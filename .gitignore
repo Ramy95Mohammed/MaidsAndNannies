@@ -1,0 +1,7 @@
+.vs/
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/private-uploads/
+appsettings.Development.json

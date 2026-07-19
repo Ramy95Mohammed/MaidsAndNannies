@@ -1,0 +1,142 @@
+{
+  "APP": {
+    "NAME": "منزلي",
+    "TAGLINE": "الحلقة الوصل بين صاحبات المنازل وعاملات المنازل"
+  },
+  "AUTH": {
+    "LOGIN": "تسجيل الدخول",
+    "REGISTER": "تسجيل جديد",
+    "LOGOUT": "تسجيل الخروج",
+    "EMAIL": "البريد الإلكتروني",
+    "PASSWORD": "كلمة المرور",
+    "CONFIRM_PASSWORD": "تأكيد كلمة المرور",
+    "PHONE": "رقم الهاتف",
+    "FULL_NAME": "الاسم الكامل",
+    "FORGOT_PASSWORD": "نسيت كلمة المرور؟",
+    "REMEMBER_ME": "تذكرني",
+    "SIGN_IN": "دخول",
+    "NO_ACCOUNT": "ليس لديك حساب؟",
+    "HAS_ACCOUNT": "لديك حساب بالفعل؟",
+    "REGISTER_AS_HOMEOWNER": "تسجيل كصاحبة منزل",
+    "REGISTER_AS_WORKER": "تسجيل كعاملة منزل",
+    "PENDING_VERIFICATION": "حسابك بانتظار التأكيد من الإدارة",
+    "HOUSEHOLD_ASSISTANT": "مساعدة منزلية",
+    "AS_HOUSEHOLD_ASSISTANT" : "كمساعدة منزلية",
+    "BASIC_INFO":"المعلومات الأساسية",
+    "HOME_WORKER_INFO":"معلومات عاملة المنزل",
+    "HOME_WORKER_IMAGE":"صورة عاملة المنزل"
+  },
+  "HOMEOWNER": {
+    "REGISTER": "تسجيل صاحبة منزل",
+    "NATIONAL_ID": "الرقم القومي",
+    "NATIONAL_ID_IMAGE": "صورة البطاقة الشخصية",
+    "SELFIE": "صورة شخصية للتحقق",
+    "PROOF_OF_ADDRESS": "إثبات السكن",
+    "ADDRESS": "العنوان",
+    "CITY": "المدينة",
+    "DISTRICT": "المنطقة"
+  },
+  "WORKER": {
+    "REGISTER": "تسجيل عاملة منزل",
+    "NATIONALITY": "الجنسية",
+    "PASSPORT_NUMBER": "رقم الباسبورت",
+    "PASSPORT_IMAGE": "صورة الباسبورت",
+    "PASSPORT_EXPIRY": "تاريخ انتهاء الباسبورت",
+    "PASSPORT_COUNTRY": "بلد إصدار الباسبورت",
+    "SPECIALIZATION": "التخصص",
+    "EXPERIENCE": "سنوات الخبرة",
+    "BIO": "نبذة عنك",
+    "IS_LIVEIN": "مقيمة في المنزل",
+    "MONTHLY_RATE": "الأجر الشهري",
+    "HOURLY_RATE": "الأجر بالساعة",
+    "CURRENCY": "العملة",
+    "LANGUAGES": "اللغات"
+  },
+  "SPECIALIZATIONS": {
+    "CLEANING": "تنظيف",
+    "COOKING": "طبخ",
+    "CHILDCARE": "رعاية أطفال",
+    "ELDERLYCARE": "رعاية مسنين",
+    "GENERALHOUSEKEEPING": "عمل منزلي عام"
+  },
+  "DASHBOARD": {
+    "TITLE": "لوحة التحكم",
+    "TOTAL_USERS": "إجمالي المستخدمين",
+    "TOTAL_HOMEOWNERS": "صاحبات المنازل",
+    "TOTAL_WORKERS": "العاملات",
+    "TOTAL_BOOKINGS": "الحجوزات",
+    "ACTIVE_BOOKINGS": "الحجوزات النشطة",
+    "PENDING_VERIFICATIONS": "طلبات التأكيد المعلقة",
+    "PENDING_PAYMENTS": "المدفوعات المعلقة"
+  },
+  "BOOKING": {
+    "CREATE": "إنشاء حجز",
+    "MY_BOOKINGS": "حجوزاتي",
+    "STATUS": "حالة الحجز",
+    "PENDING": "بانتظار القبول",
+    "ACCEPTED": "مقبول",
+    "ACTIVE": "نشط",
+    "COMPLETED": "مكتمل",
+    "CANCELLED": "ملغي",
+    "START_DATE": "تاريخ البدء",
+    "END_DATE": "تاريخ الانتهاء",
+    "MONTHLY_SALARY": "المرتب الشهري",
+    "COMMISSION": "العمولة",
+    "COMMISSION_TYPE": "نوع العمولة",
+    "ONETIME": "عمولة من أول شهر",
+    "SUBSCRIPTION": "اشتراك شهري",
+    "ACCEPT": "قبول",
+    "REJECT": "رفض",
+    "START": "بدء العمل",
+    "COMPLETE": "إنهاء"
+  },
+  "PAYMENT": {
+    "UPLOAD_PROOF": "رفع إثبات الدفع",
+    "METHOD": "طريقة الدفع",
+    "VODAFONE_CASH": "فودافون كاش",
+    "INSTAPAY": "انستاباي",
+    "AMOUNT": "المبلغ",
+    "TRANSACTION_REF": "رقم العملية",
+    "CONFIRM": "تأكيد",
+    "REJECT": "رفض"
+  },
+  "REVIEW": {
+    "TITLE": "التقييمات",
+    "WRITE": "كتابة تقييم",
+    "RATING": "التقييم",
+    "COMMENT": "التعليق",
+    "SUBMIT": "إرسال"
+  },
+  "WORKERS": {
+    "SEARCH": "البحث عن عاملة",
+    "FILTER": "تصفية",
+    "PROFILE": "الملف الشخصي",
+    "BOOK": "حجز",
+    "RATE": "تقييم"
+  },
+  "COMMON": {
+    "SAVE": "حفظ",
+    "CANCEL": "إلغاء",
+    "DELETE": "حذف",
+    "EDIT": "تعديل",
+    "VIEW": "عرض",
+    "SEARCH": "بحث",
+    "LOADING": "جاري التحميل...",
+    "NO_DATA": "لا توجد بيانات",
+    "SUCCESS": "تم بنجاح",
+    "ERROR": "حدث خطأ",
+    "CONFIRM": "تأكيد",
+    "BACK": "رجوع",
+    "NEXT": "التالي",
+    "PREVIOUS": "السابق",
+    "YES": "نعم",
+    "NO": "لا",
+    "COUNTRY":"دولة",
+    "STATE":"ولاية / محافظة"
+  },
+  "LANGUAGE": {
+    "AR": "العربية",
+    "EN": "English",
+    "SWITCH": "تغيير اللغة"
+  }
+}

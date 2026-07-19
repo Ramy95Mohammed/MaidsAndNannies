@@ -1,0 +1,142 @@
+{
+  "APP": {
+    "NAME": "MyHome",
+    "TAGLINE": "Connecting homeowners with house workers"
+  },
+  "AUTH": {
+    "LOGIN": "Login",
+    "REGISTER": "Register",
+    "LOGOUT": "Logout",
+    "EMAIL": "Email",
+    "PASSWORD": "Password",
+    "CONFIRM_PASSWORD": "Confirm Password",
+    "PHONE": "Phone Number",
+    "FULL_NAME": "Full Name",
+    "FORGOT_PASSWORD": "Forgot Password?",
+    "REMEMBER_ME": "Remember me",
+    "SIGN_IN": "Sign In",
+    "NO_ACCOUNT": "Don't have an account?",
+    "HAS_ACCOUNT": "Already have an account?",
+    "REGISTER_AS_HOMEOWNER": "Register as Homeowner",
+    "REGISTER_AS_WORKER": "Register as Worker",
+    "PENDING_VERIFICATION": "Your account is pending admin verification",
+    "HOUSEHOLD_ASSISTANT" : "Household assistant",
+    "AS_HOUSEHOLD_ASSISTANT" : "As household assistant",
+    "BASIC_INFO":"Basic info",
+    "HOME_WORKER_INFO":"Home worker info",
+    "HOME_WORKER_IMAGE":"Home worker image"
+  },
+  "HOMEOWNER": {
+    "REGISTER": "Homeowner Registration",
+    "NATIONAL_ID": "National ID",
+    "NATIONAL_ID_IMAGE": "National ID Image",
+    "SELFIE": "Selfie Photo",
+    "PROOF_OF_ADDRESS": "Proof of Address",
+    "ADDRESS": "Address",
+    "CITY": "City",
+    "DISTRICT": "District"
+  },
+  "WORKER": {
+    "REGISTER": "Worker Registration",
+    "NATIONALITY": "Nationality",
+    "PASSPORT_NUMBER": "Passport Number",
+    "PASSPORT_IMAGE": "Passport Image",
+    "PASSPORT_EXPIRY": "Passport Expiry Date",
+    "PASSPORT_COUNTRY": "Passport Country",
+    "SPECIALIZATION": "Specialization",
+    "EXPERIENCE": "Years of Experience",
+    "BIO": "About You",
+    "IS_LIVEIN": "Live-in Worker",
+    "MONTHLY_RATE": "Monthly Rate",
+    "HOURLY_RATE": "Hourly Rate",
+    "CURRENCY": "Currency",
+    "LANGUAGES": "Languages"
+  },
+  "SPECIALIZATIONS": {
+    "CLEANING": "Cleaning",
+    "COOKING": "Cooking",
+    "CHILDCARE": "Childcare",
+    "ELDERLYCARE": "Elderly Care",
+    "GENERALHOUSEKEEPING": "General Housekeeping"
+  },
+  "DASHBOARD": {
+    "TITLE": "Dashboard",
+    "TOTAL_USERS": "Total Users",
+    "TOTAL_HOMEOWNERS": "Homeowners",
+    "TOTAL_WORKERS": "Workers",
+    "TOTAL_BOOKINGS": "Total Bookings",
+    "ACTIVE_BOOKINGS": "Active Bookings",
+    "PENDING_VERIFICATIONS": "Pending Verifications",
+    "PENDING_PAYMENTS": "Pending Payments"
+  },
+  "BOOKING": {
+    "CREATE": "Create Booking",
+    "MY_BOOKINGS": "My Bookings",
+    "STATUS": "Booking Status",
+    "PENDING": "Pending",
+    "ACCEPTED": "Accepted",
+    "ACTIVE": "Active",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled",
+    "START_DATE": "Start Date",
+    "END_DATE": "End Date",
+    "MONTHLY_SALARY": "Monthly Salary",
+    "COMMISSION": "Commission",
+    "COMMISSION_TYPE": "Commission Type",
+    "ONETIME": "One-time Commission",
+    "SUBSCRIPTION": "Monthly Subscription",
+    "ACCEPT": "Accept",
+    "REJECT": "Reject",
+    "START": "Start Work",
+    "COMPLETE": "Complete"
+  },
+  "PAYMENT": {
+    "UPLOAD_PROOF": "Upload Payment Proof",
+    "METHOD": "Payment Method",
+    "VODAFONE_CASH": "Vodafone Cash",
+    "INSTAPAY": "InstaPay",
+    "AMOUNT": "Amount",
+    "TRANSACTION_REF": "Transaction Reference",
+    "CONFIRM": "Confirm",
+    "REJECT": "Reject"
+  },
+  "REVIEW": {
+    "TITLE": "Reviews",
+    "WRITE": "Write Review",
+    "RATING": "Rating",
+    "COMMENT": "Comment",
+    "SUBMIT": "Submit"
+  },
+  "WORKERS": {
+    "SEARCH": "Search Workers",
+    "FILTER": "Filter",
+    "PROFILE": "Profile",
+    "BOOK": "Book",
+    "RATE": "Rate"
+  },
+  "COMMON": {
+    "SAVE": "Save",
+    "CANCEL": "Cancel",
+    "DELETE": "Delete",
+    "EDIT": "Edit",
+    "VIEW": "View",
+    "SEARCH": "Search",
+    "LOADING": "Loading...",
+    "NO_DATA": "No data available",
+    "SUCCESS": "Success",
+    "ERROR": "Error occurred",
+    "CONFIRM": "Confirm",
+    "BACK": "Back",
+    "NEXT": "Next",
+    "PREVIOUS": "Previous",
+    "YES": "Yes",
+    "NO": "No",
+    "COUNTRY":"Country",
+    "STATE":"State/Province"
+  },
+  "LANGUAGE": {
+    "AR": "العربية",
+    "EN": "English",
+    "SWITCH": "Switch Language"
+  }
+}
