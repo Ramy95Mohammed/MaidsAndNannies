@@ -21,7 +21,7 @@ import { FileUploadModule, FileSelectEvent } from 'primeng/fileupload';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { TranslatePipe } from '@ngx-translate/core';
+import { LangChangeEvent, TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { WorkerSpecializationSpec } from '@/core/interfaces/worker-specialization-spec';
@@ -52,20 +52,22 @@ enum VerificationStatus {
     Rejected = 2
 }
 
-const SPECIALIZATION_OPTIONS = [
-    { label: 'تنظيف', value: Specialization.Cleaning },
-    { label: 'طهي', value: Specialization.Cooking },
-    { label: 'رعاية أطفال', value: Specialization.Childcare },
-    { label: 'رعاية مسنين', value: Specialization.ElderlyCare },
-    { label: 'أعمال منزلية عامة', value: Specialization.GeneralHousekeeping }
+// Translation keys under SPECIALIZATIONS.* (see public/i18n/{ar,en}.json)
+const SPECIALIZATION_KEYS: { value: Specialization; key: string }[] = [
+    { value: Specialization.Cleaning, key: 'CLEANING' },
+    { value: Specialization.Cooking, key: 'COOKING' },
+    { value: Specialization.Childcare, key: 'CHILDCARE' },
+    { value: Specialization.ElderlyCare, key: 'ELDERLYCARE' },
+    { value: Specialization.GeneralHousekeeping, key: 'GENERALHOUSEKEEPING' }
 ];
 
 // NOTE: no currency enum was provided in the domain snippets shared -
 // adjust this list to match the real backend enum once available.
-const CURRENCY_OPTIONS = [
-    { label: 'جنيه مصري (EGP)', value: 0 },
-    { label: 'دولار أمريكي (USD)', value: 1 },
-    { label: 'ريال سعودي (SAR)', value: 2 }
+// Translation keys live under WORKER_PROFILE.CURRENCY_*.
+const CURRENCY_KEYS = [
+    { value: 0, key: 'CURRENCY_EGP' },
+    { value: 1, key: 'CURRENCY_USD' },
+    { value: 2, key: 'CURRENCY_SAR' }
 ];
 
 @Component({
@@ -94,36 +96,36 @@ const CURRENCY_OPTIONS = [
         <p-toast></p-toast>
 
         <form *ngIf="!loading()" [formGroup]="form" (ngSubmit)="saveProfile()" class="card flex flex-col gap-6">
-            <h2>ملفي الشخصي</h2>
+            <h2>{{ 'WORKER_PROFILE.TITLE' | translate }}</h2>
 
             <!-- ================= البيانات الأساسية ================= -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="flex flex-col gap-4">
-                    <h3>البيانات الأساسية</h3>
+                    <h3>{{ 'WORKER_PROFILE.BASIC_INFO' | translate }}</h3>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">الاسم الكامل</label>
+                        <label class="font-bold">{{ 'AUTH.FULL_NAME' | translate }}</label>
                         <input pInputText [value]="userFullName()" class="w-full" disabled />
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">البريد الإلكتروني</label>
+                        <label class="font-bold">{{ 'AUTH.EMAIL' | translate }}</label>
                         <input pInputText  formControlName="email"  class="w-full"  />
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <label class="font-bold">رقم الهاتف</label>
+                            <label class="font-bold">{{ 'AUTH.PHONE' | translate }}</label>
                             <input pInputText [value]="profile()?.phoneNumber ?? ''" class="w-full" disabled />
                         </div>
                         <div class="flex flex-col gap-2">
-                            <label class="font-bold">رقم الواتساب</label>
-                            <input pInputText formControlName="whatsAppNumber" class="w-full" placeholder="مثال: 01012345678" />
+                            <label class="font-bold">{{ 'WORKER_PROFILE.WHATSAPP_NUMBER' | translate }}</label>
+                            <input pInputText formControlName="whatsAppNumber" class="w-full" [placeholder]="'WORKER_PROFILE.WHATSAPP_PLACEHOLDER' | translate" />
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">الجنسية</label>
+                        <label class="font-bold">{{ 'WORKER.NATIONALITY' | translate }}</label>
                         <p-select
                             formControlName="nationalityId"
                             [options]="countriesOptions()"
@@ -131,7 +133,7 @@ const CURRENCY_OPTIONS = [
                             [filterFields]="['nationality', 'native']"
                             optionValue="id"
                             optionLabel="nationality"
-                            [placeholder]="'COMMON.NATIONALITY' | translate"
+                            [placeholder]="'WORKER.NATIONALITY' | translate"
                             class="w-full"
                         >
                             <ng-template #selectedItem let-selectedOption>
@@ -155,33 +157,33 @@ const CURRENCY_OPTIONS = [
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">رقم الهوية الوطنية</label>
+                        <label class="font-bold">{{ 'WORKER_PROFILE.NATIONAL_ID_NUMBER' | translate }}</label>
                         <input pInputText formControlName="nationalIdNumber" class="w-full" />
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <label class="font-bold">رقم جواز السفر</label>
+                            <label class="font-bold">{{ 'WORKER.PASSPORT_NUMBER' | translate }}</label>
                             <input pInputText formControlName="passportNumber" class="w-full" />
                         </div>
                         <div class="flex flex-col gap-2">
-                            <label class="font-bold">تاريخ انتهاء الجواز</label>
+                            <label class="font-bold">{{ 'WORKER.PASSPORT_EXPIRY' | translate }}</label>
                             <p-datepicker formControlName="passportExpiryDate" dateFormat="dd/mm/yy" [showIcon]="true" class="w-full"></p-datepicker>
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">بلد إصدار الجواز</label>
+                        <label class="font-bold">{{ 'WORKER.PASSPORT_COUNTRY' | translate }}</label>
                         <input pInputText formControlName="passportCountry" class="w-full" />
                     </div>
                 </div>
 
                 <!-- ================= الموقع ================= -->
                 <div class="flex flex-col gap-4">
-                    <h3>الموقع</h3>
+                    <h3>{{ 'WORKER_PROFILE.LOCATION' | translate }}</h3>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">الدولة</label>
+                        <label class="font-bold">{{ 'COMMON.COUNTRY' | translate }}</label>
                         <p-select
                             formControlName="countryId"
                             [options]="countriesOptions()"
@@ -213,21 +215,21 @@ const CURRENCY_OPTIONS = [
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">المنطقة / الولاية</label>
+                        <label class="font-bold">{{ 'COMMON.STATE' | translate }}</label>
                         <p-select
                             formControlName="stateId"
                             [options]="statesOptions()"
                             [filter]="true"
                             optionValue="id"
                             optionLabel="name"
-                            (onChange)="onStateChange($event.value)"                            
-                            placeholder="اختر المنطقة"
+                            (onChange)="onStateChange($event.value)"
+                            [placeholder]="'WORKER_PROFILE.STATE_PLACEHOLDER' | translate"
                             class="w-full"
                         ></p-select>
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">المدينة</label>
+                        <label class="font-bold">{{ 'HOMEOWNER.CITY' | translate }}</label>
                         <p-select
                             formControlName="cityId"
                             [options]="citiesOptions()"
@@ -235,13 +237,13 @@ const CURRENCY_OPTIONS = [
                             optionValue="id"
                             optionLabel="name"
                             [disabled]="!form.value.stateId"
-                            placeholder="اختر المدينة"
+                            [placeholder]="'WORKER_PROFILE.CITY_PLACEHOLDER' | translate"
                             class="w-full"
                         ></p-select>
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">العنوان بالتفصيل</label>
+                        <label class="font-bold">{{ 'WORKER_PROFILE.ADDRESS_DETAILED' | translate }}</label>
                         <textarea pTextarea formControlName="address" rows="3" class="w-full"></textarea>
                     </div>
                 </div>
@@ -250,66 +252,66 @@ const CURRENCY_OPTIONS = [
             <!-- ================= المعلومات المهنية ================= -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="flex flex-col gap-4">
-                    <h3>المعلومات المهنية</h3>
+                    <h3>{{ 'WORKER_PROFILE.PROFESSIONAL_INFO' | translate }}</h3>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">نبذة عني</label>
-                        <textarea pTextarea formControlName="bio" rows="4" class="w-full" placeholder="اكتب وصفاً عن خبراتك..."></textarea>
+                        <label class="font-bold">{{ 'WORKER.BIO' | translate }}</label>
+                        <textarea pTextarea formControlName="bio" rows="4" class="w-full" [placeholder]="'WORKER_PROFILE.BIO_PLACEHOLDER' | translate"></textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <label class="font-bold">سنوات الخبرة</label>
+                            <label class="font-bold">{{ 'WORKER.EXPERIENCE' | translate }}</label>
                             <p-inputnumber formControlName="experienceYears" [min]="0" class="w-full"></p-inputnumber>
                         </div>
                         <div class="flex flex-col gap-2">
-                            <label class="font-bold">اللغات (مفصولة بفاصلة)</label>
-                            <input pInputText formControlName="languages" class="w-full" placeholder="عربي، إنجليزي" />
+                            <label class="font-bold">{{ 'WORKER.LANGUAGES' | translate }}</label>
+                            <input pInputText formControlName="languages" class="w-full" [placeholder]="'WORKER_PROFILE.LANGUAGES_PLACEHOLDER' | translate" />
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">جهة العمل السابقة</label>
+                        <label class="font-bold">{{ 'WORKER_PROFILE.PREVIOUS_EMPLOYER' | translate }}</label>
                         <input pInputText formControlName="previousEmployer" class="w-full" />
                     </div>
 
                     <div class="flex align-items-center gap-2">
                         <p-checkbox formControlName="isLiveIn" [binary]="true"></p-checkbox>
-                        <label>أعمل مقيمة</label>
+                        <label>{{ 'WORKER.IS_LIVEIN' | translate }}</label>
                     </div>
 
                     <div class="flex align-items-center gap-2">
                         <p-checkbox formControlName="isAvailable" [binary]="true"></p-checkbox>
-                        <label>متاحة للعمل حالياً</label>
+                        <label>{{ 'WORKER_PROFILE.AVAILABLE_LABEL' | translate }}</label>
                     </div>
                 </div>
 
                 <!-- ================= المعلومات المالية ================= -->
                 <div class="flex flex-col gap-4">
-                    <h3>المعلومات المالية</h3>
+                    <h3>{{ 'WORKER_PROFILE.FINANCIAL_INFO' | translate }}</h3>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">الأجر الشهري</label>
+                        <label class="font-bold">{{ 'WORKER.MONTHLY_RATE' | translate }}</label>
                         <p-inputnumber formControlName="monthlyRate" mode="decimal" [minFractionDigits]="0" [min]="0" class="w-full"></p-inputnumber>
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">أجر الساعة</label>
+                        <label class="font-bold">{{ 'WORKER.HOURLY_RATE' | translate }}</label>
                         <p-inputnumber formControlName="hourlyRate" mode="decimal" [minFractionDigits]="0" [min]="0" class="w-full"></p-inputnumber>
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <label class="font-bold">العملة</label>
-                        <p-select formControlName="currency" [options]="currencyOptions" optionLabel="label" optionValue="value" class="w-full"></p-select>
+                        <label class="font-bold">{{ 'WORKER.CURRENCY' | translate }}</label>
+                        <p-select formControlName="currency" [options]="currencyOptions()" optionLabel="label" optionValue="value" class="w-full"></p-select>
                     </div>
 
-                    <h3>حالة الحساب</h3>
+                    <h3>{{ 'WORKER_PROFILE.ACCOUNT_STATUS' | translate }}</h3>
                     <div class="flex align-items-center gap-3 flex-wrap">
                         <p-tag
                             [value]="verificationStatusLabel()"
                             [severity]="verificationStatusSeverity()"
                         ></p-tag>
-                        <span>التقييم: {{ profile()?.averageRating ?? 0 }} ({{ profile()?.totalReviews ?? 0 }} تقييم)</span>
+                        <span>{{ 'WORKER_PROFILE.RATING' | translate: { rating: profile()?.averageRating ?? 0, count: profile()?.totalReviews ?? 0 } }}</span>
                     </div>
                 </div>
             </div>
@@ -317,15 +319,15 @@ const CURRENCY_OPTIONS = [
             <!-- ================= التخصصات ================= -->
             <div>
                 <div class="flex justify-content-between align-items-center mb-3">
-                    <h3 class="m-0">التخصصات</h3>
-                    <p-button label="إضافة تخصص" icon="pi pi-plus" size="small" [outlined]="true" (onClick)="addSpecializationRow()"></p-button>
+                    <h3 class="m-0">{{ 'WORKER_PROFILE.SPECIALIZATIONS_TITLE' | translate }}</h3>
+                    <p-button [label]="'WORKER_PROFILE.ADD_SPECIALIZATION' | translate" icon="pi pi-plus" size="small" [outlined]="true" (onClick)="addSpecializationRow()"></p-button>
                 </div>
 
                 <p-table [value]="specializationsArray.controls" dataKey="index">
                     <ng-template #header>
                         <tr>
-                            <th>التخصص</th>
-                            <th style="width: 6rem">حذف</th>
+                            <th>{{ 'WORKER.SPECIALIZATION' | translate }}</th>
+                            <th style="width: 6rem">{{ 'COMMON.DELETE' | translate }}</th>
                         </tr>
                     </ng-template>
                     <ng-template #body let-row let-i="rowIndex">
@@ -333,10 +335,10 @@ const CURRENCY_OPTIONS = [
                             <td>
                                 <p-select
                                     formControlName="specialization"
-                                    [options]="specializationOptions"
+                                    [options]="specializationOptions()"
                                     optionLabel="label"
                                     optionValue="value"
-                                    placeholder="اختر تخصصاً"
+                                    [placeholder]="'WORKER_PROFILE.SELECT_SPECIALIZATION_PLACEHOLDER' | translate"
                                     appendTo="body"
                                     class="w-full"
                                 ></p-select>
@@ -348,7 +350,7 @@ const CURRENCY_OPTIONS = [
                     </ng-template>
                     <ng-template #emptymessage>
                         <tr>
-                            <td colspan="2" class="text-center text-color-secondary">لا يوجد تخصصات مضافة بعد</td>
+                            <td colspan="2" class="text-center text-color-secondary">{{ 'WORKER_PROFILE.NO_SPECIALIZATIONS' | translate }}</td>
                         </tr>
                     </ng-template>
                 </p-table>
@@ -357,39 +359,39 @@ const CURRENCY_OPTIONS = [
             <!-- ================= المستندات ================= -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="flex flex-col gap-3">
-                    <h3>الصورة الشخصية</h3>
-                    <img *ngIf="selfieUrl()" width="150" height="150" [src]="selfieUrl()" alt="الصورة الشخصية" class="w-8rem h-8rem border-round object-fit-cover" />
+                    <h3>{{ 'WORKER_PROFILE.SELFIE_TITLE' | translate }}</h3>
+                    <img *ngIf="selfieUrl()" width="150" height="150" [src]="selfieUrl()" [attr.alt]="'WORKER_PROFILE.SELFIE_TITLE' | translate" class="w-8rem h-8rem border-round object-fit-cover" />
                     <p-fileupload
                         mode="basic"
-                        chooseLabel="اختيار الصورة الشخصية"
+                        [chooseLabel]="'WORKER_PROFILE.CHOOSE_SELFIE' | translate"
                         accept="image/*"
                         [maxFileSize]="5000000"
                         [auto]="false"
                         [customUpload]="true"
                         (onSelect)="onDocumentSelect($event, documentType.Selfie)"
                     ></p-fileupload>
-                    <small class="text-color-secondary">سيتم رفع الصورة مع باقي بيانات الملف الشخصي عند الضغط على "حفظ التعديلات"</small>
+                    <small class="text-color-secondary">{{ 'WORKER_PROFILE.UPLOAD_HINT' | translate }}</small>
                 </div>
 
                 <div class="flex flex-col gap-3">
-                    <h3>صورة جواز السفر</h3>
-                    <img *ngIf="passportUrl()" width="150" height="150" [src]="passportUrl()" alt="صورة جواز السفر" class="w-8rem h-8rem border-round object-fit-cover" />
+                    <h3>{{ 'WORKER_PROFILE.PASSPORT_IMAGE_TITLE' | translate }}</h3>
+                    <img *ngIf="passportUrl()" width="150" height="150" [src]="passportUrl()" [attr.alt]="'WORKER_PROFILE.PASSPORT_IMAGE_TITLE' | translate" class="w-8rem h-8rem border-round object-fit-cover" />
                     <p-fileupload
                         mode="basic"
-                        chooseLabel="اختيار صورة الجواز"
+                        [chooseLabel]="'WORKER_PROFILE.CHOOSE_PASSPORT_IMAGE' | translate"
                         accept="image/*"
                         [maxFileSize]="5000000"
                         [auto]="false"
                         [customUpload]="true"
                         (onSelect)="onDocumentSelect($event, documentType.Passport)"
                     ></p-fileupload>
-                    <small class="text-color-secondary">سيتم رفع الصورة مع باقي بيانات الملف الشخصي عند الضغط على "حفظ التعديلات"</small>
+                    <small class="text-color-secondary">{{ 'WORKER_PROFILE.UPLOAD_HINT' | translate }}</small>
                 </div>
             </div>
 
             <div class="flex justify-content-end gap-2 mt-4">
-                <p-button label="إلغاء" [outlined]="true" routerLink="/worker/dashboard" type="button"></p-button>
-                <p-button label="حفظ التعديلات" icon="pi pi-save" type="submit" [loading]="saving()" [disabled]="form.invalid || saving()"></p-button>
+                <p-button [label]="'COMMON.CANCEL' | translate" [outlined]="true" routerLink="/worker/dashboard" type="button"></p-button>
+                <p-button [label]="'WORKER_PROFILE.SAVE_CHANGES' | translate" icon="pi pi-save" type="submit" [loading]="saving()" [disabled]="form.invalid || saving()"></p-button>
             </div>
         </form>
     `
@@ -401,11 +403,10 @@ export class WorkerProfileComponent implements OnInit {
     private globalizationSpecsService = inject(GlobalizationSpecsService);
     private authService = inject(AuthService);
     private messageService = inject(MessageService);
+    private translate = inject(TranslateService);
     private router = inject(Router);
 
     readonly documentType = DocumentType;
-    readonly specializationOptions = SPECIALIZATION_OPTIONS;
-    readonly currencyOptions = CURRENCY_OPTIONS;
 
     profile = signal<WorkerProfile | null>(null);
     loading = signal(true);
@@ -414,6 +415,28 @@ export class WorkerProfileComponent implements OnInit {
     countriesOptions = signal<any[]>([]);
     statesOptions = signal<any[]>([]);
     citiesOptions = signal<any[]>([]);
+
+    // Bumped whenever the active language changes, so the computed()s below
+    // (which read translate.instant()) re-run and pick up the new strings.
+    private currentLang = signal<string>(
+    this.translate.currentLang() ?? this.translate.getCurrentLang() ?? 'ar'
+);
+
+    specializationOptions = computed(() => {
+        this.currentLang();
+        return SPECIALIZATION_KEYS.map(o => ({
+            value: o.value,
+            label: this.translate.instant(`SPECIALIZATIONS.${o.key}`)
+        }));
+    });
+
+    currencyOptions = computed(() => {
+        this.currentLang();
+        return CURRENCY_KEYS.map(o => ({
+            value: o.value,
+            label: this.translate.instant(`WORKER_PROFILE.${o.key}`)
+        }));
+    });
 
     userFullName = computed(() => this.authService.currentUser()?.fullName ?? '');    
     userEmail = computed(() => this.authService.currentUser()?.email ?? '');
@@ -433,10 +456,11 @@ export class WorkerProfileComponent implements OnInit {
     );
 
     verificationStatusLabel = computed(() => {
+        this.currentLang();
         switch (this.profile()?.verificationStatus) {
-            case VerificationStatus.Verified: return 'موثق';
-            case VerificationStatus.Rejected: return 'مرفوض';
-            default: return 'قيد المراجعة';
+            case VerificationStatus.Verified: return this.translate.instant('WORKER_PROFILE.VERIFICATION_VERIFIED');
+            case VerificationStatus.Rejected: return this.translate.instant('WORKER_PROFILE.VERIFICATION_REJECTED');
+            default: return this.translate.instant('WORKER_PROFILE.VERIFICATION_PENDING');
         }
     });
 
@@ -479,6 +503,12 @@ export class WorkerProfileComponent implements OnInit {
         return this.form.get('specializations') as FormArray;
     }
 
+    constructor() {
+         this.translate.onLangChange.subscribe((event: LangChangeEvent) => {
+        this.currentLang.set(event.lang);
+    });
+    }
+
     ngOnInit() {
         this.loadCountries();
         this.loadProfile();
@@ -487,7 +517,11 @@ export class WorkerProfileComponent implements OnInit {
     loadCountries() {
         this.globalizationSpecsService.getCountries().subscribe({
             next: (data: any[]) => this.countriesOptions.set(data),
-            error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل قائمة الدول' })
+            error: () => this.messageService.add({
+                severity: 'error',
+                summary: this.translate.instant('COMMON.ERROR'),
+                detail: this.translate.instant('WORKER_PROFILE.TOAST_LOAD_COUNTRIES_ERROR')
+            })
         });
     }
 
@@ -500,7 +534,11 @@ export class WorkerProfileComponent implements OnInit {
         if (!countryId) return;
         this.globalizationSpecsService.getStatesByCountryId(countryId).subscribe({
             next: (data: any[]) => this.statesOptions.set(data),
-            error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل قائمة المناطق' })
+            error: () => this.messageService.add({
+                severity: 'error',
+                summary: this.translate.instant('COMMON.ERROR'),
+                detail: this.translate.instant('WORKER_PROFILE.TOAST_LOAD_STATES_ERROR')
+            })
         });
     }
 
@@ -512,7 +550,11 @@ export class WorkerProfileComponent implements OnInit {
         if (!stateId) return;
         this.globalizationSpecsService.getCitiesByStateId(stateId).subscribe({
             next: (data: any[]) => this.citiesOptions.set(data),
-            error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل قائمة المدن' })
+            error: () => this.messageService.add({
+                severity: 'error',
+                summary: this.translate.instant('COMMON.ERROR'),
+                detail: this.translate.instant('WORKER_PROFILE.TOAST_LOAD_CITIES_ERROR')
+            })
         });
     }
 
@@ -531,14 +573,17 @@ export class WorkerProfileComponent implements OnInit {
                 this.loading.set(false);
             },
             error: () => {
-                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل الملف الشخصي' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: this.translate.instant('COMMON.ERROR'),
+                    detail: this.translate.instant('WORKER_PROFILE.TOAST_LOAD_PROFILE_ERROR')
+                });
                 this.loading.set(false);
             }
         });
     }
 
     private patchForm(data: any) {
-        console.log(data);
         this.form.patchValue({
             nationalityId: data.nationalityId,
             nationalIdNumber: data.nationalIdNumber,
@@ -666,12 +711,20 @@ export class WorkerProfileComponent implements OnInit {
         this.workerService.updateWorkerProfile(formData).subscribe({
             next: () => {
                 this.saving.set(false);
-                this.messageService.add({ severity: 'success', summary: 'تم', detail: 'تم حفظ التعديلات' });
+                this.messageService.add({
+                    severity: 'success',
+                    summary: this.translate.instant('COMMON.SUCCESS'),
+                    detail: this.translate.instant('WORKER_PROFILE.TOAST_SAVE_SUCCESS')
+                });
                 setTimeout(() => this.router.navigate(['/worker/dashboard']), 1500);
             },
             error: () => {
                 this.saving.set(false);
-                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل حفظ التعديلات' });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: this.translate.instant('COMMON.ERROR'),
+                    detail: this.translate.instant('WORKER_PROFILE.TOAST_SAVE_ERROR')
+                });
             }
         });
     }
