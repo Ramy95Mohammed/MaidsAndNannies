@@ -4,6 +4,10 @@ import { WorkerSpecializationSpec } from "./worker-specialization-spec";
 
 export interface WorkerProfile extends Entity{
     userId:string,
+    fullName:string,
+    email:string,
+    phoneNumber:string | null,
+    whatsAppNumber:string | null,
     nationalityId:number,
     nationalIdNumber:string,
     passportNumber:string | null,

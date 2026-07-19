@@ -111,6 +111,17 @@ const CURRENCY_OPTIONS = [
                         <input pInputText  formControlName="email"  class="w-full"  />
                     </div>
 
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <label class="font-bold">رقم الهاتف</label>
+                            <input pInputText [value]="profile()?.phoneNumber ?? ''" class="w-full" disabled />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="font-bold">رقم الواتساب</label>
+                            <input pInputText formControlName="whatsAppNumber" class="w-full" placeholder="مثال: 01012345678" />
+                        </div>
+                    </div>
+
                     <div class="flex flex-col gap-2">
                         <label class="font-bold">الجنسية</label>
                         <p-select
@@ -440,6 +451,7 @@ export class WorkerProfileComponent implements OnInit {
     form: FormGroup = this.fb.group({
         nationalityId: [null, Validators.required],
         nationalIdNumber: ['', Validators.required],
+        whatsAppNumber: [null],
         passportNumber: [null],
         passportExpiryDate: [null],
         passportCountry: [null],
@@ -479,10 +491,12 @@ export class WorkerProfileComponent implements OnInit {
         });
     }
 
-    onCountryChange(countryId: number) {
-        this.form.patchValue({ stateId: null, cityId: null });
+    onCountryChange(countryId: number, resetChildren: boolean = true) {
+        if (resetChildren) {
+            this.form.patchValue({ stateId: null, cityId: null });
+            this.citiesOptions.set([]);
+        }
         this.statesOptions.set([]);
-        this.citiesOptions.set([]);
         if (!countryId) return;
         this.globalizationSpecsService.getStatesByCountryId(countryId).subscribe({
             next: (data: any[]) => this.statesOptions.set(data),
@@ -490,8 +504,10 @@ export class WorkerProfileComponent implements OnInit {
         });
     }
 
-    onStateChange(stateId: number) {
-        this.form.patchValue({ cityId: null });
+    onStateChange(stateId: number, resetCity: boolean = true) {
+        if (resetCity) {
+            this.form.patchValue({ cityId: null });
+        }
         this.citiesOptions.set([]);
         if (!stateId) return;
         this.globalizationSpecsService.getCitiesByStateId(stateId).subscribe({
@@ -507,7 +523,10 @@ export class WorkerProfileComponent implements OnInit {
                 this.profile.set(data);
                 this.patchForm(data);
                 if (data.countryId) {
-                    this.onCountryChange(data.countryId);
+                    this.onCountryChange(data.countryId, false);
+                }
+                if (data.stateId) {
+                    this.onStateChange(data.stateId, false);
                 }
                 this.loading.set(false);
             },
@@ -523,6 +542,7 @@ export class WorkerProfileComponent implements OnInit {
         this.form.patchValue({
             nationalityId: data.nationalityId,
             nationalIdNumber: data.nationalIdNumber,
+            whatsAppNumber: data.whatsAppNumber,
             passportNumber: data.passportNumber,
             passportExpiryDate: data.passportExpiryDate ? new Date(data.passportExpiryDate) : null,
             passportCountry: data.passportCountry,
@@ -560,6 +580,20 @@ export class WorkerProfileComponent implements OnInit {
         this.specializationsArray.removeAt(index);
     }
 
+    /**
+     * Formats a Date as "yyyy-MM-dd" using its LOCAL year/month/day.
+     * Sending the raw Date object instead would go through JSON.stringify ->
+     * Date.toISOString(), which converts to UTC and shifts the date back a
+     * day in any timezone ahead of UTC (e.g. Egypt, UTC+2/+3).
+     */
+    private toDateOnlyString(date: Date | null): string | null {
+        if (!date) return null;
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
     onDocumentSelect(event: FileSelectEvent, type: DocumentType) {
         const file = event.files?.[0];
         if (!file) return;
@@ -586,8 +620,9 @@ export class WorkerProfileComponent implements OnInit {
             ...this.profile(),
             nationalityId: value.nationalityId,            
             nationalIdNumber: value.nationalIdNumber,
+            whatsAppNumber: value.whatsAppNumber,
             passportNumber: value.passportNumber,
-            passportExpiryDate: value.passportExpiryDate,
+            passportExpiryDate: this.toDateOnlyString(value.passportExpiryDate),
             passportCountry: value.passportCountry,
            
             countryId: value.countryId,

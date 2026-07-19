@@ -6,32 +6,33 @@ using MaidsPlatform.API.Domain.Enums;
 namespace MaidsAndNannies.Domain.Entities;
 
 public class WorkerProfile : Entity
-{   
+{
     public string UserId { get; set; } = string.Empty;//
 
     // Personal Info
     public int NationalityId { get; set; }//
-    public string NationalIdNumber { get; set; } = string.Empty;    
+    public string NationalIdNumber { get; set; } = string.Empty;
+    public string? WhatsAppNumber { get; set; }
 
     // Passport (optional for foreign workers)
-    public string? PassportNumber { get; set; }    
+    public string? PassportNumber { get; set; }
     public DateTime? PassportExpiryDate { get; set; }
     public string? PassportCountry { get; set; }
-    
+
     // Professional Info
     public string? Bio { get; set; }
     public int ExperienceYears { get; set; } = 0;
-    public string?  PreviousEmployer { get; set; }
+    public string? PreviousEmployer { get; set; }
     public string? Languages { get; set; }
 
     // Specialization
-     public ICollection<WorkerSpecializationSpec>?  WorkerSpecializationSpecs { get; set; } = new List<WorkerSpecializationSpec>();
+    public ICollection<WorkerSpecializationSpec>? WorkerSpecializationSpecs { get; set; } = new List<WorkerSpecializationSpec>();
     public bool IsLiveIn { get; set; } = false;
 
     // Rates
     public decimal? HourlyRate { get; set; }
     public decimal? MonthlyRate { get; set; }
-    public int Currency { get; set; } 
+    public int Currency { get; set; }
 
     // Location
     public int? StateId { get; set; }

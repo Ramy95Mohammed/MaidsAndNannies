@@ -9,7 +9,7 @@ namespace MaidsAndNannies.Infrastructure.Persistence;
 public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : IdentityDbContext<ApplicationUser>(options)
 {
-    public DbSet<HomeownerProfile> HomeownerProfiles => Set<HomeownerProfile>();    
+    public DbSet<HomeownerProfile> HomeownerProfiles => Set<HomeownerProfile>();
     public DbSet<WorkerProfile> WorkerProfiles => Set<WorkerProfile>();
     public DbSet<WorkerDocument> WorkerDocuments => Set<WorkerDocument>();
     public DbSet<Booking> Bookings => Set<Booking>();
@@ -97,13 +97,14 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         // WorkerProfile configuration
         builder.Entity<WorkerProfile>(b =>
         {
-            b.HasKey(p => p.Id);            
-            b.Property(p => p.NationalIdNumber).HasMaxLength(20).IsRequired();            
-            b.Property(p => p.PassportNumber).HasMaxLength(30);            
+            b.HasKey(p => p.Id);
+            b.Property(p => p.NationalIdNumber).HasMaxLength(20).IsRequired();
+            b.Property(p => p.PassportNumber).HasMaxLength(30);
             b.Property(p => p.PassportCountry).HasMaxLength(100);
+            b.Property(p => p.WhatsAppNumber).HasMaxLength(20);
             b.Property(p => p.Bio).HasMaxLength(2000);
             b.Property(p => p.PreviousEmployer).HasMaxLength(200);
-            b.Property(p => p.Languages).HasMaxLength(500);                                
+            b.Property(p => p.Languages).HasMaxLength(500);
             b.Property(p => p.VerifiedBy).HasMaxLength(450);
             b.Property(p => p.MonthlyRate).HasColumnType("decimal(18,2)");
             b.Property(p => p.HourlyRate).HasColumnType("decimal(18,2)");
@@ -113,7 +114,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         // WorkerDocument configuration
         builder.Entity<WorkerDocument>(b =>
         {
-            b.HasKey(d => d.Id);            
+            b.HasKey(d => d.Id);
             b.Property(d => d.DocumentImageUrl).HasMaxLength(500).IsRequired();
             b.Property(d => d.VerifiedBy).HasMaxLength(450);
             b.HasOne(d => d.Worker)

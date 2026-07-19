@@ -3,6 +3,7 @@ using MaidsAndNannies.Domain.Enums;
 using MaidsAndNannies.Infrastructure.Persistence;
 using MaidsPlatform.API.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ namespace MaidsAndNannies.WebApi.Controllers
     public class WorkerController : BaseApiController
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
         private const long MaxDocumentSizeBytes = 5 * 1024 * 1024; // 5 MB, matches the frontend's maxFileSize
@@ -25,9 +27,10 @@ namespace MaidsAndNannies.WebApi.Controllers
             PropertyNameCaseInsensitive = true
         };
 
-        public WorkerController(ApplicationDbContext context)
+        public WorkerController(ApplicationDbContext context , IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet]
@@ -159,60 +162,69 @@ namespace MaidsAndNannies.WebApi.Controllers
             try
             {
 
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            var profile = await _context.WorkerProfiles
-                .Include(p => p.User)
-                .Include(p => p.Documents)
-                .Include(p => p.WorkerSpecializationSpecs)
-                .FirstOrDefaultAsync(p => p.UserId == userId);
+                var profile = await _context.WorkerProfiles
+                    .Include(p => p.User)
+                    .Include(p => p.Documents)
+                    .Include(p => p.WorkerSpecializationSpecs)
+                    .FirstOrDefaultAsync(p => p.UserId == userId);
 
-            if (profile == null) return NotFound();
+                if (profile == null) return NotFound();
 
-            return Ok(new
-            {
-                profile.Id,
-                profile.User.FullName,
-                profile.User.Email,
-                profile.User.PhoneNumber,
-
-                profile.NationalityId,
-                profile.NationalIdNumber,
-                profile.PassportNumber,
-                profile.PassportExpiryDate,
-                profile.PassportCountry,
-
-                profile.CountryId,
-                profile.StateId,
-                profile.CityId,
-                profile.Address,
-
-                profile.Bio,
-                profile.ExperienceYears,
-                profile.PreviousEmployer,
-                profile.WorkerSpecializationSpecs,
-                profile.IsLiveIn,
-                profile.IsAvailable,
-
-                profile.MonthlyRate,
-                profile.HourlyRate,
-                profile.Currency,
-
-                profile.AverageRating,
-                profile.TotalReviews,
-                profile.Languages,
-                profile.VerificationStatus,
-
-                // Matches the shape the Angular component expects for
-                // selfieUrl()/passportUrl(): documents[].type / .documentImageUrl
-                Documents = profile.Documents.Select(d => new
+                var profileDto = new
                 {
-                    d.Type,
-                    d.DocumentImageUrl,
-                    d.VerificationStatus
-                })
-            });
+                    profile.Id,
+                    profile.UserId,
+                    profile.User.FullName,
+                    profile.User.Email,
+                    profile.User.PhoneNumber,
+                    profile.WhatsAppNumber,
+
+                    profile.NationalityId,
+                    profile.NationalIdNumber,
+                    profile.PassportNumber,
+                    profile.PassportExpiryDate,
+                    profile.PassportCountry,
+
+                    profile.CountryId,
+                    profile.StateId,
+                    profile.CityId,
+                    profile.Address,
+
+                    profile.Bio,
+                    profile.ExperienceYears,
+                    profile.PreviousEmployer,
+                    WorkerSpecializationSpecs = profile.WorkerSpecializationSpecs.Select(s => new
+                    {
+                        s.Id,
+                        s.WorkerSpecialization
+                    }),
+                    profile.IsLiveIn,
+                    profile.IsAvailable,
+
+                    profile.MonthlyRate,
+                    profile.HourlyRate,
+                    profile.Currency,
+
+                    profile.AverageRating,
+                    profile.TotalReviews,
+                    profile.Languages,
+                    profile.VerificationStatus,
+                    profile.VerifiedAt,
+                    profile.VerifiedBy,
+
+                    // Matches the shape the Angular component expects for
+                    // selfieUrl()/passportUrl(): documents[].type / .documentImageUrl
+                    Documents = profile.Documents.Select(d => new
+                    {
+                        d.Type,
+                        DocumentImageUrl = ToAbsoluteUrl( d.DocumentImageUrl),
+                        d.VerificationStatus
+                    })
+                };
+                return Ok(profileDto);                
 
             }
             catch (Exception ex)
@@ -288,6 +300,7 @@ namespace MaidsAndNannies.WebApi.Controllers
             // -- basic / identity info --
             workerProfile.NationalityId = dto.NationalityId ?? workerProfile.NationalityId;
             workerProfile.NationalIdNumber = dto.NationalIdNumber ?? workerProfile.NationalIdNumber;
+            workerProfile.WhatsAppNumber = dto.WhatsAppNumber ?? workerProfile.WhatsAppNumber;
             workerProfile.PassportNumber = dto.PassportNumber ?? workerProfile.PassportNumber;
             workerProfile.PassportExpiryDate = dto.PassportExpiryDate ?? workerProfile.PassportExpiryDate;
             workerProfile.PassportCountry = dto.PassportCountry ?? workerProfile.PassportCountry;
@@ -339,14 +352,12 @@ namespace MaidsAndNannies.WebApi.Controllers
             {
                 if (selfieImage != null)
                 {
-                    var url = await SaveDocumentFileAsync(selfieImage, userId);
-                    UpsertDocument(workerProfile, DocumentType.Selfie, url);
+                    await ReplaceDocumentAsync(workerProfile, DocumentType.Selfie, selfieImage, userId);
                 }
 
                 if (passportImage != null)
                 {
-                    var url = await SaveDocumentFileAsync(passportImage, userId);
-                    UpsertDocument(workerProfile, DocumentType.Passport, url);
+                    await ReplaceDocumentAsync(workerProfile, DocumentType.Passport, passportImage, userId);
                 }
             }
             catch (InvalidOperationException ex)
@@ -362,9 +373,24 @@ namespace MaidsAndNannies.WebApi.Controllers
             {
                 throw;
             }
-            
+
 
             return Ok(new { Message = "تم تحديث الملف الشخصي بنجاح" });
+        }
+
+        /// <summary>
+        /// The DB stores a relative path ("/uploads/worker-documents/x.jpg"). Left
+        /// as-is, the browser resolves that against whatever page it's on (the
+        /// Angular dev server), causing 404s. Prefix it with this API's own
+        /// scheme+host so it always points at the file server.
+        /// </summary>
+        private string? ToAbsoluteUrl(string? relativeUrl)
+        {
+            if (string.IsNullOrEmpty(relativeUrl)) return relativeUrl;
+            if (relativeUrl.StartsWith("http://") || relativeUrl.StartsWith("https://")) return relativeUrl;
+
+            var request = HttpContext.Request;
+            return $"{request.Scheme}://{request.Host}{relativeUrl}";
         }
 
         private async Task<string> SaveDocumentFileAsync(IFormFile file, string userId)
@@ -392,16 +418,21 @@ namespace MaidsAndNannies.WebApi.Controllers
             return $"/uploads/worker-documents/{fileName}";
         }
 
-        // NOTE: adjust the property names below (WorkerProfileId / Type /
-        // DocumentImageUrl / VerificationStatus) if they differ from your actual
-        // WorkerDocument entity - only its TypeScript shape was shared with me,
-        // not the C# entity definition.
-        private void UpsertDocument(WorkerProfile workerProfile, DocumentType type, string url)
+        /// <summary>
+        /// Saves the newly uploaded file, points the worker's document row (Selfie
+        /// or Passport) at it, and deletes the old file from disk if one existed -
+        /// so replacing a document never leaves an orphaned image on the server.
+        /// </summary>
+        private async Task ReplaceDocumentAsync(WorkerProfile workerProfile, DocumentType type, IFormFile file, string userId)
         {
             var existing = workerProfile.Documents.FirstOrDefault(d => d.Type == type);
+            var previousUrl = existing?.DocumentImageUrl;
+
+            var newUrl = await SaveDocumentFileAsync(file, userId);
+
             if (existing != null)
             {
-                existing.DocumentImageUrl = url;
+                existing.DocumentImageUrl = newUrl;
                 existing.VerificationStatus = VerificationStatus.Pending;
             }
             else
@@ -410,9 +441,38 @@ namespace MaidsAndNannies.WebApi.Controllers
                 {
                     WorkerId = workerProfile.Id,
                     Type = type,
-                    DocumentImageUrl = url,
+                    DocumentImageUrl = newUrl,
                     VerificationStatus = VerificationStatus.Pending
                 });
+            }
+
+            if (!string.IsNullOrEmpty(previousUrl))
+            {
+                DeleteDocumentFile(previousUrl);
+            }
+        }
+
+        /// <summary>
+        /// Deletes a previously uploaded document image from wwwroot given its
+        /// stored relative URL (e.g. "/uploads/worker-documents/xxx.jpg"). Failures
+        /// are swallowed on purpose: a missing/locked file on disk should never
+        /// block saving the rest of the profile update.
+        /// </summary>
+        private void DeleteDocumentFile(string relativeUrl)
+        {
+            try
+            {
+                var relativePath = relativeUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", relativePath);
+
+                if (System.IO.File.Exists(fullPath))
+                {
+                    System.IO.File.Delete(fullPath);
+                }
+            }
+            catch
+            {
+                // Best-effort cleanup only - swallow so a stray file doesn't fail the request.
             }
         }
     }
@@ -421,6 +481,7 @@ namespace MaidsAndNannies.WebApi.Controllers
     {
         public int? NationalityId { get; set; }
         public string? NationalIdNumber { get; set; }
+        public string? WhatsAppNumber { get; set; }
         public string? PassportNumber { get; set; }
         public DateTime? PassportExpiryDate { get; set; }
         public string? PassportCountry { get; set; }
