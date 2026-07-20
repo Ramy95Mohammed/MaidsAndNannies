@@ -1,0 +1,2207 @@
+diff --git a/src/MaidsAndNannies.Application/Common/Behaviors/ValidationBehavior.cs b/src/MaidsAndNannies.Application/Common/Behaviors/ValidationBehavior.cs
+new file mode 100644
+index 0000000..2a165f6
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Common/Behaviors/ValidationBehavior.cs
+@@ -0,0 +1,32 @@
++using FluentValidation;
++using MediatR;
++using ValidationException = MaidsAndNannies.Application.Common.Exceptions.ValidationException;
++
++namespace MaidsAndNannies.Application.Common.Behaviors;
++
++public sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidator<TRequest>> validators)
++    : IPipelineBehavior<TRequest, TResponse>
++    where TRequest : IRequest<TResponse>
++{
++    public async Task<TResponse> Handle(
++        TRequest request,
++        RequestHandlerDelegate<TResponse> next,
++        CancellationToken cancellationToken)
++    {
++        if (!validators.Any())
++            return await next();
++
++        var context = new ValidationContext<TRequest>(request);
++
++        var failures = (await Task.WhenAll(
++                validators.Select(v => v.ValidateAsync(context, cancellationToken))))
++            .SelectMany(result => result.Errors)
++            .Where(failure => failure is not null)
++            .ToList();
++
++        if (failures.Count != 0)
++            throw new ValidationException(failures);
++
++        return await next();
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Common/Exceptions/NotFoundException.cs b/src/MaidsAndNannies.Application/Common/Exceptions/NotFoundException.cs
+new file mode 100644
+index 0000000..defec0a
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Common/Exceptions/NotFoundException.cs
+@@ -0,0 +1,24 @@
++namespace MaidsAndNannies.Application.Common.Exceptions;
++
++public sealed class NotFoundException : Exception
++{
++    public NotFoundException(string name, object key)
++        : base($"لم يتم العثور على \"{name}\" ({key}).")
++    {
++    }
++
++    public NotFoundException(string message) : base(message)
++    {
++    }
++}
++
++/// <summary>
++/// Business-rule conflicts that aren't validation errors, e.g. "email already
++/// registered", "same phone number used by a worker account". Mapped to 409.
++/// </summary>
++public sealed class ConflictException : Exception
++{
++    public ConflictException(string message) : base(message)
++    {
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Common/Exceptions/ValidationException.cs b/src/MaidsAndNannies.Application/Common/Exceptions/ValidationException.cs
+new file mode 100644
+index 0000000..0c5fd91
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Common/Exceptions/ValidationException.cs
+@@ -0,0 +1,25 @@
++using FluentValidation.Results;
++
++namespace MaidsAndNannies.Application.Common.Exceptions;
++
++/// <summary>
++/// Thrown by ValidationBehavior when FluentValidation rules fail before a
++/// handler ever runs. Caught by the WebApi exception middleware and turned
++/// into a 400 with a { field: [errors] } payload.
++/// </summary>
++public sealed class ValidationException : Exception
++{
++    public ValidationException() : base("تم رفض طلب واحد أو أكثر من قواعد التحقق.")
++    {
++        Errors = new Dictionary<string, string[]>();
++    }
++
++    public ValidationException(IEnumerable<ValidationFailure> failures) : this()
++    {
++        Errors = failures
++            .GroupBy(f => f.PropertyName, f => f.ErrorMessage)
++            .ToDictionary(g => g.Key, g => g.ToArray());
++    }
++
++    public IDictionary<string, string[]> Errors { get; }
++}
+diff --git a/src/MaidsAndNannies.Application/Common/Interfaces/IApplicationDbContext.cs b/src/MaidsAndNannies.Application/Common/Interfaces/IApplicationDbContext.cs
+new file mode 100644
+index 0000000..06e20e4
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Common/Interfaces/IApplicationDbContext.cs
+@@ -0,0 +1,29 @@
++using MaidsAndNannies.Domain.Entities;
++using MaidsAndNannies.Domain.Entities.Identity;
++using Microsoft.EntityFrameworkCore;
++
++namespace MaidsAndNannies.Application.Common.Interfaces;
++
++/// <summary>
++/// Everything in the Application layer (Commands/Queries/Handlers) talks to the
++/// database only through this interface - never through the concrete
++/// ApplicationDbContext. Infrastructure.Persistence.ApplicationDbContext implements
++/// it. This keeps Application testable (fake/in-memory implementation for unit
++/// tests) and keeps EF Core / SQL Server swappable without touching business logic.
++/// </summary>
++public interface IApplicationDbContext
++{
++    DbSet<ApplicationUser> Users { get; }
++    DbSet<HomeownerProfile> HomeownerProfiles { get; }
++    DbSet<WorkerProfile> WorkerProfiles { get; }
++    DbSet<WorkerSpecializationSpec> WorkerSpecializationSpecs { get; }
++    DbSet<WorkerDocument> WorkerDocuments { get; }
++    DbSet<Booking> Bookings { get; }
++    DbSet<Review> Reviews { get; }
++    DbSet<Message> Messages { get; }
++    DbSet<PaymentProof> PaymentProofs { get; }
++    DbSet<Subscription> Subscriptions { get; }
++    DbSet<Notification> Notifications { get; }
++
++    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
++}
+diff --git a/src/MaidsAndNannies.Application/Common/Interfaces/ICurrentUserService.cs b/src/MaidsAndNannies.Application/Common/Interfaces/ICurrentUserService.cs
+new file mode 100644
+index 0000000..8896099
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Common/Interfaces/ICurrentUserService.cs
+@@ -0,0 +1,12 @@
++namespace MaidsAndNannies.Application.Common.Interfaces;
++
++/// <summary>
++/// Implemented in the WebApi project (reads ClaimsPrincipal from HttpContext).
++/// Handlers depend on this instead of ClaimsPrincipal/HttpContext directly, so
++/// they stay framework-agnostic and unit-testable.
++/// </summary>
++public interface ICurrentUserService
++{
++    string? UserId { get; }
++    string? Role { get; }
++}
+diff --git a/src/MaidsAndNannies.Application/Common/Interfaces/IJwtTokenGenerator.cs b/src/MaidsAndNannies.Application/Common/Interfaces/IJwtTokenGenerator.cs
+new file mode 100644
+index 0000000..711535c
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Common/Interfaces/IJwtTokenGenerator.cs
+@@ -0,0 +1,8 @@
++using MaidsAndNannies.Domain.Entities.Identity;
++
++namespace MaidsAndNannies.Application.Common.Interfaces;
++
++public interface IJwtTokenGenerator
++{
++    (string AccessToken, DateTime ExpiresAtUtc) GenerateToken(ApplicationUser user, string role);
++}
+diff --git a/src/MaidsAndNannies.Application/Contracts/IFileStorage.cs b/src/MaidsAndNannies.Application/Contracts/IFileStorage.cs
+index fb48c12..e8b8c52 100644
+--- a/src/MaidsAndNannies.Application/Contracts/IFileStorage.cs
++++ b/src/MaidsAndNannies.Application/Contracts/IFileStorage.cs
+@@ -3,4 +3,14 @@ namespace MaidsAndNannies.Application.Contracts;
+ public interface IFileStorage
+ {
+     Task<string> SavePrivateAsync(Stream content, string fileName, CancellationToken cancellationToken = default);
++
++    /// <summary>
++    /// Saves a file under wwwroot/uploads/{subFolder}/ and returns the relative
++    /// URL ("/uploads/{subFolder}/{guid}{ext}") the SPA can load directly through
++    /// static file middleware. Used for worker/homeowner document photos.
++    /// </summary>
++    Task<string> SavePublicAsync(Stream content, string fileName, string subFolder, CancellationToken cancellationToken = default);
++
++    /// <summary>Best-effort delete of a previously-saved public file. Never throws.</summary>
++    void DeletePublic(string relativeUrl);
+ }
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommand.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommand.cs
+new file mode 100644
+index 0000000..f587f5e
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommand.cs
+@@ -0,0 +1,6 @@
++using MaidsAndNannies.Application.Features.Auth.Common;
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Auth.Commands.Login;
++
++public sealed record LoginCommand(string Email, string Password) : IRequest<AuthResponseDto>;
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommandHandler.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommandHandler.cs
+new file mode 100644
+index 0000000..4499112
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommandHandler.cs
+@@ -0,0 +1,27 @@
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Features.Auth.Common;
++using MaidsAndNannies.Domain.Entities.Identity;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++using Microsoft.AspNetCore.Identity;
++
++namespace MaidsAndNannies.Application.Features.Auth.Commands.Login;
++
++public sealed class LoginCommandHandler(
++    UserManager<ApplicationUser> userManager,
++    IJwtTokenGenerator jwtTokenGenerator) : IRequestHandler<LoginCommand, AuthResponseDto>
++{
++    public async Task<AuthResponseDto> Handle(LoginCommand request, CancellationToken cancellationToken)
++    {
++        var user = await userManager.FindByEmailAsync(request.Email);
++        if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
++            throw new UnauthorizedAccessException("Invalid email or password.");
++
++        var roles = await userManager.GetRolesAsync(user);
++        var role = roles.Single();
++
++        var (accessToken, expiresAtUtc) = jwtTokenGenerator.GenerateToken(user, role);
++        return new AuthResponseDto(accessToken, expiresAtUtc, user.FullName, role,
++            user.PreferredLanguage, VerificationStatus.Pending);
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommandValidator.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommandValidator.cs
+new file mode 100644
+index 0000000..4ffee20
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommandValidator.cs
+@@ -0,0 +1,12 @@
++using FluentValidation;
++
++namespace MaidsAndNannies.Application.Features.Auth.Commands.Login;
++
++public sealed class LoginCommandValidator : AbstractValidator<LoginCommand>
++{
++    public LoginCommandValidator()
++    {
++        RuleFor(x => x.Email).NotEmpty().EmailAddress();
++        RuleFor(x => x.Password).NotEmpty();
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommand.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommand.cs
+new file mode 100644
+index 0000000..2dcb628
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommand.cs
+@@ -0,0 +1,14 @@
++using MaidsAndNannies.Application.Features.Auth.Common;
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Auth.Commands.Register;
++
++public sealed record RegisterCommand(
++    string FullName,
++    string Email,
++    string PhoneNumber,
++    string Password,
++    AccountType AccountType,
++    string PreferredLanguage,
++    int NationalityId,
++    int CurrentCityId) : IRequest<AuthResponseDto>;
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommandHandler.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommandHandler.cs
+new file mode 100644
+index 0000000..4bb1991
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommandHandler.cs
+@@ -0,0 +1,56 @@
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Features.Auth.Common;
++using MaidsAndNannies.Domain.Entities;
++using MaidsAndNannies.Domain.Entities.Identity;
++using MaidsAndNannies.Domain.Enums;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++using Microsoft.AspNetCore.Identity;
++using ValidationException = MaidsAndNannies.Application.Common.Exceptions.ValidationException;
++
++namespace MaidsAndNannies.Application.Features.Auth.Commands.Register;
++
++public sealed class RegisterCommandHandler(
++    UserManager<ApplicationUser> userManager,
++    IApplicationDbContext dbContext,
++    IJwtTokenGenerator jwtTokenGenerator) : IRequestHandler<RegisterCommand, AuthResponseDto>
++{
++    public async Task<AuthResponseDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
++    {
++        var role = request.AccountType == AccountType.Worker ? UserRole.Worker : UserRole.Homeowner;
++
++        var user = new ApplicationUser
++        {
++            UserName = request.Email,
++            Email = request.Email,
++            FullName = request.FullName,
++            PhoneNumber = request.PhoneNumber,
++            PreferredLanguage = request.PreferredLanguage,
++            Role = role
++        };
++
++        var result = await userManager.CreateAsync(user, request.Password);
++        if (!result.Succeeded)
++        {
++            throw new ValidationException(result.Errors
++                .Select(e => new FluentValidation.Results.ValidationFailure("Identity", e.Description)));
++        }
++
++        await userManager.AddToRoleAsync(user, role.ToString());
++
++        if (role == UserRole.Worker)
++        {
++            dbContext.WorkerProfiles.Add(new WorkerProfile
++            {
++                UserId = user.Id,
++                NationalityId = request.NationalityId,
++                CityId = request.CurrentCityId
++            });
++            await dbContext.SaveChangesAsync(cancellationToken);
++        }
++
++        var (accessToken, expiresAtUtc) = jwtTokenGenerator.GenerateToken(user, role.ToString());
++        return new AuthResponseDto(accessToken, expiresAtUtc, user.FullName, role.ToString(),
++            user.PreferredLanguage, VerificationStatus.Pending);
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommandValidator.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommandValidator.cs
+new file mode 100644
+index 0000000..366655b
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommandValidator.cs
+@@ -0,0 +1,16 @@
++using FluentValidation;
++
++namespace MaidsAndNannies.Application.Features.Auth.Commands.Register;
++
++public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand>
++{
++    public RegisterCommandValidator()
++    {
++        RuleFor(x => x.FullName).NotEmpty().MaximumLength(120);
++        RuleFor(x => x.Email).NotEmpty().EmailAddress();
++        RuleFor(x => x.PhoneNumber).NotEmpty();
++        RuleFor(x => x.Password).NotEmpty().MinimumLength(8);
++        RuleFor(x => x.PreferredLanguage).Must(l => l is "ar" or "en")
++            .WithMessage("اللغة المفضلة يجب أن تكون 'ar' أو 'en'.");
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterWorker/RegisterWorkerCommand.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterWorker/RegisterWorkerCommand.cs
+new file mode 100644
+index 0000000..4204bc1
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterWorker/RegisterWorkerCommand.cs
+@@ -0,0 +1,23 @@
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Auth.Commands.RegisterWorker;
++
++/// <summary>
++/// SelfieImage is passed as a raw stream + file name so the Application layer
++/// never needs a reference to IFormFile / ASP.NET Core (kept purely in the
++/// WebApi mapping step).
++/// </summary>
++public sealed record RegisterWorkerCommand(
++    string FullName,
++    string Email,
++    string PhoneNumber,
++    string Password,
++    string ConfirmPassword,
++    int NationalityId,
++    int? CountryId,
++    int? StateId,
++    int ExperienceYears,
++    decimal MonthlyRate,
++    string? Bio,
++    Stream? SelfieImageContent,
++    string? SelfieImageFileName) : IRequest<Unit>;
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterWorker/RegisterWorkerCommandHandler.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterWorker/RegisterWorkerCommandHandler.cs
+new file mode 100644
+index 0000000..51693f1
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterWorker/RegisterWorkerCommandHandler.cs
+@@ -0,0 +1,67 @@
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Contracts;
++using MaidsAndNannies.Domain.Entities;
++using MaidsAndNannies.Domain.Entities.Identity;
++using MaidsAndNannies.Domain.Enums;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++using Microsoft.AspNetCore.Identity;
++using ValidationException = MaidsAndNannies.Application.Common.Exceptions.ValidationException;
++
++namespace MaidsAndNannies.Application.Features.Auth.Commands.RegisterWorker;
++
++public sealed class RegisterWorkerCommandHandler(
++    UserManager<ApplicationUser> userManager,
++    IApplicationDbContext dbContext,
++    IFileStorage fileStorage) : IRequestHandler<RegisterWorkerCommand, Unit>
++{
++    public async Task<Unit> Handle(RegisterWorkerCommand request, CancellationToken cancellationToken)
++    {
++        var user = new ApplicationUser
++        {
++            UserName = request.Email,
++            Email = request.Email,
++            FullName = request.FullName,
++            PhoneNumber = request.PhoneNumber,
++            PreferredLanguage = "ar",
++            Role = UserRole.Worker
++        };
++
++        var result = await userManager.CreateAsync(user, request.Password);
++        if (!result.Succeeded)
++        {
++            throw new ValidationException(result.Errors
++                .Select(e => new FluentValidation.Results.ValidationFailure("Identity", e.Description)));
++        }
++
++        await userManager.AddToRoleAsync(user, UserRole.Worker.ToString());
++
++        var workerProfile = new WorkerProfile
++        {
++            UserId = user.Id,
++            NationalityId = request.NationalityId,
++            CountryId = request.CountryId,
++            StateId = request.StateId,
++            Bio = request.Bio ?? string.Empty,
++            ExperienceYears = request.ExperienceYears,
++            MonthlyRate = request.MonthlyRate,
++            VerificationStatus = VerificationStatus.Pending
++        };
++
++        if (request.SelfieImageContent is not null && request.SelfieImageFileName is not null)
++        {
++            var url = await fileStorage.SavePublicAsync(
++                request.SelfieImageContent, request.SelfieImageFileName, $"workers/{user.Id}", cancellationToken);
++
++            workerProfile.Documents = new List<WorkerDocument>
++            {
++                new() { Type = DocumentType.Selfie, DocumentImageUrl = url }
++            };
++        }
++
++        dbContext.WorkerProfiles.Add(workerProfile);
++        await dbContext.SaveChangesAsync(cancellationToken);
++
++        return Unit.Value;
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterWorker/RegisterWorkerCommandValidator.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterWorker/RegisterWorkerCommandValidator.cs
+new file mode 100644
+index 0000000..57ce2ef
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterWorker/RegisterWorkerCommandValidator.cs
+@@ -0,0 +1,18 @@
++using FluentValidation;
++
++namespace MaidsAndNannies.Application.Features.Auth.Commands.RegisterWorker;
++
++public sealed class RegisterWorkerCommandValidator : AbstractValidator<RegisterWorkerCommand>
++{
++    public RegisterWorkerCommandValidator()
++    {
++        RuleFor(x => x.FullName).NotEmpty().MaximumLength(120);
++        RuleFor(x => x.Email).NotEmpty().EmailAddress();
++        RuleFor(x => x.PhoneNumber).NotEmpty();
++        RuleFor(x => x.Password).NotEmpty().MinimumLength(8);
++        RuleFor(x => x.ConfirmPassword).Equal(x => x.Password)
++            .WithMessage("كلمتا المرور غير متطابقتين");
++        RuleFor(x => x.ExperienceYears).GreaterThanOrEqualTo(0);
++        RuleFor(x => x.MonthlyRate).GreaterThanOrEqualTo(0);
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Common/AuthDtos.cs b/src/MaidsAndNannies.Application/Features/Auth/Common/AuthDtos.cs
+new file mode 100644
+index 0000000..c577e21
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Common/AuthDtos.cs
+@@ -0,0 +1,13 @@
++using MaidsPlatform.API.Domain.Enums;
++
++namespace MaidsAndNannies.Application.Features.Auth.Common;
++
++public enum AccountType { Homeowner, Worker }
++
++public sealed record AuthResponseDto(
++    string AccessToken,
++    DateTime ExpiresAtUtc,
++    string FullName,
++    string Role,
++    string PreferredLanguage,
++    VerificationStatus VerificationStatus);
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Commands/UpdateProfile/UpdateWorkerProfileCommand.cs b/src/MaidsAndNannies.Application/Features/Worker/Commands/UpdateProfile/UpdateWorkerProfileCommand.cs
+new file mode 100644
+index 0000000..c699863
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Commands/UpdateProfile/UpdateWorkerProfileCommand.cs
+@@ -0,0 +1,32 @@
++using MaidsAndNannies.Domain.Enums;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Worker.Commands.UpdateProfile;
++
++public sealed record UpdateWorkerProfileCommand(
++    string UserId,
++    int? NationalityId,
++    string? NationalIdNumber,
++    string? WhatsAppNumber,
++    string? PassportNumber,
++    DateTime? PassportExpiryDate,
++    string? PassportCountry,
++    int? CountryId,
++    int? StateId,
++    int? CityId,
++    string? Address,
++    string? Bio,
++    int? ExperienceYears,
++    string? Languages,
++    string? PreviousEmployer,
++    bool? IsLiveIn,
++    bool? IsAvailable,
++    decimal? HourlyRate,
++    decimal? MonthlyRate,
++    int? Currency,
++    IReadOnlyList<Specialization>? Specializations,
++    Stream? SelfieImageContent,
++    string? SelfieImageFileName,
++    Stream? PassportImageContent,
++    string? PassportImageFileName) : IRequest<Unit>;
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Commands/UpdateProfile/UpdateWorkerProfileCommandHandler.cs b/src/MaidsAndNannies.Application/Features/Worker/Commands/UpdateProfile/UpdateWorkerProfileCommandHandler.cs
+new file mode 100644
+index 0000000..76ab79c
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Commands/UpdateProfile/UpdateWorkerProfileCommandHandler.cs
+@@ -0,0 +1,114 @@
++using MaidsAndNannies.Application.Common.Exceptions;
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Contracts;
++using MaidsAndNannies.Domain.Entities;
++using MaidsAndNannies.Domain.Enums;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++using Microsoft.EntityFrameworkCore;
++
++namespace MaidsAndNannies.Application.Features.Worker.Commands.UpdateProfile;
++
++public sealed class UpdateWorkerProfileCommandHandler(IApplicationDbContext dbContext, IFileStorage fileStorage)
++    : IRequestHandler<UpdateWorkerProfileCommand, Unit>
++{
++    public async Task<Unit> Handle(UpdateWorkerProfileCommand request, CancellationToken cancellationToken)
++    {
++        var workerProfile = await dbContext.WorkerProfiles
++            .Include(p => p.Documents)
++            .FirstOrDefaultAsync(p => p.UserId == request.UserId, cancellationToken);
++
++        if (workerProfile is null)
++            throw new NotFoundException("WorkerProfile", request.UserId);
++
++        workerProfile.NationalityId = request.NationalityId ?? workerProfile.NationalityId;
++        workerProfile.NationalIdNumber = request.NationalIdNumber ?? workerProfile.NationalIdNumber;
++        workerProfile.WhatsAppNumber = request.WhatsAppNumber ?? workerProfile.WhatsAppNumber;
++        workerProfile.PassportNumber = request.PassportNumber ?? workerProfile.PassportNumber;
++        workerProfile.PassportExpiryDate = request.PassportExpiryDate ?? workerProfile.PassportExpiryDate;
++        workerProfile.PassportCountry = request.PassportCountry ?? workerProfile.PassportCountry;
++
++        workerProfile.CountryId = request.CountryId ?? workerProfile.CountryId;
++        workerProfile.StateId = request.StateId ?? workerProfile.StateId;
++        workerProfile.CityId = request.CityId ?? workerProfile.CityId;
++        workerProfile.Address = request.Address ?? workerProfile.Address;
++
++        workerProfile.Bio = request.Bio ?? workerProfile.Bio;
++        workerProfile.ExperienceYears = request.ExperienceYears ?? workerProfile.ExperienceYears;
++        workerProfile.Languages = request.Languages ?? workerProfile.Languages;
++        workerProfile.PreviousEmployer = request.PreviousEmployer ?? workerProfile.PreviousEmployer;
++        workerProfile.IsLiveIn = request.IsLiveIn ?? workerProfile.IsLiveIn;
++        workerProfile.IsAvailable = request.IsAvailable ?? workerProfile.IsAvailable;
++
++        workerProfile.HourlyRate = request.HourlyRate ?? workerProfile.HourlyRate;
++        workerProfile.MonthlyRate = request.MonthlyRate ?? workerProfile.MonthlyRate;
++        workerProfile.Currency = request.Currency ?? workerProfile.Currency;
++
++        workerProfile.UpdatedAt = DateTime.UtcNow;
++
++        // The Angular form sends the whole desired specialization list every
++        // time, so replace the stored set rather than diffing it.
++        if (request.Specializations is not null)
++        {
++            var existingSpecs = await dbContext.WorkerSpecializationSpecs
++                .Where(s => s.WorkerProfileId == workerProfile.Id)
++                .ToListAsync(cancellationToken);
++
++            foreach (var spec in existingSpecs)
++                dbContext.WorkerSpecializationSpecs.Remove(spec);
++
++            foreach (var specialization in request.Specializations.Distinct())
++            {
++                dbContext.WorkerSpecializationSpecs.Add(new WorkerSpecializationSpec
++                {
++                    WorkerProfileId = workerProfile.Id,
++                    WorkerSpecialization = specialization
++                });
++            }
++        }
++
++        if (request.SelfieImageContent is not null && request.SelfieImageFileName is not null)
++            await ReplaceDocumentAsync(workerProfile, DocumentType.Selfie, request.SelfieImageContent,
++                request.SelfieImageFileName, request.UserId, cancellationToken);
++
++        if (request.PassportImageContent is not null && request.PassportImageFileName is not null)
++            await ReplaceDocumentAsync(workerProfile, DocumentType.Passport, request.PassportImageContent,
++                request.PassportImageFileName, request.UserId, cancellationToken);
++
++        await dbContext.SaveChangesAsync(cancellationToken);
++        return Unit.Value;
++    }
++
++    private async Task ReplaceDocumentAsync(
++        WorkerProfile workerProfile,
++        DocumentType type,
++        Stream content,
++        string fileName,
++        string userId,
++        CancellationToken cancellationToken)
++    {
++        var existing = workerProfile.Documents.FirstOrDefault(d => d.Type == type);
++        var previousUrl = existing?.DocumentImageUrl;
++
++        var newUrl = await fileStorage.SavePublicAsync(content, fileName, "worker-documents", cancellationToken);
++
++        if (existing is not null)
++        {
++            existing.DocumentImageUrl = newUrl;
++            existing.VerificationStatus = VerificationStatus.Pending;
++        }
++        else
++        {
++            workerProfile.Documents.Add(new WorkerDocument
++            {
++                WorkerId = workerProfile.Id,
++                Type = type,
++                DocumentImageUrl = newUrl,
++                VerificationStatus = VerificationStatus.Pending
++            });
++        }
++
++        if (!string.IsNullOrEmpty(previousUrl))
++            fileStorage.DeletePublic(previousUrl);
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Commands/UpdateProfile/UpdateWorkerProfileCommandValidator.cs b/src/MaidsAndNannies.Application/Features/Worker/Commands/UpdateProfile/UpdateWorkerProfileCommandValidator.cs
+new file mode 100644
+index 0000000..b5a8c0b
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Commands/UpdateProfile/UpdateWorkerProfileCommandValidator.cs
+@@ -0,0 +1,14 @@
++using FluentValidation;
++
++namespace MaidsAndNannies.Application.Features.Worker.Commands.UpdateProfile;
++
++public sealed class UpdateWorkerProfileCommandValidator : AbstractValidator<UpdateWorkerProfileCommand>
++{
++    public UpdateWorkerProfileCommandValidator()
++    {
++        RuleFor(x => x.UserId).NotEmpty();
++        RuleFor(x => x.ExperienceYears).GreaterThanOrEqualTo(0).When(x => x.ExperienceYears.HasValue);
++        RuleFor(x => x.HourlyRate).GreaterThanOrEqualTo(0).When(x => x.HourlyRate.HasValue);
++        RuleFor(x => x.MonthlyRate).GreaterThanOrEqualTo(0).When(x => x.MonthlyRate.HasValue);
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Common/WorkerDtos.cs b/src/MaidsAndNannies.Application/Features/Worker/Common/WorkerDtos.cs
+new file mode 100644
+index 0000000..061fadc
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Common/WorkerDtos.cs
+@@ -0,0 +1,100 @@
++using MaidsAndNannies.Domain.Enums;
++using MaidsPlatform.API.Domain.Enums;
++
++namespace MaidsAndNannies.Application.Features.Worker.Common;
++
++public sealed record PagedResult<T>(IReadOnlyList<T> Data, int TotalCount, int Page, int PageSize)
++{
++    public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
++}
++
++public sealed record WorkerSpecializationDto(int Id, Specialization WorkerSpecialization);
++
++public sealed record WorkerSummaryDto(
++    int Id,
++    string FullName,
++    int NationalityId,
++    IReadOnlyList<WorkerSpecializationDto> WorkerSpecializationSpecs,
++    bool IsLiveIn,
++    decimal? MonthlyRate,
++    decimal? HourlyRate,
++    int Currency,
++    int? CityId,
++    int ExperienceYears,
++    decimal AverageRating,
++    int TotalReviews,
++    string? ProfileImageUrl,
++    string? Languages);
++
++public sealed record ReviewSummaryDto(int Id, string ReviewerName, int Rating, string? Comment, DateTime CreatedAt);
++
++public sealed record WorkerDetailDto(
++    int Id,
++    string FullName,
++    int NationalityId,
++    string NationalIdNumber,
++    string? PassportNumber,
++    string? PassportCountry,
++    string? Bio,
++    int ExperienceYears,
++    IReadOnlyList<WorkerSpecializationDto> WorkerSpecializationSpecs,
++    bool IsLiveIn,
++    decimal? MonthlyRate,
++    decimal? HourlyRate,
++    int Currency,
++    int? CityId,
++    string? Address,
++    decimal AverageRating,
++    int TotalReviews,
++    bool IsAvailable,
++    string? ProfileImageUrl,
++    string? Languages,
++    IReadOnlyList<ReviewSummaryDto> Reviews);
++
++public sealed record WorkerDocumentDto(DocumentType Type, string? DocumentImageUrl, VerificationStatus VerificationStatus);
++
++public sealed record WorkerProfileDto(
++    int Id,
++    string UserId,
++    string FullName,
++    string? Email,
++    string? PhoneNumber,
++    string? WhatsAppNumber,
++    int NationalityId,
++    string NationalIdNumber,
++    string? PassportNumber,
++    DateTime? PassportExpiryDate,
++    string? PassportCountry,
++    int? CountryId,
++    int? StateId,
++    int? CityId,
++    string? Address,
++    string? Bio,
++    int ExperienceYears,
++    string? PreviousEmployer,
++    IReadOnlyList<WorkerSpecializationDto> WorkerSpecializationSpecs,
++    bool IsLiveIn,
++    bool IsAvailable,
++    decimal? MonthlyRate,
++    decimal? HourlyRate,
++    int Currency,
++    decimal AverageRating,
++    int TotalReviews,
++    string? Languages,
++    VerificationStatus VerificationStatus,
++    DateTime? VerifiedAt,
++    string? VerifiedBy,
++    IReadOnlyList<WorkerDocumentDto> Documents);
++
++public sealed record MyBookingDto(
++    int Id,
++    string HomeownerName,
++    Specialization ServiceType,
++    DateTime StartDate,
++    DateTime? EndDate,
++    decimal MonthlySalary,
++    decimal CommissionAmount,
++    CommissionType CommissionType,
++    BookingStatus Status,
++    bool IsPaid,
++    DateTime CreatedAt);
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyBookings/GetMyBookingsQuery.cs b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyBookings/GetMyBookingsQuery.cs
+new file mode 100644
+index 0000000..1e87767
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyBookings/GetMyBookingsQuery.cs
+@@ -0,0 +1,6 @@
++using MaidsAndNannies.Application.Features.Worker.Common;
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Worker.Queries.GetMyBookings;
++
++public sealed record GetMyBookingsQuery(string UserId) : IRequest<IReadOnlyList<MyBookingDto>>;
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyBookings/GetMyBookingsQueryHandler.cs b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyBookings/GetMyBookingsQueryHandler.cs
+new file mode 100644
+index 0000000..fb05902
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyBookings/GetMyBookingsQueryHandler.cs
+@@ -0,0 +1,31 @@
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Features.Worker.Common;
++using MediatR;
++using Microsoft.EntityFrameworkCore;
++
++namespace MaidsAndNannies.Application.Features.Worker.Queries.GetMyBookings;
++
++public sealed class GetMyBookingsQueryHandler(IApplicationDbContext dbContext)
++    : IRequestHandler<GetMyBookingsQuery, IReadOnlyList<MyBookingDto>>
++{
++    public async Task<IReadOnlyList<MyBookingDto>> Handle(GetMyBookingsQuery request, CancellationToken cancellationToken)
++    {
++        return await dbContext.Bookings
++            .Include(b => b.Homeowner)
++            .Where(b => b.WorkerId == request.UserId)
++            .OrderByDescending(b => b.CreatedAt)
++            .Select(b => new MyBookingDto(
++                b.Id,
++                b.Homeowner.FullName,
++                b.ServiceType,
++                b.StartDate,
++                b.EndDate,
++                b.MonthlySalary,
++                b.CommissionAmount,
++                b.CommissionType,
++                b.Status,
++                b.IsPaid,
++                b.CreatedAt))
++            .ToListAsync(cancellationToken);
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyProfile/GetMyWorkerProfileQuery.cs b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyProfile/GetMyWorkerProfileQuery.cs
+new file mode 100644
+index 0000000..90e6ed9
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyProfile/GetMyWorkerProfileQuery.cs
+@@ -0,0 +1,6 @@
++using MaidsAndNannies.Application.Features.Worker.Common;
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Worker.Queries.GetMyProfile;
++
++public sealed record GetMyWorkerProfileQuery(string UserId) : IRequest<WorkerProfileDto>;
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyProfile/GetMyWorkerProfileQueryHandler.cs b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyProfile/GetMyWorkerProfileQueryHandler.cs
+new file mode 100644
+index 0000000..d8c796e
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyProfile/GetMyWorkerProfileQueryHandler.cs
+@@ -0,0 +1,58 @@
++using MaidsAndNannies.Application.Common.Exceptions;
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Features.Worker.Common;
++using MediatR;
++using Microsoft.EntityFrameworkCore;
++
++namespace MaidsAndNannies.Application.Features.Worker.Queries.GetMyProfile;
++
++public sealed class GetMyWorkerProfileQueryHandler(IApplicationDbContext dbContext)
++    : IRequestHandler<GetMyWorkerProfileQuery, WorkerProfileDto>
++{
++    public async Task<WorkerProfileDto> Handle(GetMyWorkerProfileQuery request, CancellationToken cancellationToken)
++    {
++        var profile = await dbContext.WorkerProfiles
++            .Include(p => p.User)
++            .Include(p => p.Documents)
++            .Include(p => p.WorkerSpecializationSpecs)
++            .FirstOrDefaultAsync(p => p.UserId == request.UserId, cancellationToken);
++
++        if (profile is null)
++            throw new NotFoundException("WorkerProfile", request.UserId);
++
++        return new WorkerProfileDto(
++            profile.Id,
++            profile.UserId,
++            profile.User.FullName,
++            profile.User.Email,
++            profile.User.PhoneNumber,
++            profile.WhatsAppNumber,
++            profile.NationalityId,
++            profile.NationalIdNumber,
++            profile.PassportNumber,
++            profile.PassportExpiryDate,
++            profile.PassportCountry,
++            profile.CountryId,
++            profile.StateId,
++            profile.CityId,
++            profile.Address,
++            profile.Bio,
++            profile.ExperienceYears,
++            profile.PreviousEmployer,
++            (profile.WorkerSpecializationSpecs ?? [])
++                .Select(s => new WorkerSpecializationDto(s.Id, s.WorkerSpecialization)).ToList(),
++            profile.IsLiveIn,
++            profile.IsAvailable,
++            profile.MonthlyRate,
++            profile.HourlyRate,
++            profile.Currency,
++            profile.AverageRating,
++            profile.TotalReviews,
++            profile.Languages,
++            profile.VerificationStatus,
++            profile.VerifiedAt,
++            profile.VerifiedBy,
++            profile.Documents
++                .Select(d => new WorkerDocumentDto(d.Type, d.DocumentImageUrl, d.VerificationStatus)).ToList());
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkerById/GetWorkerByIdQuery.cs b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkerById/GetWorkerByIdQuery.cs
+new file mode 100644
+index 0000000..3f4b14a
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkerById/GetWorkerByIdQuery.cs
+@@ -0,0 +1,6 @@
++using MaidsAndNannies.Application.Features.Worker.Common;
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Worker.Queries.GetWorkerById;
++
++public sealed record GetWorkerByIdQuery(int WorkerProfileId) : IRequest<WorkerDetailDto>;
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkerById/GetWorkerByIdQueryHandler.cs b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkerById/GetWorkerByIdQueryHandler.cs
+new file mode 100644
+index 0000000..0e7fcf6
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkerById/GetWorkerByIdQueryHandler.cs
+@@ -0,0 +1,54 @@
++using MaidsAndNannies.Application.Common.Exceptions;
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Features.Worker.Common;
++using MediatR;
++using Microsoft.EntityFrameworkCore;
++
++namespace MaidsAndNannies.Application.Features.Worker.Queries.GetWorkerById;
++
++public sealed class GetWorkerByIdQueryHandler(IApplicationDbContext dbContext)
++    : IRequestHandler<GetWorkerByIdQuery, WorkerDetailDto>
++{
++    public async Task<WorkerDetailDto> Handle(GetWorkerByIdQuery request, CancellationToken cancellationToken)
++    {
++        var worker = await dbContext.WorkerProfiles
++            .Include(w => w.User)
++            .Include(w => w.Documents)
++            .Include(w => w.WorkerSpecializationSpecs)
++            .FirstOrDefaultAsync(w => w.Id == request.WorkerProfileId, cancellationToken);
++
++        if (worker is null)
++            throw new NotFoundException("WorkerProfile", request.WorkerProfileId);
++
++        var reviews = await dbContext.Reviews
++            .Include(r => r.Reviewer)
++            .Where(r => r.RevieweeId == worker.UserId && r.IsVisible)
++            .OrderByDescending(r => r.CreatedAt)
++            .Select(r => new ReviewSummaryDto(r.Id, r.Reviewer.FullName, r.Rating, r.Comment, r.CreatedAt))
++            .ToListAsync(cancellationToken);
++
++        return new WorkerDetailDto(
++            worker.Id,
++            worker.User.FullName,
++            worker.NationalityId,
++            worker.NationalIdNumber,
++            worker.PassportNumber,
++            worker.PassportCountry,
++            worker.Bio,
++            worker.ExperienceYears,
++            (worker.WorkerSpecializationSpecs ?? [])
++                .Select(s => new WorkerSpecializationDto(s.Id, s.WorkerSpecialization)).ToList(),
++            worker.IsLiveIn,
++            worker.MonthlyRate,
++            worker.HourlyRate,
++            worker.Currency,
++            worker.CityId,
++            worker.Address,
++            worker.AverageRating,
++            worker.TotalReviews,
++            worker.IsAvailable,
++            worker.User.ProfileImageUrl,
++            worker.Languages,
++            reviews);
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkers/GetWorkersQuery.cs b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkers/GetWorkersQuery.cs
+new file mode 100644
+index 0000000..faafb9f
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkers/GetWorkersQuery.cs
+@@ -0,0 +1,15 @@
++using MaidsAndNannies.Application.Features.Worker.Common;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Worker.Queries.GetWorkers;
++
++public sealed record GetWorkersQuery(
++    int? CityId,
++    Specialization? Specialization,
++    bool? IsLiveIn,
++    decimal? MaxRate,
++    int? NationalityId,
++    string? Search,
++    int Page = 1,
++    int PageSize = 10) : IRequest<PagedResult<WorkerSummaryDto>>;
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkers/GetWorkersQueryHandler.cs b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkers/GetWorkersQueryHandler.cs
+new file mode 100644
+index 0000000..46a3624
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkers/GetWorkersQueryHandler.cs
+@@ -0,0 +1,65 @@
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Features.Worker.Common;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++using Microsoft.EntityFrameworkCore;
++
++namespace MaidsAndNannies.Application.Features.Worker.Queries.GetWorkers;
++
++public sealed class GetWorkersQueryHandler(IApplicationDbContext dbContext)
++    : IRequestHandler<GetWorkersQuery, PagedResult<WorkerSummaryDto>>
++{
++    public async Task<PagedResult<WorkerSummaryDto>> Handle(GetWorkersQuery request, CancellationToken cancellationToken)
++    {
++        var query = dbContext.WorkerProfiles
++            .Include(w => w.User)
++            .Include(w => w.WorkerSpecializationSpecs)
++            .Where(w => w.IsAvailable && w.VerificationStatus == VerificationStatus.Approved)
++            .AsQueryable();
++
++        if (request.CityId.HasValue)
++            query = query.Where(w => w.CityId == request.CityId);
++
++        if (request.Specialization.HasValue)
++            query = query.Where(w => w.WorkerSpecializationSpecs != null &&
++                w.WorkerSpecializationSpecs.Select(s => s.WorkerSpecialization).Contains(request.Specialization.Value));
++
++        if (request.IsLiveIn.HasValue)
++            query = query.Where(w => w.IsLiveIn == request.IsLiveIn.Value);
++
++        if (request.MaxRate.HasValue)
++            query = query.Where(w => w.MonthlyRate <= request.MaxRate.Value || w.HourlyRate <= request.MaxRate.Value);
++
++        if (!string.IsNullOrWhiteSpace(request.Search))
++            query = query.Where(w => w.User.FullName.Contains(request.Search) ||
++                                      (w.Bio != null && w.Bio.Contains(request.Search)));
++
++        if (request.NationalityId.HasValue)
++            query = query.Where(w => w.NationalityId == request.NationalityId.Value);
++
++        var totalCount = await query.CountAsync(cancellationToken);
++
++        var workers = await query
++            .OrderByDescending(w => w.AverageRating)
++            .Skip((request.Page - 1) * request.PageSize)
++            .Take(request.PageSize)
++            .Select(w => new WorkerSummaryDto(
++                w.Id,
++                w.User.FullName,
++                w.NationalityId,
++                w.WorkerSpecializationSpecs!.Select(s => new WorkerSpecializationDto(s.Id, s.WorkerSpecialization)).ToList(),
++                w.IsLiveIn,
++                w.MonthlyRate,
++                w.HourlyRate,
++                w.Currency,
++                w.CityId,
++                w.ExperienceYears,
++                w.AverageRating,
++                w.TotalReviews,
++                w.User.ProfileImageUrl,
++                w.Languages))
++            .ToListAsync(cancellationToken);
++
++        return new PagedResult<WorkerSummaryDto>(workers, totalCount, request.Page, request.PageSize);
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkers/GetWorkersQueryValidator.cs b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkers/GetWorkersQueryValidator.cs
+new file mode 100644
+index 0000000..44b41f9
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetWorkers/GetWorkersQueryValidator.cs
+@@ -0,0 +1,12 @@
++using FluentValidation;
++
++namespace MaidsAndNannies.Application.Features.Worker.Queries.GetWorkers;
++
++public sealed class GetWorkersQueryValidator : AbstractValidator<GetWorkersQuery>
++{
++    public GetWorkersQueryValidator()
++    {
++        RuleFor(x => x.Page).GreaterThanOrEqualTo(1);
++        RuleFor(x => x.PageSize).InclusiveBetween(1, 50);
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/MaidsAndNannies.Application.csproj b/src/MaidsAndNannies.Application/MaidsAndNannies.Application.csproj
+index d468887..83a86a2 100644
+--- a/src/MaidsAndNannies.Application/MaidsAndNannies.Application.csproj
++++ b/src/MaidsAndNannies.Application/MaidsAndNannies.Application.csproj
+@@ -9,7 +9,12 @@
+       <PrivateAssets>all</PrivateAssets>
+       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+     </PackageReference>
++    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.29" />
+     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
++    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
++    <PackageReference Include="MediatR" Version="12.4.1" />
++    <PackageReference Include="FluentValidation" Version="11.11.0" />
++    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
+   </ItemGroup>
+ 
+   <PropertyGroup>
+diff --git a/src/MaidsAndNannies.Application/ServiceCollectionExtensions.cs b/src/MaidsAndNannies.Application/ServiceCollectionExtensions.cs
+index b7636c0..12bde8b 100644
+--- a/src/MaidsAndNannies.Application/ServiceCollectionExtensions.cs
++++ b/src/MaidsAndNannies.Application/ServiceCollectionExtensions.cs
+@@ -1,8 +1,20 @@
++using FluentValidation;
++using MaidsAndNannies.Application.Common.Behaviors;
++using MediatR;
+ using Microsoft.Extensions.DependencyInjection;
+ 
+ namespace MaidsAndNannies.Application;
+ 
+ public static class ServiceCollectionExtensions
+ {
+-    public static IServiceCollection AddApplication(this IServiceCollection services) => services;
++    public static IServiceCollection AddApplication(this IServiceCollection services)
++    {
++        var assembly = typeof(ServiceCollectionExtensions).Assembly;
++
++        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
++        services.AddValidatorsFromAssembly(assembly);
++        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
++
++        return services;
++    }
+ }
+diff --git a/src/MaidsAndNannies.Infrastructure/MaidsAndNannies.Infrastructure.csproj b/src/MaidsAndNannies.Infrastructure/MaidsAndNannies.Infrastructure.csproj
+index ea093d2..ce0a4dd 100644
+--- a/src/MaidsAndNannies.Infrastructure/MaidsAndNannies.Infrastructure.csproj
++++ b/src/MaidsAndNannies.Infrastructure/MaidsAndNannies.Infrastructure.csproj
+@@ -8,6 +8,7 @@
+   <ItemGroup>
+     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.20" />
+     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
++    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
+   </ItemGroup>
+ 
+   <PropertyGroup>
+diff --git a/src/MaidsAndNannies.Infrastructure/Persistence/ApplicationDbContext.cs b/src/MaidsAndNannies.Infrastructure/Persistence/ApplicationDbContext.cs
+index 40b9713..e794246 100644
+--- a/src/MaidsAndNannies.Infrastructure/Persistence/ApplicationDbContext.cs
++++ b/src/MaidsAndNannies.Infrastructure/Persistence/ApplicationDbContext.cs
+@@ -1,3 +1,4 @@
++using MaidsAndNannies.Application.Common.Interfaces;
+ using MaidsAndNannies.Domain.Entities;
+ using MaidsAndNannies.Domain.Entities.Identity;
+ using Microsoft.AspNetCore.Identity;
+@@ -7,10 +8,11 @@ using Microsoft.EntityFrameworkCore;
+ namespace MaidsAndNannies.Infrastructure.Persistence;
+ 
+ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+-    : IdentityDbContext<ApplicationUser>(options)
++    : IdentityDbContext<ApplicationUser>(options), IApplicationDbContext
+ {
+     public DbSet<HomeownerProfile> HomeownerProfiles => Set<HomeownerProfile>();
+     public DbSet<WorkerProfile> WorkerProfiles => Set<WorkerProfile>();
++    public DbSet<WorkerSpecializationSpec> WorkerSpecializationSpecs => Set<WorkerSpecializationSpec>();
+     public DbSet<WorkerDocument> WorkerDocuments => Set<WorkerDocument>();
+     public DbSet<Booking> Bookings => Set<Booking>();
+     public DbSet<Review> Reviews => Set<Review>();
+diff --git a/src/MaidsAndNannies.Infrastructure/ServiceCollectionExtensions.cs b/src/MaidsAndNannies.Infrastructure/ServiceCollectionExtensions.cs
+index e0f0134..19b1787 100644
+--- a/src/MaidsAndNannies.Infrastructure/ServiceCollectionExtensions.cs
++++ b/src/MaidsAndNannies.Infrastructure/ServiceCollectionExtensions.cs
+@@ -1,4 +1,6 @@
++using MaidsAndNannies.Application.Common.Interfaces;
+ using MaidsAndNannies.Infrastructure.Persistence;
++using MaidsAndNannies.Infrastructure.Services;
+ using MaidsAndNannies.Infrastructure.Storage;
+ using MaidsAndNannies.Application.Contracts;
+ using Microsoft.AspNetCore.Identity;
+@@ -16,6 +18,8 @@ public static class ServiceCollectionExtensions
+         services.AddDbContext<ApplicationDbContext>(options =>
+             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+ 
++        services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
++
+         services.AddIdentityCore<ApplicationUser>(options =>
+         {
+             options.User.RequireUniqueEmail = true;
+@@ -26,6 +30,7 @@ public static class ServiceCollectionExtensions
+         .AddEntityFrameworkStores<ApplicationDbContext>();
+ 
+         services.AddScoped<IFileStorage, LocalPrivateFileStorage>();
++        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+ 
+         return services;
+     }
+diff --git a/src/MaidsAndNannies.Infrastructure/Services/JwtTokenGenerator.cs b/src/MaidsAndNannies.Infrastructure/Services/JwtTokenGenerator.cs
+new file mode 100644
+index 0000000..f946958
+--- /dev/null
++++ b/src/MaidsAndNannies.Infrastructure/Services/JwtTokenGenerator.cs
+@@ -0,0 +1,35 @@
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Domain.Entities.Identity;
++using Microsoft.Extensions.Configuration;
++using Microsoft.IdentityModel.Tokens;
++using System.IdentityModel.Tokens.Jwt;
++using System.Security.Claims;
++using System.Text;
++
++namespace MaidsAndNannies.Infrastructure.Services;
++
++public sealed class JwtTokenGenerator(IConfiguration configuration) : IJwtTokenGenerator
++{
++    public (string AccessToken, DateTime ExpiresAtUtc) GenerateToken(ApplicationUser user, string role)
++    {
++        var claims = new[]
++        {
++            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
++            new Claim(ClaimTypes.NameIdentifier, user.Id),
++            new Claim(JwtRegisteredClaimNames.Email, user.Email!),
++            new Claim(ClaimTypes.Name, user.FullName),
++            new Claim(ClaimTypes.Role, role)
++        };
++
++        var expiresAt = DateTime.UtcNow.AddHours(8);
++        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
++        var token = new JwtSecurityToken(
++            issuer: configuration["Jwt:Issuer"],
++            audience: configuration["Jwt:Audience"],
++            claims: claims,
++            expires: expiresAt,
++            signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
++
++        return (new JwtSecurityTokenHandler().WriteToken(token), expiresAt);
++    }
++}
+diff --git a/src/MaidsAndNannies.Infrastructure/Storage/LocalPrivateFileStorage.cs b/src/MaidsAndNannies.Infrastructure/Storage/LocalPrivateFileStorage.cs
+index f932973..a64aaab 100644
+--- a/src/MaidsAndNannies.Infrastructure/Storage/LocalPrivateFileStorage.cs
++++ b/src/MaidsAndNannies.Infrastructure/Storage/LocalPrivateFileStorage.cs
+@@ -5,6 +5,9 @@ namespace MaidsAndNannies.Infrastructure.Storage;
+ 
+ public sealed class LocalPrivateFileStorage(IHostEnvironment environment) : IFileStorage
+ {
++    private static readonly string[] AllowedImageExtensions = [".jpg", ".jpeg", ".png", ".webp"];
++    private const long MaxFileSizeBytes = 5 * 1024 * 1024; // 5 MB
++
+     public async Task<string> SavePrivateAsync(Stream content, string fileName, CancellationToken cancellationToken = default)
+     {
+         var extension = Path.GetExtension(fileName);
+@@ -17,4 +20,42 @@ public sealed class LocalPrivateFileStorage(IHostEnvironment environment) : IFil
+         await content.CopyToAsync(output, cancellationToken);
+         return storageKey;
+     }
++
++    public async Task<string> SavePublicAsync(Stream content, string fileName, string subFolder, CancellationToken cancellationToken = default)
++    {
++        var extension = Path.GetExtension(fileName).ToLowerInvariant();
++        if (!AllowedImageExtensions.Contains(extension))
++            throw new InvalidOperationException("صيغة الصورة غير مدعومة");
++
++        if (content.Length > MaxFileSizeBytes)
++            throw new InvalidOperationException("حجم الصورة أكبر من الحد المسموح به (5 ميجابايت)");
++
++        var uploadsRoot = Path.Combine(environment.ContentRootPath, "wwwroot", "uploads", subFolder);
++        Directory.CreateDirectory(uploadsRoot);
++
++        var storedFileName = $"{Guid.NewGuid():N}{extension}";
++        var filePath = Path.Combine(uploadsRoot, storedFileName);
++
++        await using (var output = File.Create(filePath))
++        {
++            await content.CopyToAsync(output, cancellationToken);
++        }
++
++        return $"/uploads/{subFolder}/{storedFileName}";
++    }
++
++    public void DeletePublic(string relativeUrl)
++    {
++        try
++        {
++            var relativePath = relativeUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
++            var fullPath = Path.Combine(environment.ContentRootPath, "wwwroot", relativePath);
++            if (File.Exists(fullPath))
++                File.Delete(fullPath);
++        }
++        catch
++        {
++            // Best-effort cleanup only - a stray file should never fail the request.
++        }
++    }
+ }
+diff --git a/src/MaidsAndNannies.WebApi/Controllers/AuthController.cs b/src/MaidsAndNannies.WebApi/Controllers/AuthController.cs
+index be9a041..ac7bf92 100644
+--- a/src/MaidsAndNannies.WebApi/Controllers/AuthController.cs
++++ b/src/MaidsAndNannies.WebApi/Controllers/AuthController.cs
+@@ -1,170 +1,55 @@
+-using MaidsAndNannies.Domain.Entities;
+-using MaidsAndNannies.Domain.Entities.Identity;
+-using MaidsAndNannies.Domain.Enums;
+-using MaidsAndNannies.Infrastructure.Persistence;
+-using MaidsPlatform.API.Domain.Enums;
+-using Microsoft.AspNetCore.Identity;
++using MaidsAndNannies.Application.Features.Auth.Commands.Login;
++using MaidsAndNannies.Application.Features.Auth.Commands.Register;
++using MaidsAndNannies.Application.Features.Auth.Commands.RegisterWorker;
++using MaidsAndNannies.Application.Features.Auth.Common;
++using MediatR;
+ using Microsoft.AspNetCore.Mvc;
+-using Microsoft.EntityFrameworkCore;
+-using Microsoft.IdentityModel.Tokens;
+ using System.ComponentModel.DataAnnotations;
+-using System.Data;
+-using System.IdentityModel.Tokens.Jwt;
+-using System.Security.Claims;
+-using System.Text;
+ 
+ namespace MaidsAndNannies.WebApi.Controllers;
+ 
+-public sealed class AuthController(
+-    UserManager<ApplicationUser> userManager,
+-    ApplicationDbContext dbContext,
+-    IConfiguration configuration) : BaseApiController
++/// <summary>
++/// Thin by design: every action just maps the HTTP request into a MediatR
++/// Command and returns the result. All business rules (password matching,
++/// role assignment, WorkerProfile seeding, JWT issuing...) live in
++/// MaidsAndNannies.Application/Features/Auth.
++/// </summary>
++public sealed class AuthController(ISender sender) : BaseApiController
+ {
+     [HttpPost("register")]
+-    public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
++    public async Task<ActionResult<AuthResponseDto>> Register(RegisterRequest request)
+     {
+-        var role = request.AccountType == AccountType.Worker ? UserRole.Worker : UserRole.Homeowner;
+-        var user = new ApplicationUser
+-        {
+-            UserName = request.Email,
+-            Email = request.Email,
+-            FullName = request.FullName,
+-            PhoneNumber = request.PhoneNumber,
+-            PreferredLanguage = request.PreferredLanguage,
+-            Role = role
+-        };
++        var command = new RegisterCommand(
++            request.FullName, request.Email, request.PhoneNumber, request.Password,
++            request.AccountType, request.PreferredLanguage, request.NationalityId, request.CurrentCityId);
+ 
+-        var result = await userManager.CreateAsync(user, request.Password);
+-        if (!result.Succeeded) return BadRequest(result.Errors.Select(error => error.Description));
+-
+-        await userManager.AddToRoleAsync(user, role.ToString());
+-        if (role == UserRole.Worker)
+-        {
+-            dbContext.WorkerProfiles.Add(new WorkerProfile
+-            {
+-                UserId = user.Id,
+-                NationalityId = request.NationalityId,
+-                CityId = request.CurrentCityId
+-            });
+-            await dbContext.SaveChangesAsync();
+-        }
+-
+-        return Ok(CreateResponse(user, role.ToString()));
++        return Ok(await sender.Send(command));
+     }
+ 
+     [HttpPost("register/worker")]
+     [Consumes("multipart/form-data")]
+     public async Task<ActionResult> RegisterWorker([FromForm] RegisterWorkerRequest request)
+     {
+-        if (request.Password != request.ConfirmPassword)
+-            return BadRequest(new { message = "كلمتا المرور غير متطابقتين" });
+-
+-        var user = new ApplicationUser
+-        {
+-            UserName = request.Email,
+-            Email = request.Email,
+-            FullName = request.FullName,
+-            PhoneNumber = request.PhoneNumber,
+-            PreferredLanguage = "ar",
+-            Role = UserRole.Worker
+-        };
+-
+-        var result = await userManager.CreateAsync(user, request.Password);
+-        if (!result.Succeeded)
+-            return BadRequest(new { message = string.Join(" | ", result.Errors.Select(e => e.Description)) });
+-
+-        await userManager.AddToRoleAsync(user, UserRole.Worker.ToString());
+-
+-        var workerProfile = new WorkerProfile
+-        {
+-            UserId = user.Id,
+-            NationalityId = request.NationalityId,                        
+-            CountryId = request.CountryId,
+-            StateId = request.StateId,                        
+-            Bio = request.Bio ?? string.Empty,
+-            ExperienceYears = request.ExperienceYears,
+-            MonthlyRate = request.MonthlyRate,                      
+-            VerificationStatus = VerificationStatus.Pending
+-        };
+-
+-        var selfieKey = await SaveImageAsync(request.SelfieImage, user.Id, "selfie");
+-        if (selfieKey is not null)
+-        {
+-            workerProfile.Documents = new List<WorkerDocument>
+-        {
+-            new() { Type = DocumentType.Selfie,  DocumentImageUrl = selfieKey }
+-        };
+-        }
++        Stream? selfieStream = null;
++        if (request.SelfieImage is { Length: > 0 })
++            selfieStream = request.SelfieImage.OpenReadStream();
+ 
+-        dbContext.WorkerProfiles.Add(workerProfile);
+-        await dbContext.SaveChangesAsync();
++        var command = new RegisterWorkerCommand(
++            request.FullName, request.Email, request.PhoneNumber, request.Password, request.ConfirmPassword,
++            request.NationalityId, request.CountryId, request.StateId, request.ExperienceYears,
++            request.MonthlyRate, request.Bio, selfieStream, request.SelfieImage?.FileName);
+ 
++        await sender.Send(command);
+         return Ok(new { message = "تم التسجيل بنجاح، سيتم مراجعة حسابك." });
+     }
+ 
+-    //private static async Task<string?> SaveFileAsync(IFormFile? file, string userId, string label)
+-    //{
+-    //    if (file is null || file.Length == 0) return null;
+-
+-    //    var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "workers", userId);
+-    //    Directory.CreateDirectory(uploadsRoot);
+-
+-    //    var fileName = $"{label}{Path.GetExtension(file.FileName)}";
+-    //    var fullPath = Path.Combine(uploadsRoot, fileName);
+-
+-    //    await using var stream = new FileStream(fullPath, FileMode.Create);
+-    //    await file.CopyToAsync(stream);
+-
+-    //    return $"/uploads/workers/{userId}/{fileName}";
+-    //}
+-   
+-    private static async Task<string?> SaveImageAsync(IFormFile? file, string userId, string label)
+-{
+-    if (file is null || file.Length == 0) return null;
+-
+-    var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "workers", userId);
+-    Directory.CreateDirectory(uploadsRoot);
+-
+-    var fileName = $"{label}{Path.GetExtension(file.FileName)}";
+-    var fullPath = Path.Combine(uploadsRoot, fileName);
+-
+-    await using var stream = new FileStream(fullPath, FileMode.Create);
+-    await file.CopyToAsync(stream);
+-
+-    return $"/uploads/workers/{userId}/{fileName}";
+-}
+-
+     [HttpPost("login")]
+-    public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
++    public async Task<ActionResult<AuthResponseDto>> Login(LoginRequest request)
+     {
+-        var user = await userManager.FindByEmailAsync(request.Email);
+-        if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
+-            return Unauthorized("Invalid email or password.");
+-
+-        var roles = await userManager.GetRolesAsync(user);
+-        return Ok(CreateResponse(user, roles.Single()));
+-    }
+-
+-    private AuthResponse CreateResponse(ApplicationUser user, string role)
+-    {
+-        var claims = new[]
+-        {
+-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+-            new Claim(ClaimTypes.NameIdentifier, user.Id),
+-            new Claim(JwtRegisteredClaimNames.Email, user.Email!),
+-            new Claim(ClaimTypes.Name, user.FullName),
+-            new Claim(ClaimTypes.Role, role)
+-        };
+-        var expiresAt = DateTime.UtcNow.AddHours(8);
+-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
+-        var token = new JwtSecurityToken(
+-            issuer: configuration["Jwt:Issuer"], audience: configuration["Jwt:Audience"], claims: claims,
+-            expires: expiresAt, signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+-        return new AuthResponse(new JwtSecurityTokenHandler().WriteToken(token), expiresAt, user.FullName, role, user.PreferredLanguage , VerificationStatus.Pending);
++        return Ok(await sender.Send(new LoginCommand(request.Email, request.Password)));
+     }
+ }
+ 
+-public enum AccountType { Homeowner, Worker }
+ public sealed class RegisterRequest
+ {
+     [Required, StringLength(120)] public required string FullName { get; init; }
+@@ -177,7 +62,6 @@ public sealed class RegisterRequest
+     public int CurrentCityId { get; init; }
+ }
+ 
+-
+ public sealed class RegisterWorkerRequest
+ {
+     [Required, StringLength(120)] public required string FullName { get; init; }
+@@ -185,14 +69,17 @@ public sealed class RegisterWorkerRequest
+     [Required, Phone] public required string PhoneNumber { get; init; }
+     [Required, MinLength(8)] public required string Password { get; init; }
+     [Required] public required string ConfirmPassword { get; init; }
+-    public int NationalityId { get; init; }        
++    public int NationalityId { get; init; }
+     public int? CountryId { get; init; }
+-    public int? StateId { get; init; } 
++    public int? StateId { get; init; }
+     public int ExperienceYears { get; init; }
+     public decimal MonthlyRate { get; init; }
+-    public string? Bio { get; init; }    
++    public string? Bio { get; init; }
+     public IFormFile? SelfieImage { get; init; }
+ }
+ 
+-public sealed class LoginRequest { [Required, EmailAddress] public required string Email { get; init; } [Required] public required string Password { get; init; } }
+-public sealed record AuthResponse(string AccessToken, DateTime ExpiresAtUtc, string FullName, string Role, string PreferredLanguage , VerificationStatus VerificationStatus);
++public sealed class LoginRequest
++{
++    [Required, EmailAddress] public required string Email { get; init; }
++    [Required] public required string Password { get; init; }
++}
+diff --git a/src/MaidsAndNannies.WebApi/Controllers/WorkerController.cs b/src/MaidsAndNannies.WebApi/Controllers/WorkerController.cs
+index cd609b2..475d9c0 100644
+--- a/src/MaidsAndNannies.WebApi/Controllers/WorkerController.cs
++++ b/src/MaidsAndNannies.WebApi/Controllers/WorkerController.cs
+@@ -1,37 +1,22 @@
+-﻿using MaidsAndNannies.Domain.Entities;
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Features.Worker.Commands.UpdateProfile;
++using MaidsAndNannies.Application.Features.Worker.Queries.GetMyBookings;
++using MaidsAndNannies.Application.Features.Worker.Queries.GetMyProfile;
++using MaidsAndNannies.Application.Features.Worker.Queries.GetWorkerById;
++using MaidsAndNannies.Application.Features.Worker.Queries.GetWorkers;
+ using MaidsAndNannies.Domain.Enums;
+-using MaidsAndNannies.Infrastructure.Persistence;
+ using MaidsPlatform.API.Domain.Enums;
++using MediatR;
+ using Microsoft.AspNetCore.Authorization;
+-using Microsoft.AspNetCore.Hosting;
+-using Microsoft.AspNetCore.Http;
+-using Microsoft.AspNetCore.Identity;
+ using Microsoft.AspNetCore.Mvc;
+-using Microsoft.EntityFrameworkCore;
+-using System.Security.Claims;
+ using System.Text.Json;
+ 
+ namespace MaidsAndNannies.WebApi.Controllers
+ {
+     [Authorize]
+-    public class WorkerController : BaseApiController
++    public sealed class WorkerController(ISender sender, ICurrentUserService currentUser) : BaseApiController
+     {
+-        private readonly ApplicationDbContext _context;
+-        private readonly IWebHostEnvironment _webHostEnvironment;
+-
+-        private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
+-        private const long MaxDocumentSizeBytes = 5 * 1024 * 1024; // 5 MB, matches the frontend's maxFileSize
+-
+-        private static readonly JsonSerializerOptions JsonOptions = new()
+-        {
+-            PropertyNameCaseInsensitive = true
+-        };
+-
+-        public WorkerController(ApplicationDbContext context , IWebHostEnvironment webHostEnvironment)
+-        {
+-            _context = context;
+-            _webHostEnvironment = webHostEnvironment;
+-        }
++        private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+ 
+         [HttpGet]
+         [AllowAnonymous]
+@@ -45,229 +30,84 @@ namespace MaidsAndNannies.WebApi.Controllers
+             [FromQuery] int page = 1,
+             [FromQuery] int pageSize = 10)
+         {
+-            var query = _context.WorkerProfiles
+-                .Include(w => w.User)
+-                .Where(w => w.IsAvailable && w.VerificationStatus == VerificationStatus.Approved)
+-                .AsQueryable();
+-
+-            if (cityId.HasValue)
+-                query = query.Where(w => w.CityId == cityId);
+-
+-            if (specialization.HasValue)
+-                query = query.Where(w => w.WorkerSpecializationSpecs != null &&
+-                w.WorkerSpecializationSpecs.Select(s => s.WorkerSpecialization).Contains(specialization.Value));
+-
+-            if (isLiveIn.HasValue)
+-                query = query.Where(w => w.IsLiveIn == isLiveIn.Value);
+-
+-            if (maxRate.HasValue)
+-                query = query.Where(w => w.MonthlyRate <= maxRate.Value || w.HourlyRate <= maxRate.Value);
+-
+-            if (!string.IsNullOrEmpty(search))
+-                query = query.Where(w => w.User.FullName.Contains(search) ||
+-                                         (w.Bio != null && w.Bio.Contains(search)));
+-
+-            if (nationalityId.HasValue)
+-                query = query.Where(w => w.NationalityId == nationalityId.Value);
+-
+-            var totalCount = await query.CountAsync();
+-            var workers = await query
+-                .OrderByDescending(w => w.AverageRating)
+-                .Skip((page - 1) * pageSize)
+-                .Take(pageSize)
+-                .Select(w => new
+-                {
+-                    w.Id,
+-                    w.User.FullName,
+-                    w.NationalityId,
+-                    w.WorkerSpecializationSpecs,
+-                    w.IsLiveIn,
+-                    w.MonthlyRate,
+-                    w.HourlyRate,
+-                    w.Currency,
+-                    w.CityId,
+-                    w.ExperienceYears,
+-                    w.AverageRating,
+-                    w.TotalReviews,
+-                    w.User.ProfileImageUrl,
+-                    w.Languages
+-                })
+-                .ToListAsync();
+-
+-            return Ok(new
+-            {
+-                Data = workers,
+-                TotalCount = totalCount,
+-                Page = page,
+-                PageSize = pageSize,
+-                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+-            });
++            var result = await sender.Send(new GetWorkersQuery(
++                cityId, specialization, isLiveIn, maxRate, nationalityId, search, page, pageSize));
++            return Ok(result);
+         }
+ 
+         [HttpGet("{id}")]
+         [AllowAnonymous]
+         public async Task<IActionResult> GetWorker(int id)
+         {
+-            var worker = await _context.WorkerProfiles
+-                .Include(w => w.User)
+-                .Include(w => w.Documents)
+-                .FirstOrDefaultAsync(w => w.Id == id);
+-
+-            if (worker == null)
+-                return NotFound();
+-
+-            var reviews = await _context.Reviews
+-                .Include(r => r.Reviewer)
+-                .Where(r => r.RevieweeId == worker.UserId && r.IsVisible)
+-                .OrderByDescending(r => r.CreatedAt)
+-                .Select(r => new
+-                {
+-                    r.Id,
+-                    ReviewerName = r.Reviewer.FullName,
+-                    r.Rating,
+-                    r.Comment,
+-                    r.CreatedAt
+-                })
+-                .ToListAsync();
+-
+-            return Ok(new
+-            {
+-                worker.Id,
+-                worker.User.FullName,
+-                worker.NationalityId,
+-                worker.NationalIdNumber,
+-                worker.PassportNumber,
+-                worker.PassportCountry,
+-                worker.Bio,
+-                worker.ExperienceYears,
+-                worker.WorkerSpecializationSpecs,
+-                worker.IsLiveIn,
+-                worker.MonthlyRate,
+-                worker.HourlyRate,
+-                worker.Currency,
+-                worker.CityId,
+-                worker.Address,
+-                worker.AverageRating,
+-                worker.TotalReviews,
+-                worker.IsAvailable,
+-                worker.User.ProfileImageUrl,
+-                worker.Languages,
+-                Reviews = reviews
+-            });
++            var worker = await sender.Send(new GetWorkerByIdQuery(id));
++            return Ok(worker);
+         }
+ 
+         [HttpGet("profile")]
+         public async Task<IActionResult> GetProfile()
+         {
+-            try
+-            {
++            if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
+ 
+-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+-                if (string.IsNullOrEmpty(userId)) return Unauthorized();
++            var profile = await sender.Send(new GetMyWorkerProfileQuery(currentUser.UserId));
+ 
+-                var profile = await _context.WorkerProfiles
+-                    .Include(p => p.User)
+-                    .Include(p => p.Documents)
+-                    .Include(p => p.WorkerSpecializationSpecs)
+-                    .FirstOrDefaultAsync(p => p.UserId == userId);
+-
+-                if (profile == null) return NotFound();
+-
+-                var profileDto = new
+-                {
+-                    profile.Id,
+-                    profile.UserId,
+-                    profile.User.FullName,
+-                    profile.User.Email,
+-                    profile.User.PhoneNumber,
+-                    profile.WhatsAppNumber,
+-
+-                    profile.NationalityId,
+-                    profile.NationalIdNumber,
+-                    profile.PassportNumber,
+-                    profile.PassportExpiryDate,
+-                    profile.PassportCountry,
+-
+-                    profile.CountryId,
+-                    profile.StateId,
+-                    profile.CityId,
+-                    profile.Address,
+-
+-                    profile.Bio,
+-                    profile.ExperienceYears,
+-                    profile.PreviousEmployer,
+-                    WorkerSpecializationSpecs = profile.WorkerSpecializationSpecs.Select(s => new
+-                    {
+-                        s.Id,
+-                        s.WorkerSpecialization
+-                    }),
+-                    profile.IsLiveIn,
+-                    profile.IsAvailable,
+-
+-                    profile.MonthlyRate,
+-                    profile.HourlyRate,
+-                    profile.Currency,
+-
+-                    profile.AverageRating,
+-                    profile.TotalReviews,
+-                    profile.Languages,
+-                    profile.VerificationStatus,
+-                    profile.VerifiedAt,
+-                    profile.VerifiedBy,
+-
+-                    // Matches the shape the Angular component expects for
+-                    // selfieUrl()/passportUrl(): documents[].type / .documentImageUrl
+-                    Documents = profile.Documents.Select(d => new
+-                    {
+-                        d.Type,
+-                        DocumentImageUrl = ToAbsoluteUrl( d.DocumentImageUrl),
+-                        d.VerificationStatus
+-                    })
+-                };
+-                return Ok(profileDto);                
++            // Matches the shape the Angular component expects for selfieUrl()/passportUrl():
++            // documents[].type / .documentImageUrl - as an absolute URL.
++            var documents = profile.Documents.Select(d => new
++            {
++                d.Type,
++                DocumentImageUrl = ToAbsoluteUrl(d.DocumentImageUrl),
++                d.VerificationStatus
++            });
+ 
+-            }
+-            catch (Exception ex)
++            return Ok(new
+             {
+-                throw;
+-            }
++                profile.Id,
++                profile.UserId,
++                profile.FullName,
++                profile.Email,
++                profile.PhoneNumber,
++                profile.WhatsAppNumber,
++                profile.NationalityId,
++                profile.NationalIdNumber,
++                profile.PassportNumber,
++                profile.PassportExpiryDate,
++                profile.PassportCountry,
++                profile.CountryId,
++                profile.StateId,
++                profile.CityId,
++                profile.Address,
++                profile.Bio,
++                profile.ExperienceYears,
++                profile.PreviousEmployer,
++                WorkerSpecializationSpecs = profile.WorkerSpecializationSpecs,
++                profile.IsLiveIn,
++                profile.IsAvailable,
++                profile.MonthlyRate,
++                profile.HourlyRate,
++                profile.Currency,
++                profile.AverageRating,
++                profile.TotalReviews,
++                profile.Languages,
++                profile.VerificationStatus,
++                profile.VerifiedAt,
++                profile.VerifiedBy,
++                Documents = documents
++            });
+         }
+ 
+         [HttpGet("bookings")]
+         public async Task<IActionResult> GetMyBookings()
+         {
+-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+-
+-            var bookings = await _context.Bookings
+-                .Include(b => b.Homeowner)
+-                .Where(b => b.WorkerId == userId)
+-                .OrderByDescending(b => b.CreatedAt)
+-                .Select(b => new
+-                {
+-                    b.Id,
+-                    HomeownerName = b.Homeowner.FullName,
+-                    b.ServiceType,
+-                    b.StartDate,
+-                    b.EndDate,
+-                    b.MonthlySalary,
+-                    b.CommissionAmount,
+-                    b.CommissionType,
+-                    b.Status,
+-                    b.IsPaid,
+-                    b.CreatedAt
+-                })
+-                .ToListAsync();
++            if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
+ 
++            var bookings = await sender.Send(new GetMyBookingsQuery(currentUser.UserId));
+             return Ok(new { Data = bookings });
+         }
+ 
+         /// <summary>
+         /// Single multipart/form-data request: the "profile" form field carries the
+-        /// JSON payload (everything the Angular reactive form holds, including the
+-        /// specialization rows) and the optional "selfieImage" / "passportImage"
+-        /// form files carry the two document photos. Everything is persisted in one
+-        /// call, matching what WorkerProfileComponent.saveProfile() now sends.
++        /// JSON payload and the optional "selfieImage" / "passportImage" form files
++        /// carry the two document photos.
+         /// </summary>
+         [HttpPut("profile")]
+         [Consumes("multipart/form-data")]
+@@ -276,113 +116,42 @@ namespace MaidsAndNannies.WebApi.Controllers
+             IFormFile? selfieImage,
+             IFormFile? passportImage)
+         {
+-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
++            if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
+ 
+-            UpdateWorkerProfileDto? dto;
++            UpdateWorkerProfileRequest? dto;
+             try
+             {
+-                dto = JsonSerializer.Deserialize<UpdateWorkerProfileDto>(profile, JsonOptions);
++                dto = JsonSerializer.Deserialize<UpdateWorkerProfileRequest>(profile, JsonOptions);
+             }
+             catch (JsonException)
+             {
+                 return BadRequest(new { Message = "بيانات الملف الشخصي غير صالحة" });
+             }
+ 
+-            if (dto == null) return BadRequest(new { Message = "بيانات الملف الشخصي غير صالحة" });
+-
+-            var workerProfile = await _context.WorkerProfiles
+-                .Include(p => p.Documents)
+-                .FirstOrDefaultAsync(p => p.UserId == userId);
+-
+-            if (workerProfile == null) return NotFound();
+-
+-            // -- basic / identity info --
+-            workerProfile.NationalityId = dto.NationalityId ?? workerProfile.NationalityId;
+-            workerProfile.NationalIdNumber = dto.NationalIdNumber ?? workerProfile.NationalIdNumber;
+-            workerProfile.WhatsAppNumber = dto.WhatsAppNumber ?? workerProfile.WhatsAppNumber;
+-            workerProfile.PassportNumber = dto.PassportNumber ?? workerProfile.PassportNumber;
+-            workerProfile.PassportExpiryDate = dto.PassportExpiryDate ?? workerProfile.PassportExpiryDate;
+-            workerProfile.PassportCountry = dto.PassportCountry ?? workerProfile.PassportCountry;
+-
+-            // -- location --
+-            workerProfile.CountryId = dto.CountryId ?? workerProfile.CountryId;
+-            workerProfile.StateId = dto.StateId ?? workerProfile.StateId;
+-            workerProfile.CityId = dto.CityId ?? workerProfile.CityId;
+-            workerProfile.Address = dto.Address ?? workerProfile.Address;
+-
+-            // -- professional info --
+-            workerProfile.Bio = dto.Bio ?? workerProfile.Bio;
+-            workerProfile.ExperienceYears = dto.ExperienceYears ?? workerProfile.ExperienceYears;
+-            workerProfile.Languages = dto.Languages ?? workerProfile.Languages;
+-            workerProfile.PreviousEmployer = dto.PreviousEmployer ?? workerProfile.PreviousEmployer;
+-            workerProfile.IsLiveIn = dto.IsLiveIn ?? workerProfile.IsLiveIn;
+-            workerProfile.IsAvailable = dto.IsAvailable ?? workerProfile.IsAvailable;
+-
+-            // -- financial info --
+-            workerProfile.HourlyRate = dto.HourlyRate ?? workerProfile.HourlyRate;
+-            workerProfile.MonthlyRate = dto.MonthlyRate ?? workerProfile.MonthlyRate;
+-            workerProfile.Currency = dto.Currency ?? workerProfile.Currency;
+-
+-            workerProfile.UpdatedAt = DateTime.UtcNow;
+-
+-            // -- specializations: the frontend sends the whole desired list every
+-            // time (add/remove rows client-side), so replace the stored set --
+-            if (dto.WorkerSpecializationSpecs != null)
+-            {
+-                var existingSpecs = await _context.Set<WorkerSpecializationSpec>()
+-                    .Where(s => s.WorkerProfileId == workerProfile.Id)
+-                    .ToListAsync();
+-                _context.RemoveRange(existingSpecs);
+-
+-                foreach (var specialization in dto.WorkerSpecializationSpecs
+-                             .Select(s => s.WorkerSpecialization)
+-                             .Distinct())
+-                {
+-                    _context.Add(new WorkerSpecializationSpec
+-                    {
+-                        WorkerProfileId = workerProfile.Id,
+-                        WorkerSpecialization = specialization
+-                    });
+-                }
+-            }
+-
+-            // -- documents (only touched if the user actually picked a new file) --
+-            try
+-            {
+-                if (selfieImage != null)
+-                {
+-                    await ReplaceDocumentAsync(workerProfile, DocumentType.Selfie, selfieImage, userId);
+-                }
++            if (dto is null) return BadRequest(new { Message = "بيانات الملف الشخصي غير صالحة" });
+ 
+-                if (passportImage != null)
+-                {
+-                    await ReplaceDocumentAsync(workerProfile, DocumentType.Passport, passportImage, userId);
+-                }
+-            }
+-            catch (InvalidOperationException ex)
+-            {
+-                return BadRequest(new { Message = ex.Message });
+-            }
+-
+-            try
+-            {
+-                await _context.SaveChangesAsync();
+-            }
+-            catch (Exception ex)
+-            {
+-                throw;
+-            }
++            var command = new UpdateWorkerProfileCommand(
++                currentUser.UserId,
++                dto.NationalityId, dto.NationalIdNumber, dto.WhatsAppNumber,
++                dto.PassportNumber, dto.PassportExpiryDate, dto.PassportCountry,
++                dto.CountryId, dto.StateId, dto.CityId, dto.Address,
++                dto.Bio, dto.ExperienceYears, dto.Languages, dto.PreviousEmployer,
++                dto.IsLiveIn, dto.IsAvailable, dto.HourlyRate, dto.MonthlyRate, dto.Currency,
++                dto.WorkerSpecializationSpecs?.Select(s => s.WorkerSpecialization).ToList(),
++                selfieImage is { Length: > 0 } ? selfieImage.OpenReadStream() : null,
++                selfieImage?.FileName,
++                passportImage is { Length: > 0 } ? passportImage.OpenReadStream() : null,
++                passportImage?.FileName);
+ 
++            await sender.Send(command);
+ 
+             return Ok(new { Message = "تم تحديث الملف الشخصي بنجاح" });
+         }
+ 
+         /// <summary>
+-        /// The DB stores a relative path ("/uploads/worker-documents/x.jpg"). Left
+-        /// as-is, the browser resolves that against whatever page it's on (the
+-        /// Angular dev server), causing 404s. Prefix it with this API's own
+-        /// scheme+host so it always points at the file server.
++        /// The DB/Application layer only knows about relative URLs
++        /// ("/uploads/worker-documents/x.jpg"). Turning that into an absolute URL
++        /// the SPA can load is purely an HTTP concern, so it stays here.
+         /// </summary>
+         private string? ToAbsoluteUrl(string? relativeUrl)
+         {
+@@ -392,92 +161,9 @@ namespace MaidsAndNannies.WebApi.Controllers
+             var request = HttpContext.Request;
+             return $"{request.Scheme}://{request.Host}{relativeUrl}";
+         }
+-
+-        private async Task<string> SaveDocumentFileAsync(IFormFile file, string userId)
+-        {
+-            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+-            if (!AllowedImageExtensions.Contains(extension))
+-                throw new InvalidOperationException("صيغة الصورة غير مدعومة");
+-
+-            if (file.Length > MaxDocumentSizeBytes)
+-                throw new InvalidOperationException("حجم الصورة أكبر من الحد المسموح به (5 ميجابايت)");
+-
+-            var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "worker-documents");
+-            Directory.CreateDirectory(uploadsRoot);
+-
+-            var fileName = $"{userId}_{Guid.NewGuid()}{extension}";
+-            var filePath = Path.Combine(uploadsRoot, fileName);
+-
+-            await using (var stream = new FileStream(filePath, FileMode.Create))
+-            {
+-                await file.CopyToAsync(stream);
+-            }
+-
+-            // Served by the static files middleware (app.UseStaticFiles()) from wwwroot.
+-            // Switch this to your blob/CDN URL builder if documents aren't stored on disk.
+-            return $"/uploads/worker-documents/{fileName}";
+-        }
+-
+-        /// <summary>
+-        /// Saves the newly uploaded file, points the worker's document row (Selfie
+-        /// or Passport) at it, and deletes the old file from disk if one existed -
+-        /// so replacing a document never leaves an orphaned image on the server.
+-        /// </summary>
+-        private async Task ReplaceDocumentAsync(WorkerProfile workerProfile, DocumentType type, IFormFile file, string userId)
+-        {
+-            var existing = workerProfile.Documents.FirstOrDefault(d => d.Type == type);
+-            var previousUrl = existing?.DocumentImageUrl;
+-
+-            var newUrl = await SaveDocumentFileAsync(file, userId);
+-
+-            if (existing != null)
+-            {
+-                existing.DocumentImageUrl = newUrl;
+-                existing.VerificationStatus = VerificationStatus.Pending;
+-            }
+-            else
+-            {
+-                _context.Add(new WorkerDocument
+-                {
+-                    WorkerId = workerProfile.Id,
+-                    Type = type,
+-                    DocumentImageUrl = newUrl,
+-                    VerificationStatus = VerificationStatus.Pending
+-                });
+-            }
+-
+-            if (!string.IsNullOrEmpty(previousUrl))
+-            {
+-                DeleteDocumentFile(previousUrl);
+-            }
+-        }
+-
+-        /// <summary>
+-        /// Deletes a previously uploaded document image from wwwroot given its
+-        /// stored relative URL (e.g. "/uploads/worker-documents/xxx.jpg"). Failures
+-        /// are swallowed on purpose: a missing/locked file on disk should never
+-        /// block saving the rest of the profile update.
+-        /// </summary>
+-        private void DeleteDocumentFile(string relativeUrl)
+-        {
+-            try
+-            {
+-                var relativePath = relativeUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+-                var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", relativePath);
+-
+-                if (System.IO.File.Exists(fullPath))
+-                {
+-                    System.IO.File.Delete(fullPath);
+-                }
+-            }
+-            catch
+-            {
+-                // Best-effort cleanup only - swallow so a stray file doesn't fail the request.
+-            }
+-        }
+     }
+ 
+-    public class UpdateWorkerProfileDto
++    public sealed class UpdateWorkerProfileRequest
+     {
+         public int? NationalityId { get; set; }
+         public string? NationalIdNumber { get; set; }
+@@ -502,11 +188,11 @@ namespace MaidsAndNannies.WebApi.Controllers
+         public decimal? MonthlyRate { get; set; }
+         public int? Currency { get; set; }
+ 
+-        public List<WorkerSpecializationSpecDto>? WorkerSpecializationSpecs { get; set; }
++        public List<WorkerSpecializationSpecRequest>? WorkerSpecializationSpecs { get; set; }
+     }
+ 
+-    public class WorkerSpecializationSpecDto
++    public sealed class WorkerSpecializationSpecRequest
+     {
+         public Specialization WorkerSpecialization { get; set; }
+     }
+-}
+\ No newline at end of file
++}
+diff --git a/src/MaidsAndNannies.WebApi/Middleware/ExceptionHandlingMiddleware.cs b/src/MaidsAndNannies.WebApi/Middleware/ExceptionHandlingMiddleware.cs
+new file mode 100644
+index 0000000..39212e6
+--- /dev/null
++++ b/src/MaidsAndNannies.WebApi/Middleware/ExceptionHandlingMiddleware.cs
+@@ -0,0 +1,52 @@
++using MaidsAndNannies.Application.Common.Exceptions;
++using System.Net;
++using System.Text.Json;
++using ValidationException = MaidsAndNannies.Application.Common.Exceptions.ValidationException;
++
++namespace MaidsAndNannies.WebApi.Middleware;
++
++/// <summary>
++/// Every Command/Query handler throws domain-meaningful exceptions instead of
++/// returning ActionResult directly. This middleware is the single place that
++/// maps them to HTTP status codes, so controllers stay thin (just `Send` +
++/// `Ok(result)`).
++/// </summary>
++public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
++{
++    public async Task InvokeAsync(HttpContext context)
++    {
++        try
++        {
++            await next(context);
++        }
++        catch (ValidationException ex)
++        {
++            await WriteAsync(context, HttpStatusCode.BadRequest, new { errors = ex.Errors });
++        }
++        catch (NotFoundException ex)
++        {
++            await WriteAsync(context, HttpStatusCode.NotFound, new { message = ex.Message });
++        }
++        catch (ConflictException ex)
++        {
++            await WriteAsync(context, HttpStatusCode.Conflict, new { message = ex.Message });
++        }
++        catch (UnauthorizedAccessException ex)
++        {
++            await WriteAsync(context, HttpStatusCode.Unauthorized, new { message = ex.Message });
++        }
++        catch (Exception ex)
++        {
++            logger.LogError(ex, "Unhandled exception while processing {Path}", context.Request.Path);
++            await WriteAsync(context, HttpStatusCode.InternalServerError,
++                new { message = "حدث خطأ غير متوقع. حاول مرة أخرى لاحقاً." });
++        }
++    }
++
++    private static Task WriteAsync(HttpContext context, HttpStatusCode statusCode, object payload)
++    {
++        context.Response.ContentType = "application/json";
++        context.Response.StatusCode = (int)statusCode;
++        return context.Response.WriteAsync(JsonSerializer.Serialize(payload));
++    }
++}
+diff --git a/src/MaidsAndNannies.WebApi/Program.cs b/src/MaidsAndNannies.WebApi/Program.cs
+index b961a8f..e0a46e1 100644
+--- a/src/MaidsAndNannies.WebApi/Program.cs
++++ b/src/MaidsAndNannies.WebApi/Program.cs
+@@ -1,7 +1,10 @@
+ using MaidsAndNannies.Application;
++using MaidsAndNannies.Application.Common.Interfaces;
+ using MaidsAndNannies.Domain.Enums;
+ using MaidsAndNannies.Infrastructure;
+ using MaidsAndNannies.Infrastructure.Persistence;
++using MaidsAndNannies.WebApi.Middleware;
++using MaidsAndNannies.WebApi.Services;
+ using Microsoft.AspNetCore.Authentication.JwtBearer;
+ using Microsoft.AspNetCore.Identity;
+ using Microsoft.EntityFrameworkCore;
+@@ -15,6 +18,8 @@ builder.Services.AddEndpointsApiExplorer();
+ builder.Services.AddSwaggerGen();
+ builder.Services.AddApplication();
+ builder.Services.AddInfrastructure(builder.Configuration);
++builder.Services.AddHttpContextAccessor();
++builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+ var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT key is missing.");
+ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+     .AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters
+@@ -52,6 +57,7 @@ if (app.Environment.IsDevelopment())
+     app.UseSwaggerUI();
+ }
+ 
++app.UseMiddleware<ExceptionHandlingMiddleware>();
+ app.UseHttpsRedirection();
+ app.UseStaticFiles();
+ app.UseCors();
+diff --git a/src/MaidsAndNannies.WebApi/Services/CurrentUserService.cs b/src/MaidsAndNannies.WebApi/Services/CurrentUserService.cs
+new file mode 100644
+index 0000000..a57f0fd
+--- /dev/null
++++ b/src/MaidsAndNannies.WebApi/Services/CurrentUserService.cs
+@@ -0,0 +1,10 @@
++using MaidsAndNannies.Application.Common.Interfaces;
++using System.Security.Claims;
++
++namespace MaidsAndNannies.WebApi.Services;
++
++public sealed class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICurrentUserService
++{
++    public string? UserId => httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
++    public string? Role => httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Role);
++}

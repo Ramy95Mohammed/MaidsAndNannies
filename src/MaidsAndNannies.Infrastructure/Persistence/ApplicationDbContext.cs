@@ -1,3 +1,4 @@
+using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Domain.Entities;
 using MaidsAndNannies.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -7,10 +8,11 @@ using Microsoft.EntityFrameworkCore;
 namespace MaidsAndNannies.Infrastructure.Persistence;
 
 public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : IdentityDbContext<ApplicationUser>(options)
+    : IdentityDbContext<ApplicationUser>(options), IApplicationDbContext
 {
     public DbSet<HomeownerProfile> HomeownerProfiles => Set<HomeownerProfile>();
     public DbSet<WorkerProfile> WorkerProfiles => Set<WorkerProfile>();
+    public DbSet<WorkerSpecializationSpec> WorkerSpecializationSpecs => Set<WorkerSpecializationSpec>();
     public DbSet<WorkerDocument> WorkerDocuments => Set<WorkerDocument>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<Review> Reviews => Set<Review>();
