@@ -49,6 +49,27 @@ using (var scope = app.Services.CreateScope())
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     foreach (var role in Enum.GetNames<UserRole>())
         if (!await roleManager.RoleExistsAsync(role)) await roleManager.CreateAsync(new IdentityRole(role));
+
+    var adminEmail = builder.Configuration["AdminSeed:Email"] ?? "admin@maidsandnannies.local";
+    var adminPassword = builder.Configuration["AdminSeed:Password"] ?? "Admin@12345";
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<MaidsAndNannies.Domain.Entities.Identity.ApplicationUser>>();
+
+    if (await userManager.FindByEmailAsync(adminEmail) is null)
+    {
+        var adminUser = new MaidsAndNannies.Domain.Entities.Identity.ApplicationUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            FullName = "Platform Admin",
+            PreferredLanguage = "ar",
+            Role = UserRole.Admin,
+            EmailConfirmed = true
+        };
+
+        var createResult = await userManager.CreateAsync(adminUser, adminPassword);
+        if (createResult.Succeeded)
+            await userManager.AddToRoleAsync(adminUser, UserRole.Admin.ToString());
+    }
 }
 
 if (app.Environment.IsDevelopment())

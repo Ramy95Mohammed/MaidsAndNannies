@@ -82,6 +82,7 @@ public sealed record WorkerProfileDto(
     int TotalReviews,
     string? Languages,
     VerificationStatus VerificationStatus,
+    string? VerificationNotes,
     DateTime? VerifiedAt,
     string? VerifiedBy,
     IReadOnlyList<WorkerDocumentDto> Documents);

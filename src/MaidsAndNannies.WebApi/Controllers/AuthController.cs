@@ -1,5 +1,6 @@
 using MaidsAndNannies.Application.Features.Auth.Commands.Login;
 using MaidsAndNannies.Application.Features.Auth.Commands.Register;
+using MaidsAndNannies.Application.Features.Auth.Commands.RegisterHomeowner;
 using MaidsAndNannies.Application.Features.Auth.Commands.RegisterWorker;
 using MaidsAndNannies.Application.Features.Auth.Common;
 using MediatR;
@@ -24,6 +25,17 @@ public sealed class AuthController(ISender sender) : BaseApiController
             request.AccountType, request.PreferredLanguage, request.NationalityId, request.CurrentCityId);
 
         return Ok(await sender.Send(command));
+    }
+
+    [HttpPost("register/homeowner")]
+    public async Task<ActionResult> RegisterHomeowner(RegisterHomeownerRequest request)
+    {
+        var command = new RegisterHomeownerCommand(
+            request.FullName, request.Email, request.PhoneNumber, request.Password,
+            request.City, request.Address);
+
+        await sender.Send(command);
+        return Ok(new { message = "تم التسجيل بنجاح، سيتم مراجعة حسابك." });
     }
 
     [HttpPost("register/worker")]
@@ -60,6 +72,16 @@ public sealed class RegisterRequest
     [RegularExpression("^(ar|en)$")] public string PreferredLanguage { get; init; } = "ar";
     public int NationalityId { get; init; }
     public int CurrentCityId { get; init; }
+}
+
+public sealed class RegisterHomeownerRequest
+{
+    [Required, StringLength(120)] public required string FullName { get; init; }
+    [Required, EmailAddress] public required string Email { get; init; }
+    [Required, Phone] public required string PhoneNumber { get; init; }
+    [Required, MinLength(8)] public required string Password { get; init; }
+    public string? City { get; init; }
+    public string? Address { get; init; }
 }
 
 public sealed class RegisterWorkerRequest

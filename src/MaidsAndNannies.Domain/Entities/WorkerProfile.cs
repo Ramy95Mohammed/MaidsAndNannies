@@ -47,6 +47,7 @@ public class WorkerProfile : Entity
     // Status
     public bool IsAvailable { get; set; } = true;
     public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.Pending;
+    public string? VerificationNotes { get; set; }
     public DateTime? VerifiedAt { get; set; }
     public string? VerifiedBy { get; set; }
 

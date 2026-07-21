@@ -10,4 +10,5 @@ public sealed record AuthResponseDto(
     string FullName,
     string Role,
     string PreferredLanguage,
-    VerificationStatus VerificationStatus);
+    VerificationStatus VerificationStatus,
+    string? VerificationNotes);

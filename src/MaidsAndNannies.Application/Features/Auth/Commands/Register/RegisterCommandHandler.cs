@@ -51,6 +51,6 @@ public sealed class RegisterCommandHandler(
 
         var (accessToken, expiresAtUtc) = jwtTokenGenerator.GenerateToken(user, role.ToString());
         return new AuthResponseDto(accessToken, expiresAtUtc, user.FullName, role.ToString(),
-            user.PreferredLanguage, VerificationStatus.Pending);
+            user.PreferredLanguage, VerificationStatus.Pending, null);
     }
 }
