@@ -25,8 +25,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         base.OnModelCreating(builder);
 
         // Custom table names
-        builder.Entity<ApplicationUser>().ToTable("Users");
-        builder.Entity<ApplicationRole>().ToTable("Roles");
+        builder.Entity<ApplicationUser>().ToTable("Users");        
         builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
         builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims");
         builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins");
@@ -192,27 +191,24 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         });
 
         // Seed Admin role
-        builder.Entity<ApplicationRole>().HasData(
-            new ApplicationRole
+        builder.Entity<IdentityRole>().HasData(
+            new IdentityRole()
             {
                 Id = "admin-role-id",
                 Name = "Admin",
-                NormalizedName = "ADMIN",
-                Description = "System Administrator"
+                NormalizedName = "ADMIN",                
             },
-            new ApplicationRole
+            new IdentityRole
             {
                 Id = "homeowner-role-id",
                 Name = "Homeowner",
-                NormalizedName = "HOMEOWNER",
-                Description = "Home Owner"
+                NormalizedName = "HOMEOWNER",                
             },
-            new ApplicationRole
+            new IdentityRole
             {
                 Id = "worker-role-id",
                 Name = "Worker",
-                NormalizedName = "WORKER",
-                Description = "House Worker"
+                NormalizedName = "WORKER",                
             }
         );
     }

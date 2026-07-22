@@ -5,6 +5,7 @@ export default <Routes>[
     {
   path: 'dashboard',
   loadComponent: () =>import('./dashboard/homeowner-dashboard').then(m => m.HomeownerDashboard)},
+    { path: 'profile', loadComponent: () => import('./profile/homeowner-profile').then(m => m.HomeownerProfileComponent) },
     { path: 'workers', loadComponent: () => import('./workers/worker-search').then(m => m.WorkerSearch) },
     { path: 'workers/:id', loadComponent: () => import('./workers/worker-detail').then(m => m.WorkerDetail)  },
     { path: 'bookings', loadComponent: () => import('./bookings/homeowner-bookings').then(m => m.HomeownerBookings)  },

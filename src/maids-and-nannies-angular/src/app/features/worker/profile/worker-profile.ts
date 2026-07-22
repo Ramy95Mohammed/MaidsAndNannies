@@ -475,7 +475,7 @@ export class WorkerProfileComponent implements OnInit {
     form: FormGroup = this.fb.group({
         nationalityId: [null, Validators.required],
         nationalIdNumber: ['', Validators.required],
-        whatsAppNumber: [null],
+        whatsAppNumber: ['' ,  Validators.required],
         passportNumber: [null],
         passportExpiryDate: [null],
         passportCountry: [null],

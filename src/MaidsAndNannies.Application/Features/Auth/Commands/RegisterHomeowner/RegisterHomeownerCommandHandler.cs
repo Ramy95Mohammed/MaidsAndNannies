@@ -33,14 +33,25 @@ public sealed class RegisterHomeownerCommandHandler(
 
         await userManager.AddToRoleAsync(user, UserRole.Homeowner.ToString());
 
-        dbContext.HomeownerProfiles.Add(new HomeownerProfile
+        try
         {
-            UserId = user.Id,
-            City = request.City ?? string.Empty,
-            Address = request.Address ?? string.Empty
-        });
+            
+            dbContext.HomeownerProfiles.Add(new HomeownerProfile
+            {
+                UserId = user.Id,
+                City = request.City ?? string.Empty,
+                Address = request.Address ?? string.Empty,
+                NationalIdNumber = ""
+            });
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-        return Unit.Value;
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return Unit.Value;
+        }
+        catch (Exception ex)
+        {
+            await userManager.DeleteAsync(user);
+            throw;
+        }
+
     }
 }

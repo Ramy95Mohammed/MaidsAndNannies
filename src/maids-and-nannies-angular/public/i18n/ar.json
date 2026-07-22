@@ -34,7 +34,14 @@
     "PROOF_OF_ADDRESS": "إثبات السكن",
     "ADDRESS": "العنوان",
     "CITY": "المدينة",
-    "DISTRICT": "المنطقة"
+    "DISTRICT": "المنطقة",
+     "PROFILE": "الملف الشخصي",
+    "BASIC_INFO": "البيانات الأساسية",
+    "ADDRESS_INFO": "معلومات العنوان",            
+    "NATIONAL_ID_NUMBER": "رقم البطاقة الشخصية",    
+    "SELFIE_IMAGE": "صورة شخصية",    
+    "VERIFICATION_STATUS": "حالة التوثيق",
+    "STATE":"ولاية / محافظة"
   },
   "WORKER": {
     "REGISTER": "تسجيل عاملة منزل",
@@ -132,7 +139,11 @@
     "YES": "نعم",
     "NO": "لا",
     "COUNTRY":"دولة",
-    "STATE":"ولاية / محافظة"
+    "STATE":"ولاية / محافظة",
+     "WHATSAPP_NUMBER": "رقم الواتساب",
+     "EX_CAIRO":"علي سبيل المثال . القاهرة",
+     "EX_FIFTHSETTLEMENT":"علي سبيل المثال . التجمع الخامس",
+     "EX_90ThSTREET":"علي سبيل المثال . شارع التسعين"
   },
   "LANGUAGE": {
     "AR": "العربية",

@@ -1,10 +1,14 @@
+using FluentValidation;
 using MaidsAndNannies.Application;
+using MaidsAndNannies.Application.Common.Behaviors;
 using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Homeowner.Commands.UpdateProfile;
 using MaidsAndNannies.Domain.Enums;
 using MaidsAndNannies.Infrastructure;
 using MaidsAndNannies.Infrastructure.Persistence;
 using MaidsAndNannies.WebApi.Middleware;
 using MaidsAndNannies.WebApi.Services;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -37,9 +41,12 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
         .AllowAnyHeader()
         .AllowAnyMethod()));
 
+
+
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
+
 
 using (var scope = app.Services.CreateScope())
 {

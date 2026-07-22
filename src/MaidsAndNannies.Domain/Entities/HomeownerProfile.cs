@@ -7,12 +7,14 @@ public class HomeownerProfile : Entity
 {    
     public string UserId { get; set; } = string.Empty;
 
-    public string NationalIdNumber { get; set; } = string.Empty;
+    public string? NationalIdNumber { get; set; }
+    public string WhatsAppNumber { get; set; } = string.Empty;
     public string NationalIdImage { get; set; } = string.Empty;
     public string SelfieImage { get; set; } = string.Empty;
     public string? ProofOfAddressImage { get; set; }
 
     public string Address { get; set; } = string.Empty;
+    public string State { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
     public string? District { get; set; }
 

@@ -12,7 +12,7 @@ public class WorkerProfile : Entity
     // Personal Info
     public int NationalityId { get; set; }//
     public string NationalIdNumber { get; set; } = string.Empty;
-    public string? WhatsAppNumber { get; set; }
+    public string WhatsAppNumber { get; set; } = string.Empty;
 
     // Passport (optional for foreign workers)
     public string? PassportNumber { get; set; }

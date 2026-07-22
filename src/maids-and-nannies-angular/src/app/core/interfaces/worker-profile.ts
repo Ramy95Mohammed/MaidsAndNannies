@@ -7,7 +7,7 @@ export interface WorkerProfile extends Entity{
     fullName:string,
     email:string,
     phoneNumber:string | null,
-    whatsAppNumber:string | null,
+    whatsAppNumber:string ,
     nationalityId:number,
     nationalIdNumber:string,
     passportNumber:string | null,

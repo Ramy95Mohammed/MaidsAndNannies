@@ -55,7 +55,8 @@ export class AppMenu {
                 items: [
                     { label: isAr ? 'لوحة التحكم' : 'Dashboard', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/homeowner/dashboard'] },
                     { label: isAr ? 'بحث عن عاملة' : 'Search Workers', icon: 'pi pi-fw pi-search', routerLink: ['/homeowner/workers'] },
-                    { label: isAr ? 'حجوزاتي' : 'My Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/homeowner/bookings'] }
+                    { label: isAr ? 'حجوزاتي' : 'My Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/homeowner/bookings'] },
+                    { label: isAr ? 'ملفي الشخصي' : 'My Profile', icon: 'pi pi-fw pi-user', routerLink: ['/homeowner/profile'] },
                 ]
             });
         }
@@ -71,19 +72,19 @@ export class AppMenu {
             });
         }
 
-        this.model.push(
-            {
-                label: isAr ? 'الإعدادات' : 'Settings',
-                items: [
-                    { label: isAr ? 'الملف الشخصي' : 'Profile', icon: 'pi pi-fw pi-user', routerLink: ['/pages/profile'] }
-                ]
-            },
-            {
-                label: isAr ? 'المساعدة' : 'Help',
-                items: [
-                    { label: 'Documentation', icon: 'pi pi-fw pi-book', routerLink: ['/documentation'] }
-                ]
-            }
-        );
+        // this.model.push(
+        //     {
+        //         label: isAr ? 'الإعدادات' : 'Settings',
+        //         items: [
+        //             { label: isAr ? 'الملف الشخصي' : 'Profile', icon: 'pi pi-fw pi-user', routerLink: ['/pages/profile'] }
+        //         ]
+        //     },
+        //     {
+        //         label: isAr ? 'المساعدة' : 'Help',
+        //         items: [
+        //             { label: 'Documentation', icon: 'pi pi-fw pi-book', routerLink: ['/documentation'] }
+        //         ]
+        //     }
+        // );
     }
 }

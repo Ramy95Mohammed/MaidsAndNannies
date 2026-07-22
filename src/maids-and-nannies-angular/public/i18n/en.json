@@ -34,7 +34,14 @@
     "PROOF_OF_ADDRESS": "Proof of Address",
     "ADDRESS": "Address",
     "CITY": "City",
-    "DISTRICT": "District"
+    "DISTRICT": "District",
+     "PROFILE": "Profile",
+    "BASIC_INFO": "Basic Info",
+    "ADDRESS_INFO": "Address Info",            
+    "NATIONAL_ID_NUMBER": "National ID Number",    
+    "SELFIE_IMAGE": "Selfie Image",    
+    "VERIFICATION_STATUS": "Verification Status",
+    "STATE":"State/Province"
   },
   "WORKER": {
     "REGISTER": "Worker Registration",
@@ -132,7 +139,11 @@
     "YES": "Yes",
     "NO": "No",
     "COUNTRY":"Country",
-    "STATE":"State/Province"
+    "STATE":"State/Province",
+    "WHATSAPP_NUMBER": "WhatsApp Number",
+    "EX_CAIRO":"Ex.cairo",
+    "EX_FIFTHSETTLEMENT":"Ex.Fifth Settlement",
+    "EX_90ThSTREET":"Ex.90th Street"
   },
   "LANGUAGE": {
     "AR": "العربية",
