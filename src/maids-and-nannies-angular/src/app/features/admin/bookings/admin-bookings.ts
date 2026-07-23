@@ -56,7 +56,8 @@ interface BookingRow {
                                 <p-button *ngIf="b.status === 0" label="تأكيد العاملة" size="small" (onClick)="confirmWorker(b.id)"></p-button>
                                 <p-button *ngIf="b.status === 1" label="طلب دفع" size="small" (onClick)="requestPayment(b.id)"></p-button>
                                 <p-button *ngIf="b.status === 3" label="بدء العمل" size="small" (onClick)="startWork(b.id)"></p-button>
-                                <p-button *ngIf="b.status === 4" label="إنهاء" size="small" severity="success" (onClick)="completeWork(b.id)"></p-button>
+                                <p-button *ngIf="b.status === 4" label="إنهاء" size="small" severity="success" (onClick)="completeWork(b.id)"></p-button>                                
+                                <p-button *ngIf="b.status === 7" label="تأكيد البديلة" size="small" severity="warn" (onClick)="confirmWorker(b.id)"></p-button>
                             </div>
                         </td>
                     </tr>

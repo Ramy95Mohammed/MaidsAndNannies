@@ -24,7 +24,7 @@ public sealed class CompleteWorkCommandHandler(
         var worker = await dbContext.WorkerProfiles
                 .FirstOrDefaultAsync(w => w.UserId == booking.WorkerId, ct);
         if (worker is not null)
-            worker.IsAvailable = true;
+            worker.IsAvailable = false;
 
         await dbContext.SaveChangesAsync(ct);
         return Unit.Value;

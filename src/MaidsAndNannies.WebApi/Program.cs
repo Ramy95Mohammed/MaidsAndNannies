@@ -1,19 +1,24 @@
+using Azure.Core;
 using FluentValidation;
 using MaidsAndNannies.Application;
 using MaidsAndNannies.Application.Common.Behaviors;
 using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Contracts;
 using MaidsAndNannies.Application.Features.Homeowner.Commands.UpdateProfile;
+using MaidsAndNannies.Domain.Entities;
 using MaidsAndNannies.Domain.Enums;
 using MaidsAndNannies.Infrastructure;
 using MaidsAndNannies.Infrastructure.Persistence;
 using MaidsAndNannies.WebApi.Middleware;
 using MaidsAndNannies.WebApi.Services;
+using MaidsPlatform.API.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +59,9 @@ using (var scope = app.Services.CreateScope())
         await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync();
 
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
     foreach (var role in Enum.GetNames<UserRole>())
         if (!await roleManager.RoleExistsAsync(role)) await roleManager.CreateAsync(new IdentityRole(role));
 
@@ -75,7 +83,82 @@ using (var scope = app.Services.CreateScope())
 
         var createResult = await userManager.CreateAsync(adminUser, adminPassword);
         if (createResult.Succeeded)
-            await userManager.AddToRoleAsync(adminUser, UserRole.Admin.ToString());
+            await userManager.AddToRoleAsync(adminUser, UserRole.Admin.ToString());        
+    }
+
+    if (app.Environment.IsDevelopment())
+    {
+        var homeownerEmail = "homeowner@maidsandnannies.local";
+        if (await userManager.FindByEmailAsync(homeownerEmail) is null)
+        {
+
+            var homeownerUser = new MaidsAndNannies.Domain.Entities.Identity.ApplicationUser
+            {
+                UserName = homeownerEmail,
+                Email = homeownerEmail,
+                FullName = "Platform Homeowner",
+                PreferredLanguage = "ar",
+                Role = UserRole.Homeowner,
+                EmailConfirmed = true,
+                PhoneNumber = "11245454878787"
+            };
+
+            var homeownerCreateResult = await userManager.CreateAsync(homeownerUser, "Homeowner@12345");
+            if (homeownerCreateResult.Succeeded)
+                await userManager.AddToRoleAsync(homeownerUser, UserRole.Homeowner.ToString());
+
+
+            var homeownerProfile = new HomeownerProfile
+            {
+                UserId = homeownerUser.Id,
+                Address = "my address",
+                City = "my city",
+                State = "my state",
+                WhatsAppNumber = "454564578745455",
+                VerificationStatus = VerificationStatus.Pending,
+                NationalIdNumber = "id number"
+            };
+
+            dbContext.HomeownerProfiles.Add(homeownerProfile);
+            await dbContext.SaveChangesAsync();
+
+        }
+
+
+        var workerEmail = "worker@maidsandnannies.local";
+        if (await userManager.FindByEmailAsync(workerEmail) is null)
+        {
+
+            var workerUser = new MaidsAndNannies.Domain.Entities.Identity.ApplicationUser
+            {
+                UserName = workerEmail,
+                Email = workerEmail,
+                FullName = "Platform Worker",
+                PreferredLanguage = "ar",
+                Role = UserRole.Worker,
+                EmailConfirmed = true,
+                PhoneNumber = "01254545454454"
+            };
+
+            var workerCreateResult = await userManager.CreateAsync(workerUser, "Worker@12345");
+            if (workerCreateResult.Succeeded)
+                await userManager.AddToRoleAsync(workerUser, UserRole.Worker.ToString());
+
+            var workerProfile = new WorkerProfile
+            {
+                UserId = workerUser.Id,
+                NationalityId = 65,
+                CountryId = null,
+                StateId = null,
+                Bio =  string.Empty,
+                ExperienceYears = 5,
+                MonthlyRate = 5000,
+                VerificationStatus = VerificationStatus.Pending
+            };            
+
+            dbContext.WorkerProfiles.Add(workerProfile);
+            await dbContext.SaveChangesAsync();
+        }
     }
 }
 

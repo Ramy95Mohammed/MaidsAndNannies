@@ -9,5 +9,6 @@ export default <Routes>[
     { path: 'workers', loadComponent: () => import('./workers/worker-search').then(m => m.WorkerSearch) },
     { path: 'workers/:id', loadComponent: () => import('./workers/worker-detail').then(m => m.WorkerDetail)  },
     { path: 'bookings', loadComponent: () => import('./bookings/homeowner-bookings').then(m => m.HomeownerBookings)  },
-    { path: 'bookings/:id', loadComponent: () => import('./bookings/booking-detail').then(m => m.BookingDetail)  }
+    { path: 'bookings/:id', loadComponent: () => import('./bookings/booking-detail').then(m => m.BookingDetail)  },
+    { path: 'subscriptions', loadComponent: () => import('./subscriptions/my-subscriptions').then(m => m.MySubscriptions) }
 ];

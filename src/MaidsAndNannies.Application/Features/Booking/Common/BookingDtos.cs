@@ -56,7 +56,8 @@ public sealed record CreateBookingRequest(
     int WorkerId,
     Specialization ServiceType,
     DateTime StartDate,
-    decimal MonthlySalary);
+    decimal MonthlySalary,
+    CommissionType CommissionType);
 
 public sealed record UploadPaymentProofRequest(
     PaymentMethod PaymentMethod,

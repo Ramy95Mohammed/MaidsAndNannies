@@ -25,7 +25,7 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
 
         var id = await sender.Send(new CreateBookingCommand(
             currentUser.UserId, request.WorkerId, request.ServiceType,
-            request.StartDate, request.MonthlySalary));
+            request.StartDate, request.MonthlySalary , request.CommissionType));
 
         return Ok(new { BookingId = id, Message = "تم إنشاء الحجز بنجاح" });
     }

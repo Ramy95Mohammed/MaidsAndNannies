@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
@@ -51,6 +51,20 @@ import { BookingService, BookingDetailDto } from '../../../core/services/booking
                         <p>{{ 'BOOKING.COMMISSION_TYPE' | translate }}: {{ booking.commissionType === 0 ? ('BOOKING.ONETIME' | translate) : ('BOOKING.SUBSCRIPTION' | translate) }}</p>
                     </p-card>
                 </div>
+                
+
+                     <!-- Replacement -->
+                    <div class="col-span-12" *ngIf="canRequestReplacement()">
+                        <p-card>
+                            <div class="flex align-items-center justify-content-between">
+                                <div>
+                                    <strong>{{ 'BOOKING.REPLACEMENT' | translate }}</strong>
+                                    <p class="text-sm text-muted-color">تم استخدام {{ booking.replacementCount }} من 2 استبدال</p>
+                                </div>
+                                <p-button label="طلب استبدال" icon="pi pi-refresh" severity="warn" (onClick)="requestReplacement()"></p-button>
+                            </div>
+                        </p-card>
+                    </div>
 
                 <!-- Payment Proof Upload (only when WaitingPayment) -->
                 <div class="col-span-12" *ngIf="booking.status === 2">
@@ -120,6 +134,7 @@ export class BookingDetail implements OnInit {
     private fb = inject(FormBuilder);
     private bookingService = inject(BookingService);
     private messageService = inject(MessageService);
+    private router = inject(Router);
 
     booking: BookingDetailDto | null = null;
     isSubmitting = false;
@@ -183,6 +198,18 @@ export class BookingDetail implements OnInit {
             }
         });
     }
+
+    canRequestReplacement(): boolean {
+    return this.booking !== null
+                && (this.booking.status === 3 || this.booking.status === 4)
+                && this.booking.replacementCount < 2;
+        }
+
+        requestReplacement() {
+            this.router.navigate(['/homeowner/workers'], {
+                queryParams: { mode: 'replacement', bookingId: this.booking!.id }
+            });
+        }
 
     statusLabel(s: number): string {
         return ['في الانتظار','تم تأكيد العاملة','بانتظار الدفع','مدفوع','نشط','مكتمل','ملغي','طلب استبدال','قيد المراجعة'][s]||'—';

@@ -12,36 +12,42 @@ public sealed class CreateBookingCommandHandler(
 {
     public async Task<int> Handle(CreateBookingCommand request, CancellationToken ct)
     {
-        try
+        var worker = await dbContext.WorkerProfiles
+            .FirstOrDefaultAsync(w => w.Id == request.WorkerId, ct)
+            ?? throw new KeyNotFoundException("العاملة غير موجودة");
+
+        var commissionAmount = request.MonthlySalary * 0.1m;
+
+        var booking = new Booking
         {
-            var worker = await dbContext.WorkerProfiles
-                      .FirstOrDefaultAsync(w => w.Id == request.WorkerId, ct)
-                      ?? throw new KeyNotFoundException("العاملة غير موجودة");
+            HomeownerId = request.HomeownerId,
+            WorkerId = worker.UserId,
+            OriginalWorkerId = worker.Id,
+            ServiceType = request.ServiceType,
+            StartDate = request.StartDate,
+            MonthlySalary = request.MonthlySalary,
+            CommissionAmount = commissionAmount,
+            CommissionType = request.CommissionType,
+            Status = BookingStatus.Pending,
+            ReplacementCount = 0
+        };
 
-            var commissionAmount = request.MonthlySalary * 0.1m;
+        dbContext.Bookings.Add(booking);
 
-            var booking = new Booking
+        if (request.CommissionType == CommissionType.Subscription)
+        {
+            dbContext.Subscriptions.Add(new Domain.Entities.Subscription
             {
                 HomeownerId = request.HomeownerId,
-                WorkerId = worker.UserId,
-                OriginalWorkerId = worker.Id,
-                ServiceType = request.ServiceType,
+                PlanType = CommissionType.Subscription,
+                Amount = commissionAmount,
                 StartDate = request.StartDate,
-                MonthlySalary = request.MonthlySalary,
-                CommissionAmount = commissionAmount,
-                CommissionType = CommissionType.OneTime,
-                Status = BookingStatus.Pending,
-                ReplacementCount = 0
-            };
+                EndDate = request.StartDate.AddDays(30),
+                IsActive = true
+            });
+        }
 
-            dbContext.Bookings.Add(booking);
-            await dbContext.SaveChangesAsync(ct);
-            return booking.Id;
-        }
-        catch (Exception ex)
-        {
-            throw;
-        }
-      
+        await dbContext.SaveChangesAsync(ct);
+        return booking.Id;
     }
 }

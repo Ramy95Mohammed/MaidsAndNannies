@@ -97,7 +97,9 @@
     "ACCEPT": "قبول",
     "REJECT": "رفض",
     "START": "بدء العمل",
-    "COMPLETE": "إنهاء"
+    "COMPLETE": "إنهاء",
+     "REPLACEMENT": "الاستبدال",
+    "REPLACEMENT_HINT": "تم استخدام {{count}} من 2 استبدال"
   },
   "PAYMENT": {
     "UPLOAD_PROOF": "رفع إثبات الدفع",
@@ -194,5 +196,17 @@
     "TOAST_LOAD_PROFILE_ERROR": "فشل تحميل الملف الشخصي",
     "TOAST_SAVE_SUCCESS": "تم حفظ التعديلات",
     "TOAST_SAVE_ERROR": "فشل حفظ التعديلات"
-  }
+  },
+  "SUBSCRIPTION": {
+    "MY_SUBSCRIPTIONS": "اشتراكاتي",
+    "ALL_SUBSCRIPTIONS": "كل الاشتراكات",
+    "PLAN": "الخطة",
+    "AMOUNT": "المبلغ",
+    "START_DATE": "تاريخ البداية",
+    "END_DATE": "تاريخ الانتهاء",
+    "STATUS": "الحالة",
+    "RENEW": "تجديد",
+    "NO_SUBSCRIPTIONS": "لا توجد اشتراكات",
+    "DAYS_REMAINING": "باقي {{days}} يوم"
+}
 }

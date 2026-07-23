@@ -29,14 +29,8 @@ export class AppMenu {
     buildMenu() {
         const user = this.authService.currentUser();
         const isAr = this.langService.getCurrentLanguage() === 'ar';
-
-        this.model = [
-            {
-                label: isAr ? 'القائمة' : 'Menu',
-                items: [{ label: isAr ? 'لوحة التحكم' : 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
-            }
-        ];
-
+    
+        
         if (user?.role === 'Admin') {
             this.model.push({
                 label: isAr ? 'الإدارة' : 'Admin',
@@ -45,7 +39,8 @@ export class AppMenu {
                     { label: isAr ? 'الصاحبات' : 'Homeowners', icon: 'pi pi-fw pi-home', routerLink: ['/admin/homeowners'] },
                     { label: isAr ? 'العاملات' : 'Workers', icon: 'pi pi-fw pi-users', routerLink: ['/admin/workers'] },
                     { label: isAr ? 'الحجوزات' : 'Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/admin/bookings'] },
-                    { label: isAr ? 'المدفوعات' : 'Payments', icon: 'pi pi-fw pi-dollar', routerLink: ['/admin/payments'] }
+                    { label: isAr ? 'المدفوعات' : 'Payments', icon: 'pi pi-fw pi-dollar', routerLink: ['/admin/payments'] },
+                    { label: isAr ? 'الاشتراكات' : 'Subscriptions', icon: 'pi pi-fw pi-credit-card', routerLink: ['/admin/subscriptions'] },
                 ]
             });
         }
@@ -58,6 +53,7 @@ export class AppMenu {
                     { label: isAr ? 'ملفي الشخصي' : 'My Profile', icon: 'pi pi-fw pi-user', routerLink: ['/homeowner/profile'] },
                     { label: isAr ? 'بحث عن عاملة' : 'Search Workers', icon: 'pi pi-fw pi-search', routerLink: ['/homeowner/workers'] },
                     { label: isAr ? 'حجوزاتي' : 'My Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/homeowner/bookings'] },                    
+                    { label: isAr ? 'اشتراكاتي' : 'My Subscriptions', icon: 'pi pi-fw pi-credit-card', routerLink: ['/homeowner/subscriptions'] },
                 ]
             });
         }
@@ -72,20 +68,6 @@ export class AppMenu {
                 ]
             });
         }
-
-        // this.model.push(
-        //     {
-        //         label: isAr ? 'الإعدادات' : 'Settings',
-        //         items: [
-        //             { label: isAr ? 'الملف الشخصي' : 'Profile', icon: 'pi pi-fw pi-user', routerLink: ['/pages/profile'] }
-        //         ]
-        //     },
-        //     {
-        //         label: isAr ? 'المساعدة' : 'Help',
-        //         items: [
-        //             { label: 'Documentation', icon: 'pi pi-fw pi-book', routerLink: ['/documentation'] }
-        //         ]
-        //     }
-        // );
+        
     }
 }

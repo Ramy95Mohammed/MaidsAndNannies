@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -12,6 +12,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 import { GlobalizationSpecsService } from '@/core/services/globalization-specs.service';
 import { MessageService } from 'primeng/api';
+import { BookingService } from '@/core/services/booking.service';
 
 @Component({
     selector: 'app-worker-search',
@@ -94,6 +95,12 @@ import { MessageService } from 'primeng/api';
                 </div>
             </div>
 
+            <div *ngIf="isReplacementMode()" class="p-3 border-round mb-4 flex align-items-center gap-2">
+                <i class="pi pi-refresh text-orange-500"></i>
+                <span>اختر عاملة بديلة للحجز #{{ replacementBookingId() }}</span>
+                <p-button label="إلغاء" size="small" severity="secondary" (onClick)="router.navigate(['/homeowner/bookings', replacementBookingId()!])" class="mr-auto"></p-button>
+            </div>
+
             <div *ngIf="workers().length === 0 && !loading()" class="text-center py-8">
                 <i class="pi pi-search text-4xl text-muted-color mb-4"></i>
                 <p class="text-muted-color">لا توجد نتائج</p>
@@ -107,11 +114,18 @@ export class WorkerSearch implements OnInit {
     workers = signal<any[]>([]);
     loading = signal(false);
     statesOptions = signal<any[]>([]);
-    citiesOptions = signal<any[]>([]);
+    citiesOptions = signal<any[]>([]); 
+    isReplacementMode = signal(false);
+    replacementBookingId = signal<number | null>(null);
+
+
 
     private globalizationSpecsService = inject(GlobalizationSpecsService);
     private messageService = inject(MessageService);
     private translate = inject(TranslateService);
+    private route = inject(ActivatedRoute);
+    public router = inject(Router);
+    private bookingService = inject(BookingService);
 
     filters: any = {
         stateId: null,
@@ -136,6 +150,13 @@ export class WorkerSearch implements OnInit {
     ];
 
     ngOnInit() {
+         this.route.queryParams.subscribe(params => {
+        if (params['mode'] === 'replacement' && params['bookingId']) {
+            this.isReplacementMode.set(true);
+            this.replacementBookingId.set(Number(params['bookingId']));
+        }
+    });
+
         this.getStatesByCountryId();
         this.search();
     }
@@ -163,9 +184,21 @@ export class WorkerSearch implements OnInit {
         return labels[value] || 'غير محدد';
     }
 
+   
+
     viewWorker(id: number) {
-        window.location.href = '/homeowner/workers/' + id;
+    if (this.isReplacementMode()) {
+        // وضع استبدال: يطلب التأكيد ثم يستبدل
+        this.bookingService.requestReplacement(this.replacementBookingId()!, id).subscribe({
+            next: () => {
+                this.messageService.add({ severity: 'success', detail: 'تم طلب الاستبدال بنجاح' });
+                this.router.navigate(['/homeowner/bookings', this.replacementBookingId()!]);
+            }
+        });
+        return;
     }
+    window.location.href = '/homeowner/workers/' + id;
+}
 
     getStatesByCountryId() {
         this.statesOptions.set([]);

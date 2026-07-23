@@ -594,7 +594,10 @@ export class WorkerProfileComponent implements OnInit {
         this.form.patchValue({
             nationalityId: data.nationalityId,
             nationalIdNumber: data.nationalIdNumber,
-            birthDate: data.birthDate ? new Date(data.birthDate) : null,
+            birthDate:
+                data.birthDate && new Date(data.birthDate).getFullYear() !== 1
+                    ? new Date(data.birthDate)
+                    : null,
             whatsAppNumber: data.whatsAppNumber,
             passportNumber: data.passportNumber,
             passportExpiryDate: data.passportExpiryDate ? new Date(data.passportExpiryDate) : null,

@@ -97,7 +97,9 @@
     "ACCEPT": "Accept",
     "REJECT": "Reject",
     "START": "Start Work",
-    "COMPLETE": "Complete"
+    "COMPLETE": "Complete",
+     "REPLACEMENT": "Replacement",
+    "REPLACEMENT_HINT": "Two replacement used"
   },
   "PAYMENT": {
     "UPLOAD_PROOF": "Upload Payment Proof",
@@ -194,5 +196,17 @@
     "TOAST_LOAD_PROFILE_ERROR": "Failed to load profile",
     "TOAST_SAVE_SUCCESS": "Changes saved successfully",
     "TOAST_SAVE_ERROR": "Failed to save changes"
-  }
+  } ,
+  "SUBSCRIPTION": {
+   "MY_SUBSCRIPTIONS": "My Subscriptions",
+    "ALL_SUBSCRIPTIONS": "All Subscriptions",
+    "PLAN": "Plan",
+    "AMOUNT": "Amount",
+    "START_DATE": "Start Date",
+    "END_DATE": "End Date",
+    "STATUS": "Status",
+    "RENEW": "Renew",
+    "NO_SUBSCRIPTIONS": "No Subscriptions",
+    "DAYS_REMAINING": "{{days}} days remaining"
+}
 }

@@ -20,6 +20,7 @@ public class Subscription : Entity
     public DateTime? PaymentConfirmedAt { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string? TransactionReference { get; set; }
 
     public virtual ApplicationUser Homeowner { get; set; } = null!;
 }

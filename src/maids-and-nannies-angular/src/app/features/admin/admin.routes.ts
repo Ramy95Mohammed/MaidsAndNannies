@@ -6,5 +6,6 @@ export default <Routes>[
     { path: 'homeowners', loadComponent: () => import('./homeowners/admin-homeowners').then(m=>m.AdminHomeowners) },
     { path: 'workers', loadComponent: () => import('./workers/admin-workers').then(m=>m.AdminWorkers) },
     { path: 'payments', loadComponent: () => import('./payments/admin-payments').then(m=>m.AdminPayments) },
-    { path: 'bookings', loadComponent: () => import('./bookings/admin-bookings').then(m => m.AdminBookings) }
+    { path: 'bookings', loadComponent: () => import('./bookings/admin-bookings').then(m => m.AdminBookings) },
+    { path: 'subscriptions', loadComponent: () => import('./subscriptions/admin-subscriptions').then(m => m.AdminSubscriptions) }
 ];

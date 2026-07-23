@@ -7,6 +7,7 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
+import { SubscriptionService } from '@/core/services/subscription.service';
 
 @Component({
     selector: 'app-homeowner-dashboard',
@@ -63,6 +64,16 @@ import { ApiService } from '../../../core/services/api.service';
                 </p-card>
             </div>
 
+            <div class="col-span-12" *ngIf="subscriptionWarning()">
+                <p-card styleClass="border-1 border-orange-300 bg-orange-50">
+                    <div class="flex align-items-center gap-2">
+                        <i class="pi pi-exclamation-triangle text-orange-500"></i>
+                        <span>{{ subscriptionWarning() }}</span>
+                        <p-button routerLink="/homeowner/subscriptions" label="تجديد" size="small" class="mr-auto"></p-button>
+                    </div>
+                </p-card>
+            </div>
+
             <div class="col-span-12">
                 <p-card>
                     <ng-template #header>
@@ -99,11 +110,22 @@ import { ApiService } from '../../../core/services/api.service';
 export class HomeownerDashboard implements OnInit {
     authService = inject(AuthService);
     private apiService = inject(ApiService);
+    private subscriptionService = inject(SubscriptionService);
+
+    subscriptionWarning = signal<string | null>(null);
 
     bookings = signal<any[]>([]);
 
     ngOnInit() {
         this.loadBookings();
+
+        this.subscriptionService.getMySubscriptions().subscribe({
+    next: (data) => {
+        const active = data.find(s => s.isActive && s.daysRemaining > 0);
+        if (active && active.daysRemaining <= 7)
+            this.subscriptionWarning.set(`باقي ${active.daysRemaining} يوم على تجديد الاشتراك`);
+    }
+});
     }
 
     loadBookings() {
