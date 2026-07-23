@@ -1,90 +1,193 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
-import { DividerModule } from 'primeng/divider';
-import { ApiService } from '../../../core/services/api.service';
+import { ButtonModule } from 'primeng/button';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { FileUpload } from 'primeng/fileupload';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { TranslatePipe } from '@ngx-translate/core';
+import { BookingService, BookingDetailDto } from '../../../core/services/booking.service';
 
 @Component({
     selector: 'app-booking-detail',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule],
+    imports: [
+        CommonModule, ReactiveFormsModule, CardModule, TagModule,
+        ButtonModule, SelectModule, InputTextModule, FileUpload,
+        ToastModule, RouterModule, TranslatePipe
+    ],
+    providers: [MessageService],
     template: `
-        <div class="card">
-            <a routerLink="/homeowner/bookings" class="text-primary cursor-pointer"><i class="pi pi-arrow-left mr-2"></i>العودة للحجوزات</a>
+        <p-toast />
+        <div class="card" *ngIf="booking">
+            <h2>{{ 'BOOKING.MY_BOOKINGS' | translate }} #{{ booking.id }}</h2>
 
-            <div *ngIf="booking()" class="mt-4">
-                <div class="flex align-items-center justify-content-between mb-4">
-                    <h2 class="m-0">تفاصيل الحجز #{{ booking().id }}</h2>
-                    <p-tag [value]="getStatusLabel(booking().status)" [severity]="getStatusSeverity(booking().status)"></p-tag>
+            <div class="grid grid-cols-12 gap-4 mt-4">
+                <!-- Worker Info -->
+                <div class="col-span-12 md:col-span-6">
+                    <p-card header="{{ 'WORKER.REGISTER' | translate }}">
+                        <p>{{ booking.workerFullName || '—' }}</p>
+                        <p *ngIf="booking.workerPhone">{{ 'AUTH.PHONE' | translate }}: {{ booking.workerPhone }}</p>
+                        <p *ngIf="!booking.workerPhone" class="text-warning">سيظهر رقم العاملة بعد تأكيد الدفع</p>
+                        <p *ngIf="booking.workerWhatsApp">{{ 'COMMON.WHATSAPP_NUMBER' | translate }}: {{ booking.workerWhatsApp }}</p>
+                        <p *ngIf="booking.workerProfileImage">
+                            <img [src]="booking.workerProfileImage" alt="Worker" class="w-50 h-50 border-round" />
+                        </p>
+                    </p-card>
+                </div>  
+
+                <!-- Booking Status & Salary -->
+                <div class="col-span-12 md:col-span-6">
+                    <p-card header="{{ 'BOOKING.STATUS' | translate }}">
+                        <p-tag [value]="statusLabel(booking.status)" [severity]="statusSeverity(booking.status)"></p-tag>
+                        <p class="mt-2">{{ 'BOOKING.START_DATE' | translate }}: {{ booking.startDate | date:'shortDate' }}</p>
+                        <p>{{ 'BOOKING.MONTHLY_SALARY' | translate }}: {{ booking.monthlySalary | currency:'EGP':'symbol':'1.0-0' }}</p>
+                        <p>{{ 'BOOKING.COMMISSION' | translate }}: {{ booking.commissionAmount | currency:'EGP':'symbol':'1.0-0' }}</p>
+                        <p>{{ 'BOOKING.COMMISSION_TYPE' | translate }}: {{ booking.commissionType === 0 ? ('BOOKING.ONETIME' | translate) : ('BOOKING.SUBSCRIPTION' | translate) }}</p>
+                    </p-card>
                 </div>
 
-                <p-divider></p-divider>
+                <!-- Payment Proof Upload (only when WaitingPayment) -->
+                <div class="col-span-12" *ngIf="booking.status === 2">
+                    <p-card header="{{ 'PAYMENT.UPLOAD_PROOF' | translate }}">
+                        <form [formGroup]="paymentForm" class="grid grid-cols-12 gap-4">
+                            <div class="col-span-12 md:col-span-4">
+                                <label class="block font-bold mb-1">{{ 'PAYMENT.METHOD' | translate }}</label>
+                                <p-select
+                                    formControlName="paymentMethod"
+                                    [options]="paymentMethods"
+                                    optionValue="value"
+                                    optionLabel="label"
+                                    [placeholder]="'PAYMENT.METHOD' | translate"
+                                    class="w-full">
+                                </p-select>
+                            </div>
+                            <div class="col-span-12 md:col-span-4">
+                                <label class="block font-bold mb-1">{{ 'PAYMENT.AMOUNT' | translate }}</label>
+                                <input pInputText formControlName="commissionAmount" type="number" class="w-full" />
+                            </div>
+                            <div class="col-span-12 md:col-span-4">
+                                <label class="block font-bold mb-1">{{ 'PAYMENT.TRANSACTION_REF' | translate }}</label>
+                                <input pInputText formControlName="transactionReference" class="w-full" />
+                            </div>
+                            <div class="col-span-12">
+                                <label class="block font-bold mb-1">{{ 'PAYMENT.UPLOAD_PROOF' | translate }}</label>
+                                <p-fileupload
+                                    name="proofImage"
+                                    mode="basic"
+                                    accept="image/*"
+                                    maxFileSize="5000000"
+                                    [auto]="false"
+                                    chooseLabel="اختر صورة الإيصال"
+                                    (onSelect)="onProofSelected($event)">
+                                </p-fileupload>
+                                <span *ngIf="proofFileName" class="text-sm text-muted-color">{{ proofFileName }}</span>
+                            </div>
+                            <div class="col-span-12 text-center">
+                                <p-button
+                                    [label]="'PAYMENT.UPLOAD_PROOF' | translate"
+                                    icon="pi pi-upload"
+                                    (onClick)="submitPaymentProof()"
+                                    [loading]="isSubmitting"
+                                    [disabled]="paymentForm.invalid || !proofFile">
+                                </p-button>
+                            </div>
+                        </form>
+                    </p-card>
+                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h3>معلومات الحجز</h3>
-                        <div class="mb-2"><strong>صاحبة المنزل:</strong> {{ booking().homeowner?.fullName }}</div>
-                        <div class="mb-2"><strong>العاملة:</strong> {{ booking().worker?.fullName }}</div>
-                        <div class="mb-2"><strong>التخصص:</strong> {{ getSpecLabel(booking().serviceType) }}</div>
-                        <div class="mb-2"><strong>تاريخ البداية:</strong> {{ booking().startDate | date:'longDate' }}</div>
-                        <div class="mb-2"><strong>تاريخ النهاية:</strong> {{ booking().endDate ? (booking().endDate | date:'longDate') : '---' }}</div>
-                        <div class="mb-2"><strong>المرتب الشهري:</strong> {{ booking().monthlySalary | currency:'EGP':'symbol':'1.0-0' }}</div>
-                        <div class="mb-2"><strong>العمولة:</strong> {{ booking().commissionAmount | currency:'EGP':'symbol':'1.0-0' }}</div>
-                    </div>
-
-                    <div>
-                        <h3>الدفع</h3>
-                        <div class="mb-2"><strong>نوع العمولة:</strong> {{ booking().commissionType === 0 ? 'عمولة من أول شهر' : 'اشتراك شهري' }}</div>
-                        <div class="mb-2"><strong>طريقة الدفع:</strong> {{ getPaymentMethodLabel(booking().paymentMethod) }}</div>
-                        <div class="mb-2"><strong>حالة الدفع:</strong> {{ booking().isPaid ? 'مدفوع' : 'لم يتم الدفع' }}</div>
-                    </div>
+                                <!-- رسالة تأكيد الاستلام - المهمة دي -->
+                <div class="col-span-12" *ngIf="booking.status === 8">
+                    <p-card>
+                        <div class="text-center py-4">
+                            <i class="pi pi-check-circle text-4xl text-green-500 mb-3"></i>
+                            <p class="text-lg font-bold">تم استلام إثبات الدفع</p>
+                            <p class="text-muted-color">بانتظار مراجعة الإدارة وتأكيد الدفع</p>
+                        </div>
+                    </p-card>
                 </div>
             </div>
         </div>
     `
 })
 export class BookingDetail implements OnInit {
-    private apiService = inject(ApiService);
     private route = inject(ActivatedRoute);
+    private fb = inject(FormBuilder);
+    private bookingService = inject(BookingService);
+    private messageService = inject(MessageService);
 
-    booking = signal<any>(null);
+    booking: BookingDetailDto | null = null;
+    isSubmitting = false;
+    proofFile: File | null = null;
+    proofFileName = '';
+
+    paymentMethods = [
+        { label: 'فودافون كاش', value: 0 },
+        { label: 'انستاباي', value: 1 }
+    ];
+
+    paymentForm: FormGroup = this.fb.group({
+        paymentMethod: [null, Validators.required],
+        amount: [0, [Validators.required, Validators.min(1)]],
+        commissionAmount: [0, [Validators.required, Validators.min(1)]],
+        transactionReference: ['']
+    });
 
     ngOnInit() {
-        const id = this.route.snapshot.paramMap.get('id');
-        if (id) {
-            this.apiService.getBooking(id).subscribe({
-                next: (data) => this.booking.set(data),
-                error: () => {}
-            });
+        const id = Number(this.route.snapshot.paramMap.get('id'));
+        this.loadBooking(id);
+    }
+
+    private loadBooking(id: number) {
+        this.bookingService.getBookingById(id).subscribe({
+            next: (data) => {
+                this.booking = data;
+                this.paymentForm.patchValue({ amount: data.monthlySalary , commissionAmount:data.commissionAmount });
+            }
+        });
+    }
+
+    onProofSelected(event: any) {
+        const file = event.currentFiles?.[0];
+        if (file) {
+            this.proofFile = file;
+            this.proofFileName = file.name;
         }
     }
 
-    getStatusLabel(status: number): string {
-        const labels: { [k: number]: string } = {
-            0: 'في الانتظار', 1: 'مقبول', 2: 'قيد العمل',
-            3: 'مكتمل', 4: 'بانتظار الدفع', 5: 'مدفوع', 6: 'ملغي'
-        };
-        return labels[status] || 'غير معروف';
+    submitPaymentProof() {
+        if (this.paymentForm.invalid || !this.proofFile || !this.booking) return;
+
+        this.isSubmitting = true;
+        const fd = new FormData();
+        fd.append('PaymentMethod', this.paymentForm.get('paymentMethod')?.value);
+        fd.append('Amount', this.paymentForm.get('amount')?.value);
+        fd.append('CommissionAmount', this.paymentForm.get('commissionAmount')?.value);
+        fd.append('TransactionReference', this.paymentForm.get('transactionReference')?.value || '');
+        fd.append('proofImage', this.proofFile);
+
+        this.bookingService.uploadPaymentProof(this.booking.id, fd).subscribe({
+            next: () => {
+                this.messageService.add({ severity: 'success', detail: 'تم رفع إثبات الدفع بنجاح' });
+                this.isSubmitting = false;
+                this.loadBooking(this.booking!.id);
+            },
+            error: () => {
+                this.messageService.add({ severity: 'error', detail: 'فشل رفع إثبات الدفع' });
+                this.isSubmitting = false;
+            }
+        });
     }
 
-    getStatusSeverity(status: number): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {
-        const s: { [k: number]: any } = {
-            0: 'warn', 1: 'info', 2: 'info', 3: 'success', 4: 'warn', 5: 'success', 6: 'danger'
-        };
-        return s[status] || 'secondary';
+    statusLabel(s: number): string {
+        return ['في الانتظار','تم تأكيد العاملة','بانتظار الدفع','مدفوع','نشط','مكتمل','ملغي','طلب استبدال','قيد المراجعة'][s]||'—';
     }
-
-    getSpecLabel(value: number): string {
-        const labels: { [k: number]: string } = { 0: 'تنظيف', 1: 'طبخ', 2: 'رعاية أطفال', 3: 'رعاية مسنين', 4: 'عمل منزلي' };
-        return labels[value] || 'غير محدد';
-    }
-
-    getPaymentMethodLabel(method: number | null): string {
-        if (method === null || method === undefined) return 'لم يتم الدفع';
-        return method === 0 ? 'فودافون كاش' : 'انستاباي';
+    statusSeverity(s: number): any {
+        return ['warn','info','warn','success','info','success','danger','warn','info'][s]||'secondary';
     }
 }

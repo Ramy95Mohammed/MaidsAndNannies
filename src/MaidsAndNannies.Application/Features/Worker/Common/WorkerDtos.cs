@@ -49,6 +49,7 @@ public sealed record WorkerDetailDto(
     bool IsAvailable,
     string? ProfileImageUrl,
     string? Languages,
+    decimal Age,
     IReadOnlyList<ReviewSummaryDto> Reviews);
 
 public sealed record WorkerDocumentDto(DocumentType Type, string? DocumentImageUrl, VerificationStatus VerificationStatus);
@@ -62,6 +63,7 @@ public sealed record WorkerProfileDto(
     string? WhatsAppNumber,
     int NationalityId,
     string NationalIdNumber,
+    DateTime BirthDate,
     string? PassportNumber,
     DateTime? PassportExpiryDate,
     string? PassportCountry,

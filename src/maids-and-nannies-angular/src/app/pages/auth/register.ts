@@ -276,7 +276,7 @@ export class Register implements OnInit {
 
         fd.append('selfieImage', this.selfieImageFile);
 
-        this.authService.registerHomeowner(this.formData).subscribe({
+        this.authService.registerWorker(fd).subscribe({
             next: (response) => {
                 this.isLoading = false;
                 this.successMessage = response.message;

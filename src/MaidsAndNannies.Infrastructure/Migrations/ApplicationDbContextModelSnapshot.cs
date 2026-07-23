@@ -30,6 +30,10 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
                     b.Property<decimal>("CommissionAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -55,6 +59,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Property<decimal>("MonthlySalary")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("OriginalWorkerId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("datetime2");
 
@@ -71,6 +78,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Property<string>("PaymentProofImageUrl")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("ReplacementCount")
+                        .HasColumnType("int");
 
                     b.Property<int>("ServiceType")
                         .HasColumnType("int");
@@ -92,9 +102,11 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("HomeownerId");
 
+                    b.HasIndex("OriginalWorkerId");
+
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("Bookings");
+                    b.ToTable("Bookings", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.HomeownerProfile", b =>
@@ -181,7 +193,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("HomeownerProfiles");
+                    b.ToTable("HomeownerProfiles", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", b =>
@@ -316,7 +328,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Notification", b =>
@@ -358,7 +370,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.PaymentProof", b =>
@@ -374,6 +386,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.Property<int>("BookingId")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("CommissionAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("ConfirmedAt")
                         .HasColumnType("datetime2");
@@ -417,7 +432,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("HomeownerId");
 
-                    b.ToTable("PaymentProofs");
+                    b.ToTable("PaymentProofs", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Review", b =>
@@ -463,7 +478,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("ReviewerId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Subscription", b =>
@@ -517,7 +532,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("HomeownerId");
 
-                    b.ToTable("Subscriptions");
+                    b.ToTable("Subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.WorkerDocument", b =>
@@ -559,7 +574,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("WorkerDocuments");
+                    b.ToTable("WorkerDocuments", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.WorkerProfile", b =>
@@ -579,6 +594,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Property<string>("Bio")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("BirthDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("CityId")
                         .HasColumnType("int");
@@ -673,7 +691,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("WorkerProfiles");
+                    b.ToTable("WorkerProfiles", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.WorkerSpecializationSpec", b =>
@@ -697,7 +715,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerSpecializationSpecs");
+                    b.ToTable("WorkerSpecializationSpecs", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -861,6 +879,10 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("MaidsAndNannies.Domain.Entities.WorkerProfile", "OriginalWorker")
+                        .WithMany("Bookings")
+                        .HasForeignKey("OriginalWorkerId");
+
                     b.HasOne("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", "Worker")
                         .WithMany("BookingsAsWorker")
                         .HasForeignKey("WorkerId")
@@ -868,6 +890,8 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Homeowner");
+
+                    b.Navigation("OriginalWorker");
 
                     b.Navigation("Worker");
                 });
@@ -1086,6 +1110,8 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.WorkerProfile", b =>
                 {
+                    b.Navigation("Bookings");
+
                     b.Navigation("Documents");
 
                     b.Navigation("WorkerSpecializationSpecs");

@@ -57,7 +57,9 @@
     "MONTHLY_RATE": "Monthly Rate",
     "HOURLY_RATE": "Hourly Rate",
     "CURRENCY": "Currency",
-    "LANGUAGES": "Languages"
+    "LANGUAGES": "Languages",
+    "MAXIMUM_MONTHLY_SALARY":"Maximum monthly salary",
+    "BIRTHDATE":"Birth of date"
   },
   "SPECIALIZATIONS": {
     "CLEANING": "Cleaning",
@@ -143,7 +145,8 @@
     "WHATSAPP_NUMBER": "WhatsApp Number",
     "EX_CAIRO":"Ex.cairo",
     "EX_FIFTHSETTLEMENT":"Ex.Fifth Settlement",
-    "EX_90ThSTREET":"Ex.90th Street"
+    "EX_90ThSTREET":"Ex.90th Street",
+    "CITY": "City"
   },
   "LANGUAGE": {
     "AR": "العربية",

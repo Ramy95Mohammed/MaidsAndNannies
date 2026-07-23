@@ -13,6 +13,7 @@ public class WorkerProfile : Entity
     public int NationalityId { get; set; }//
     public string NationalIdNumber { get; set; } = string.Empty;
     public string WhatsAppNumber { get; set; } = string.Empty;
+    public DateTime BirthDate { get; set; }
 
     // Passport (optional for foreign workers)
     public string? PassportNumber { get; set; }
@@ -56,6 +57,7 @@ public class WorkerProfile : Entity
 
     public virtual ApplicationUser User { get; set; } = null!;
     public virtual ICollection<WorkerDocument> Documents { get; set; } = new List<WorkerDocument>();
+    public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }
 
 

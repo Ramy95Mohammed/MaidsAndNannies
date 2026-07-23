@@ -57,7 +57,9 @@
     "MONTHLY_RATE": "الأجر الشهري",
     "HOURLY_RATE": "الأجر بالساعة",
     "CURRENCY": "العملة",
-    "LANGUAGES": "اللغات"
+    "LANGUAGES": "اللغات",
+    "MAXIMUM_MONTHLY_SALARY":"أقصي أجر شهري",
+    "BIRTHDATE":"تاريخ الميلاد"
   },
   "SPECIALIZATIONS": {
     "CLEANING": "تنظيف",
@@ -143,7 +145,8 @@
      "WHATSAPP_NUMBER": "رقم الواتساب",
      "EX_CAIRO":"علي سبيل المثال . القاهرة",
      "EX_FIFTHSETTLEMENT":"علي سبيل المثال . التجمع الخامس",
-     "EX_90ThSTREET":"علي سبيل المثال . شارع التسعين"
+     "EX_90ThSTREET":"علي سبيل المثال . شارع التسعين",
+     "CITY": "المدينة"
   },
   "LANGUAGE": {
     "AR": "العربية",

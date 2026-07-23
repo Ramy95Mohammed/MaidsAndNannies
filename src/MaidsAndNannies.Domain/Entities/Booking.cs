@@ -28,7 +28,13 @@ public class Booking : Entity
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
+    public int ReplacementCount { get; set; }
+    public int? OriginalWorkerId { get; set; }
+    public string? AdminNotes { get; set; }
+
     public virtual ApplicationUser Homeowner { get; set; } = null!;
     public virtual ApplicationUser Worker { get; set; } = null!;
-    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public virtual WorkerProfile OriginalWorker { get; set; } = null!;
+    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();    
+
 }

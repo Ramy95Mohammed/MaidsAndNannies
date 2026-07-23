@@ -33,6 +33,7 @@ public sealed class GetMyWorkerProfileQueryHandler(
             profile.WhatsAppNumber,
             profile.NationalityId,
             profile.NationalIdNumber,
+            profile.BirthDate,
             profile.PassportNumber,
             profile.PassportExpiryDate,
             profile.PassportCountry,

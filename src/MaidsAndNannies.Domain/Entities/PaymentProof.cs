@@ -11,6 +11,7 @@ public class PaymentProof : Entity
 
     public PaymentMethod PaymentMethod { get; set; }
     public decimal Amount { get; set; }
+    public decimal CommissionAmount { get; set; }
     public string ProofImageUrl { get; set; } = string.Empty;
     public string? TransactionReference { get; set; }
 

@@ -28,3 +28,24 @@ public sealed record PendingHomeownerDto(
     string Address,
     VerificationStatus VerificationStatus,
     DateTime CreatedAt);
+
+public sealed record AdminDashboardDto(
+    int TotalUsers,
+    int TotalHomeowners,
+    int TotalWorkers,
+    int TotalBookings,
+    int ActiveBookings,
+    int PendingVerifications,
+    int PendingPayments);
+
+public sealed record PendingPaymentDto(
+    int Id,
+    int BookingId,
+    string HomeownerName,
+    decimal Amount,
+    decimal CommissionAmount,
+    PaymentMethod PaymentMethod,
+    string? TransactionReference,
+    string? ProofImageUrl,
+    bool IsConfirmed,
+    DateTime CreatedAt);

@@ -23,6 +23,7 @@ public sealed class UpdateWorkerProfileCommandHandler(IApplicationDbContext dbCo
 
         workerProfile.NationalityId = request.NationalityId ?? workerProfile.NationalityId;
         workerProfile.NationalIdNumber = request.NationalIdNumber ?? workerProfile.NationalIdNumber;
+        workerProfile.BirthDate = request.BirthDate;
         workerProfile.WhatsAppNumber = request.WhatsAppNumber ?? workerProfile.WhatsAppNumber;
         workerProfile.PassportNumber = request.PassportNumber ?? workerProfile.PassportNumber;
         workerProfile.PassportExpiryDate = request.PassportExpiryDate ?? workerProfile.PassportExpiryDate;

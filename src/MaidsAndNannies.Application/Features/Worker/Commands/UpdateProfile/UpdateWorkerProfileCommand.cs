@@ -8,6 +8,7 @@ public sealed record UpdateWorkerProfileCommand(
     string UserId,
     int? NationalityId,
     string? NationalIdNumber,
+    DateTime BirthDate,
     string? WhatsAppNumber,
     string? PassportNumber,
     DateTime? PassportExpiryDate,

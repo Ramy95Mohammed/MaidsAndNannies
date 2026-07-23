@@ -21,17 +21,20 @@ namespace MaidsAndNannies.WebApi.Controllers
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetWorkers(
-            [FromQuery] int? cityId,
-            [FromQuery] Specialization? specialization,
-            [FromQuery] bool? isLiveIn,
-            [FromQuery] decimal? maxRate,
-            [FromQuery] int? nationalityId,
-            [FromQuery] string? search,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
+    [FromQuery] int? stateId,
+    [FromQuery] int? cityId,
+    [FromQuery] Specialization? specialization,
+    [FromQuery] bool? isLiveIn,
+    [FromQuery] decimal? maxRate,
+    [FromQuery] int? nationalityId,
+    [FromQuery] string? search,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
         {
             var result = await sender.Send(new GetWorkersQuery(
-                cityId, specialization, isLiveIn, maxRate, nationalityId, search, page, pageSize));
+                stateId,
+                cityId, specialization, isLiveIn, maxRate, nationalityId, search, page, pageSize,
+                currentUser.UserId, currentUser.Role));
             return Ok(result);
         }
 
@@ -39,7 +42,7 @@ namespace MaidsAndNannies.WebApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetWorker(int id)
         {
-            var worker = await sender.Send(new GetWorkerByIdQuery(id));
+            var worker = await sender.Send(new GetWorkerByIdQuery(id, currentUser.UserId, currentUser.Role));
             return Ok(worker);
         }
 
@@ -88,7 +91,7 @@ namespace MaidsAndNannies.WebApi.Controllers
 
             var command = new UpdateWorkerProfileCommand(
                 currentUser.UserId,
-                dto.NationalityId, dto.NationalIdNumber, dto.WhatsAppNumber,
+                dto.NationalityId, dto.NationalIdNumber, dto.BirthDate, dto.WhatsAppNumber,
                 dto.PassportNumber, dto.PassportExpiryDate, dto.PassportCountry,
                 dto.CountryId, dto.StateId, dto.CityId, dto.Address,
                 dto.Bio, dto.ExperienceYears, dto.Languages, dto.PreviousEmployer,
@@ -116,6 +119,7 @@ namespace MaidsAndNannies.WebApi.Controllers
     {
         public int? NationalityId { get; set; }
         public string? NationalIdNumber { get; set; }
+        public DateTime BirthDate { get; set; }
         public string? WhatsAppNumber { get; set; }
         public string? PassportNumber { get; set; }
         public DateTime? PassportExpiryDate { get; set; }

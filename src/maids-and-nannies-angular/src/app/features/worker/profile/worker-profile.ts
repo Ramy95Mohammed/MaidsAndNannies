@@ -122,6 +122,12 @@ const CURRENCY_KEYS = [
                             <label class="font-bold">{{ 'WORKER_PROFILE.WHATSAPP_NUMBER' | translate }}</label>
                             <input pInputText formControlName="whatsAppNumber" class="w-full" [placeholder]="'WORKER_PROFILE.WHATSAPP_PLACEHOLDER' | translate" />
                         </div>
+
+                        <div class="flex flex-col gap-2">
+                            <label class="font-bold">{{ 'WORKER.BIRTHDATE' | translate }}</label>
+                            <p-datepicker formControlName="birthDate" dateFormat="dd/mm/yy" inputStyleClass="w-full" [showIcon]="true" class="w-full"></p-datepicker>
+                        </div>
+                        
                     </div>
 
                     <div class="flex flex-col gap-2">
@@ -478,6 +484,7 @@ export class WorkerProfileComponent implements OnInit {
         whatsAppNumber: ['' ,  Validators.required],
         passportNumber: [null],
         passportExpiryDate: [null],
+        birthDate: [null, Validators.required],
         passportCountry: [null],
         email:[{value:null , disabled:true}],
         countryId: [null],
@@ -587,6 +594,7 @@ export class WorkerProfileComponent implements OnInit {
         this.form.patchValue({
             nationalityId: data.nationalityId,
             nationalIdNumber: data.nationalIdNumber,
+            birthDate: data.birthDate ? new Date(data.birthDate) : null,
             whatsAppNumber: data.whatsAppNumber,
             passportNumber: data.passportNumber,
             passportExpiryDate: data.passportExpiryDate ? new Date(data.passportExpiryDate) : null,
@@ -668,6 +676,7 @@ export class WorkerProfileComponent implements OnInit {
             whatsAppNumber: value.whatsAppNumber,
             passportNumber: value.passportNumber,
             passportExpiryDate: this.toDateOnlyString(value.passportExpiryDate),
+            birthDate: this.toDateOnlyString(value.birthDate),
             passportCountry: value.passportCountry,
            
             countryId: value.countryId,

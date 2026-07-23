@@ -8,31 +8,46 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { RatingModule } from 'primeng/rating';
 import { ChipModule } from 'primeng/chip';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
+import { GlobalizationSpecsService } from '@/core/services/globalization-specs.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
     selector: 'app-worker-search',
     standalone: true,
-    imports: [
-        CommonModule, FormsModule, RouterModule, CardModule, ButtonModule,
-        InputTextModule, SelectModule, RatingModule, ChipModule, TranslatePipe
-    ],
+    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, RatingModule, ChipModule, TranslatePipe],
     template: `
         <div class="card">
             <h2>البحث عن عاملة</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div>
-                    <label class="block font-bold mb-2">المدينة</label>
-                    <input pInputText [(ngModel)]="filters.city" placeholder="القاهرة" class="w-full" (input)="search()" />
+                    <label class="block font-bold mb-2">{{ 'COMMON.STATE' | translate }}</label>
+                    <p-select
+                        [(ngModel)]="filters.stateId"
+                        [options]="statesOptions()"
+                        [filter]="true"
+                        [showClear]="true"
+                        optionValue="id"
+                        optionLabel="name"
+                        (onChange)="onStateChange($event.value); search()"
+                        [placeholder]="'WORKER_PROFILE.STATE_PLACEHOLDER' | translate"
+                        class="w-full"
+                    ></p-select>
+                </div>
+
+                <div>
+                    <label class="block font-bold mb-2">{{ 'HOMEOWNER.CITY' | translate }}</label>
+                    <p-select [(ngModel)]="filters.cityId" [showClear]="true" [options]="citiesOptions()" [filter]="true" optionValue="id" optionLabel="name" (onChange)="search()" [placeholder]="'WORKER_PROFILE.CITY_PLACEHOLDER' | translate" class="w-full"></p-select>
+                </div>
+
+                <div>
+                    <label class="block font-bold mb-2">{{ 'WORKER_PROFILE.SPECIALIZATIONS_TITLE' | translate }}</label>
+                    <p-select [(ngModel)]="filters.specialization" [showClear]="true" [options]="specializations" optionLabel="label" optionValue="value" placeholder="الكل" (onChange)="search()" styleClass="w-full"></p-select>
                 </div>
                 <div>
-                    <label class="block font-bold mb-2">التخصص</label>
-                    <p-select [(ngModel)]="filters.specialization" [options]="specializations" optionLabel="label" optionValue="value" placeholder="الكل" (onChange)="search()" styleClass="w-full"></p-select>
-                </div>
-                <div>
-                    <label class="block font-bold mb-2">مقيمة / يومية</label>
+                    <label class="block font-bold mb-2">{{ 'WORKER.IS_LIVEIN' | translate }}</label>
                     <p-select [(ngModel)]="filters.isLiveIn" [options]="liveInOptions" optionLabel="label" optionValue="value" placeholder="الكل" (onChange)="search()" styleClass="w-full"></p-select>
                 </div>
                 <div>
@@ -66,7 +81,7 @@ import { ApiService } from '../../../core/services/api.service';
 
                     <div class="flex align-items-center justify-content-between">
                         <div>
-                            <span class="text-2xl font-bold text-primary">{{ worker.monthlyRate | currency:'EGP':'symbol':'1.0-0' }}</span>
+                            <span class="text-2xl font-bold text-primary">{{ worker.monthlyRate | currency: 'EGP' : 'symbol' : '1.0-0' }}</span>
                             <span class="text-muted-color text-sm"> / شهرياً</span>
                         </div>
                         <p-button label="حجز" icon="pi pi-calendar" [rounded]="true" (onClick)="$event.stopPropagation(); viewWorker(worker.id)"></p-button>
@@ -91,9 +106,16 @@ export class WorkerSearch implements OnInit {
 
     workers = signal<any[]>([]);
     loading = signal(false);
+    statesOptions = signal<any[]>([]);
+    citiesOptions = signal<any[]>([]);
+
+    private globalizationSpecsService = inject(GlobalizationSpecsService);
+    private messageService = inject(MessageService);
+    private translate = inject(TranslateService);
 
     filters: any = {
-        city: '',
+        stateId: null,
+        cityId: null,
         specialization: null,
         isLiveIn: null,
         maxRate: null
@@ -114,20 +136,22 @@ export class WorkerSearch implements OnInit {
     ];
 
     ngOnInit() {
+        this.getStatesByCountryId();
         this.search();
     }
 
     search() {
         this.loading.set(true);
         const params: any = {};
-        if (this.filters.city) params.city = this.filters.city;
+        if (this.filters.stateId) params.stateId = this.filters.stateId;
+        if (this.filters.cityId) params.cityId = this.filters.cityId;
         if (this.filters.specialization !== null) params.specialization = this.filters.specialization;
         if (this.filters.isLiveIn !== null) params.isLiveIn = this.filters.isLiveIn;
         if (this.filters.maxRate) params.maxRate = this.filters.maxRate;
 
         this.apiService.getWorkers(params).subscribe({
             next: (data) => {
-                this.workers.set(data.Data || []);
+                this.workers.set(data.data || []);
                 this.loading.set(false);
             },
             error: () => this.loading.set(false)
@@ -141,5 +165,32 @@ export class WorkerSearch implements OnInit {
 
     viewWorker(id: number) {
         window.location.href = '/homeowner/workers/' + id;
+    }
+
+    getStatesByCountryId() {
+        this.statesOptions.set([]);
+        this.globalizationSpecsService.getStatesByCountryId(65).subscribe({
+            next: (data: any[]) => this.statesOptions.set(data),
+            error: () =>
+                this.messageService.add({
+                    severity: 'error',
+                    summary: this.translate.instant('COMMON.ERROR'),
+                    detail: this.translate.instant('WORKER_PROFILE.TOAST_LOAD_STATES_ERROR')
+                })
+        });
+    }
+
+    onStateChange(stateId: number, resetCity: boolean = true) {
+        this.citiesOptions.set([]);
+        if (!stateId) return;
+        this.globalizationSpecsService.getCitiesByStateId(stateId).subscribe({
+            next: (data: any[]) => this.citiesOptions.set(data),
+            error: () =>
+                this.messageService.add({
+                    severity: 'error',
+                    summary: this.translate.instant('COMMON.ERROR'),
+                    detail: this.translate.instant('WORKER_PROFILE.TOAST_LOAD_CITIES_ERROR')
+                })
+        });
     }
 }

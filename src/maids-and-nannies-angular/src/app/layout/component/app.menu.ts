@@ -44,6 +44,7 @@ export class AppMenu {
                     { label: isAr ? 'لوحة التحكم' : 'Dashboard', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/admin/dashboard'] },
                     { label: isAr ? 'الصاحبات' : 'Homeowners', icon: 'pi pi-fw pi-home', routerLink: ['/admin/homeowners'] },
                     { label: isAr ? 'العاملات' : 'Workers', icon: 'pi pi-fw pi-users', routerLink: ['/admin/workers'] },
+                    { label: isAr ? 'الحجوزات' : 'Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/admin/bookings'] },
                     { label: isAr ? 'المدفوعات' : 'Payments', icon: 'pi pi-fw pi-dollar', routerLink: ['/admin/payments'] }
                 ]
             });
@@ -54,9 +55,9 @@ export class AppMenu {
                 label: isAr ? 'صاحبة المنزل' : 'Homeowner',
                 items: [
                     { label: isAr ? 'لوحة التحكم' : 'Dashboard', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/homeowner/dashboard'] },
-                    { label: isAr ? 'بحث عن عاملة' : 'Search Workers', icon: 'pi pi-fw pi-search', routerLink: ['/homeowner/workers'] },
-                    { label: isAr ? 'حجوزاتي' : 'My Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/homeowner/bookings'] },
                     { label: isAr ? 'ملفي الشخصي' : 'My Profile', icon: 'pi pi-fw pi-user', routerLink: ['/homeowner/profile'] },
+                    { label: isAr ? 'بحث عن عاملة' : 'Search Workers', icon: 'pi pi-fw pi-search', routerLink: ['/homeowner/workers'] },
+                    { label: isAr ? 'حجوزاتي' : 'My Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/homeowner/bookings'] },                    
                 ]
             });
         }

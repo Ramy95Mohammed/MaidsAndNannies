@@ -113,16 +113,16 @@ export class HomeownerDashboard implements OnInit {
     }
 
     getStatusLabel(status: number): string {
-        const labels: { [k: number]: string } = {
-            0: 'في الانتظار', 1: 'مقبول', 2: 'قيد العمل',
-            3: 'مكتمل', 4: 'بانتظار الدفع', 5: 'مدفوع', 6: 'ملغي'
+       const labels: { [k: number]: string } = {
+            0: 'في الانتظار', 1: 'تم تأكيد العاملة', 2: 'بانتظار الدفع',
+            3: 'مدفوع', 4: 'نشط', 5: 'مكتمل', 6: 'ملغي', 7: 'طلب استبدال' , 8:'قيد المراجعة'
         };
         return labels[status] || 'غير معروف';
     }
 
     getStatusSeverity(status: number): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {
-        const s: { [k: number]: any } = {
-            0: 'warn', 1: 'info', 2: 'info', 3: 'success', 4: 'warn', 5: 'success', 6: 'danger'
+         const s: { [k: number]: any } = {
+            0: 'warn', 1: 'info', 2: 'warn', 3: 'success', 4: 'info', 5: 'success', 6: 'danger', 7: 'warn',8:'info'
         };
         return s[status] || 'secondary';
     }

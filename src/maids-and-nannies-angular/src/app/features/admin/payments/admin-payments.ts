@@ -25,6 +25,7 @@ import { ApiService } from '../../../core/services/api.service';
                         <th>رقم الحجز</th>
                         <th>الصاحبة</th>
                         <th>المبلغ</th>
+                        <th>العمولة</th>
                         <th>طريقة الدفع</th>
                         <th>رقم المعاملة</th>
                         <th>الحالة</th>
@@ -36,6 +37,7 @@ import { ApiService } from '../../../core/services/api.service';
                         <td>#{{ payment.bookingId }}</td>
                         <td>{{ payment.homeownerName }}</td>
                         <td>{{ payment.amount | currency:'EGP':'symbol':'1.0-0' }}</td>
+                        <td>{{ payment.commissionAmount | currency:'EGP':'symbol':'1.0-0' }}</td>
                         <td>{{ getPaymentMethodName(payment.paymentMethod) }}</td>
                         <td>{{ payment.transactionReference }}</td>
                         <td>
@@ -66,8 +68,9 @@ export class AdminPayments implements OnInit {
     }
 
     loadPayments() {
-        this.apiService.getPendingPayments().subscribe({
-            next: (data) => this.payments.set(data.Data || []),
+        this.apiService.getPendingPayments().subscribe({            
+            next: (data) => {                
+                this.payments.set(data || [])},
             error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل المدفوعات' })
         });
     }

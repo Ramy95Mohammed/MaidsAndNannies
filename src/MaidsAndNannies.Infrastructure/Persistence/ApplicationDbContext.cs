@@ -132,6 +132,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             b.Property(bo => bo.CommissionAmount).HasColumnType("decimal(18,2)");
             b.Property(bo => bo.PaymentProofImageUrl).HasMaxLength(500);
             b.Property(bo => bo.PaymentConfirmedBy).HasMaxLength(450);
+            b.Property(bo => bo.AdminNotes).HasMaxLength(2000);
         });
 
         // Review configuration
