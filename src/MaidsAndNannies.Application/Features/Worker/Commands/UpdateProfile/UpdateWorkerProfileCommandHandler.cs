@@ -42,8 +42,9 @@ public sealed class UpdateWorkerProfileCommandHandler(IApplicationDbContext dbCo
         workerProfile.IsAvailable = request.IsAvailable ?? workerProfile.IsAvailable;
 
         workerProfile.HourlyRate = request.HourlyRate ?? workerProfile.HourlyRate;
+        workerProfile.DailyRate = request.DailyRate ?? workerProfile.DailyRate;
         workerProfile.MonthlyRate = request.MonthlyRate ?? workerProfile.MonthlyRate;
-        workerProfile.Currency = request.Currency ?? workerProfile.Currency;
+        workerProfile.CurrencyId = request.CurrencyId ?? workerProfile.CurrencyId;
 
         workerProfile.UpdatedAt = DateTime.UtcNow;
 

@@ -17,6 +17,10 @@ interface BookingRow {
     monthlySalary: number;
     status: number;
     replacementCount: number;
+    bookingType: number;
+    quantity: number;
+    totalAmount: number;
+    commissionAmount: number;
 }
 
 @Component({
@@ -36,6 +40,10 @@ interface BookingRow {
                         <th>صاحبة المنزل</th>
                         <th>العاملة</th>
                         <th>الراتب</th>
+                        <th>النوع</th>
+                        <th>الكمية</th>
+                        <th>الإجمالي</th>
+                        <th>الإجمالي بعد التحويل</th>
                         <th>العمولة</th>
                         <th>الحالة</th>
                         <th>استبدال</th>
@@ -47,8 +55,12 @@ interface BookingRow {
                         <td>{{ b.id }}</td>
                         <td>{{ b.homeownerName }}</td>
                         <td>{{ b.workerName }}</td>
-                        <td>{{ b.monthlySalary | currency:'EGP':'symbol':'1.0-0' }}</td>
-                        <td>{{ b.commissionAmount | currency:'EGP':'symbol':'1.0-0' }}</td>
+                        <td>{{ (b.bookingType == 0)? b.dailySalary:(b.bookingType == 1)?b.monthlySalary:b.hourlySalary | currency:b.currencyCode:'':'1.0-0' }} {{ b.currencyCode }}</td>
+                        <td>{{ ['يومي','شهري','ساعي'][b.bookingType] || '—' }}</td>
+                        <td>{{ b.quantity }}</td>
+                        <td>{{ b.totalAmount | currency:b.currencyCode:'':'1.0-0' }} {{ b.currencyCode }}</td>
+                        <td>{{ b.totalAmountAfterConversion | currency:'EGP':'code':'1.0-0' }}</td>
+                        <td>{{ b.commissionAmount | currency:'EGP':'code':'1.0-0' }}</td>
                         <td><p-tag [value]="statusLabel(b.status)" [severity]="statusSeverity(b.status)"></p-tag></td>
                         <td>{{ b.replacementCount }}/2</td>
                         <td>

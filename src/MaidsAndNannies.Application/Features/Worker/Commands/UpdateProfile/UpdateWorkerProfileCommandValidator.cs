@@ -10,5 +10,6 @@ public sealed class UpdateWorkerProfileCommandValidator : AbstractValidator<Upda
         RuleFor(x => x.ExperienceYears).GreaterThanOrEqualTo(0).When(x => x.ExperienceYears.HasValue);
         RuleFor(x => x.HourlyRate).GreaterThanOrEqualTo(0).When(x => x.HourlyRate.HasValue);
         RuleFor(x => x.MonthlyRate).GreaterThanOrEqualTo(0).When(x => x.MonthlyRate.HasValue);
+        RuleFor(x => x.DailyRate).GreaterThanOrEqualTo(0).When(x => x.DailyRate.HasValue);
     }
 }

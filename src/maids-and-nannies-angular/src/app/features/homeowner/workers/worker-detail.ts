@@ -16,6 +16,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { CurrencyService } from '@/core/services/currency.service';
 
 @Component({
     selector: 'app-worker-detail',
@@ -53,9 +54,9 @@ import { AuthService } from '../../../core/services/auth.service';
                             <div><strong>العمر:</strong> {{ worker().age }} سنة</div>
                             <div><strong>الخبرة:</strong> {{ worker().experienceYears }} سنوات</div>
                             <div><strong>مقيمة:</strong> {{ worker().isLiveIn ? 'نعم' : 'لا' }}</div>
-                            <div><strong>معدل العمل:</strong> {{ worker().dailyRate | currency:'EGP':'symbol':'1.0-0' }} / يوم</div>
-                            <div><strong>الأجر الشهري:</strong> {{ worker().monthlyRate | currency:'EGP':'symbol':'1.0-0' }}</div>
-                            <div><strong>الأجر الساعة:</strong> {{ worker().hourlyRate | currency:'EGP':'symbol':'1.0-0' }}</div>
+                            <div><strong>الأجر اليومي:</strong> {{ worker().dailyRate }} {{ currenciesMap()[worker().currencyId] || 'EGP' }} </div>
+                            <div><strong>الأجر الشهري:</strong> {{ worker().monthlyRate }} {{ currenciesMap()[worker().currencyId] || 'EGP' }}</div>
+                            <div><strong>الأجر الساعة:</strong> {{ worker().hourlyRate }} {{ currenciesMap()[worker().currencyId] || 'EGP' }}</div>
                         </div>
 
                         <div class="mt-4">
@@ -96,6 +97,11 @@ import { AuthService } from '../../../core/services/auth.service';
                             <p-datepicker [(ngModel)]="startDate" dateFormat="yy-mm-dd" styleClass="w-full" placeholder="اختر التاريخ"></p-datepicker>
                         </div>
 
+                                                <div class="mb-3">
+                            <label class="block font-bold mb-2">الكمية (عدد الأيام/الساعات)</label>
+                            <input pInputText [(ngModel)]="quantity" type="number" min="1" class="w-full" />
+                        </div>
+
                         <div class="mb-3">
                             <label class="block font-bold mb-2">ملاحظات</label>
                             <textarea pTextarea [(ngModel)]="notes" rows="3" class="w-full" placeholder="أي ملاحظات إضافية"></textarea>
@@ -128,11 +134,14 @@ export class WorkerDetail implements OnInit {
     private router = inject(Router);
     private authService = inject(AuthService);
     private messageService = inject(MessageService);
+        private currencyService = inject(CurrencyService);
 
+   currenciesMap = signal<{ [id: number]: string }>({});
     worker = signal<any>(null);
     bookingType = 0;
     commissionType = 0;
     startDate: Date | null = null;
+    quantity = 1;
     notes = '';
 
     bookingTypes = [
@@ -154,6 +163,8 @@ export class WorkerDetail implements OnInit {
                 error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'لم يتم العثور على العاملة' })
             });
         }
+
+         this.currencyService.loadCurrencies(this.currenciesMap);
     }
 
     getSpecLabel(value: number): string {
@@ -161,17 +172,25 @@ export class WorkerDetail implements OnInit {
         return labels[value] || 'غير محدد';
     }
 
-    createBooking() {
+       createBooking() {
         if (!this.startDate) {
             this.messageService.add({ severity: 'warn', summary: 'تنبيه', detail: 'اختر تاريخ البداية' });
+            return;
+        }
+        if (!this.quantity || this.quantity < 1) {
+            this.messageService.add({ severity: 'warn', summary: 'تنبيه', detail: 'أدخل كمية صحيحة' });
             return;
         }
 
         this.apiService.createBooking({
             workerId: this.worker().id,
             serviceType: this.bookingType,
+            bookingType: this.bookingType,
+            quantity: this.quantity,
             startDate: this.startDate.toISOString().split('T')[0],
             monthlySalary: this.worker().monthlyRate,
+            dailySalary: this.worker().dailyRate,
+            hourlySalary: this.worker().hourlyRate,
             commissionType: this.commissionType
         }).subscribe({
             next: () => {

@@ -46,9 +46,13 @@ import { BookingService, BookingDetailDto } from '../../../core/services/booking
                     <p-card header="{{ 'BOOKING.STATUS' | translate }}">
                         <p-tag [value]="statusLabel(booking.status)" [severity]="statusSeverity(booking.status)"></p-tag>
                         <p class="mt-2">{{ 'BOOKING.START_DATE' | translate }}: {{ booking.startDate | date:'shortDate' }}</p>
-                        <p>{{ 'BOOKING.MONTHLY_SALARY' | translate }}: {{ booking.monthlySalary | currency:'EGP':'symbol':'1.0-0' }}</p>
-                        <p>{{ 'BOOKING.COMMISSION' | translate }}: {{ booking.commissionAmount | currency:'EGP':'symbol':'1.0-0' }}</p>
-                        <p>{{ 'BOOKING.COMMISSION_TYPE' | translate }}: {{ booking.commissionType === 0 ? ('BOOKING.ONETIME' | translate) : ('BOOKING.SUBSCRIPTION' | translate) }}</p>
+                        <p>{{ 'BOOKING.TYPE' | translate }}: {{ getBookingTypeLabel(booking.bookingType) }}</p>
+                        <p>{{ 'BOOKING.SALARY' | translate }}: {{ (booking.bookingType == 0)? booking.dailySalary:(booking.bookingType == 1)?booking.monthlySalary:booking.hourlySalary | currency:booking.currencyCode:'':'1.0-0' }} {{ booking.currencyCode }}</p>
+                        <p>{{ 'BOOKING.QUANTITY' | translate }}: {{ booking.quantity }}</p>
+                        <p>{{ 'BOOKING.TOTAL_AMOUNT' | translate }}:{{ booking.totalAmount | currency: booking.currencyCode:'':'1.0-0' }} {{ booking.currencyCode }}</p>
+                        <p>{{ 'BOOKING.TOTAL_AMOUNT_AFTER_CONVERSION' | translate }}:{{ booking.totalAmountAfterConversion | currency:'EGP':'code':'1.0-0' }}</p>
+                        <p>{{ 'BOOKING.COMMISSION' | translate }}: {{ booking.commissionAmount | currency:'EGP':'code':'1.0-0' }}</p>
+                       @if(booking.bookingType == 1){ <p>{{ 'BOOKING.COMMISSION_TYPE' | translate }}: {{ booking.commissionType === 0 ? ('BOOKING.ONETIME' | translate) : ('BOOKING.SUBSCRIPTION' | translate) }}</p>}
                     </p-card>
                 </div>
                 
@@ -210,6 +214,10 @@ export class BookingDetail implements OnInit {
                 queryParams: { mode: 'replacement', bookingId: this.booking!.id }
             });
         }
+
+            getBookingTypeLabel(type: number): string {
+        return ['يومي', 'شهري', 'ساعي'][type] || '—';
+    }
 
     statusLabel(s: number): string {
         return ['في الانتظار','تم تأكيد العاملة','بانتظار الدفع','مدفوع','نشط','مكتمل','ملغي','طلب استبدال','قيد المراجعة'][s]||'—';

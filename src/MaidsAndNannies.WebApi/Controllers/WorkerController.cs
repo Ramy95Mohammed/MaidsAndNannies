@@ -95,7 +95,7 @@ namespace MaidsAndNannies.WebApi.Controllers
                 dto.PassportNumber, dto.PassportExpiryDate, dto.PassportCountry,
                 dto.CountryId, dto.StateId, dto.CityId, dto.Address,
                 dto.Bio, dto.ExperienceYears, dto.Languages, dto.PreviousEmployer,
-                dto.IsLiveIn, dto.IsAvailable, dto.HourlyRate, dto.MonthlyRate, dto.Currency,
+                dto.IsLiveIn, dto.IsAvailable, dto.HourlyRate, dto.DailyRate ,dto.MonthlyRate, dto.CurrencyId,
                 dto.WorkerSpecializationSpecs?.Select(s => s.WorkerSpecialization).ToList(),
                 selfieImage is { Length: > 0 } ? selfieImage.OpenReadStream() : null,
                 selfieImage?.FileName,
@@ -138,8 +138,9 @@ namespace MaidsAndNannies.WebApi.Controllers
         public bool? IsAvailable { get; set; }
 
         public decimal? HourlyRate { get; set; }
+        public decimal? DailyRate { get; set; }
         public decimal? MonthlyRate { get; set; }
-        public int? Currency { get; set; }
+        public int? CurrencyId { get; set; }
 
         public List<WorkerSpecializationSpecRequest>? WorkerSpecializationSpecs { get; set; }
     }

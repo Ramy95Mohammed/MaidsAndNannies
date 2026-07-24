@@ -8,8 +8,11 @@ export interface BookingListDto {
   workerName: string;
   workerId: number;
   serviceType: number;
+  bookingType: number;
+  quantity: number;
   startDate: string;
   monthlySalary: number;
+  totalAmount: number;
   commissionAmount: number;
   status: number;
   isPaid: boolean;
@@ -29,9 +32,16 @@ export interface BookingDetailDto {
   workerProfileImage: string | null;
   workerNationalityId: number | null;
   serviceType: number;
+  bookingType: number;
+  quantity: number;
+  currencyCode:string,
   startDate: string;
   endDate: string | null;
   monthlySalary: number;
+  dailySalary:number,
+  hourlySalary:number,
+  totalAmount: number;
+  totalAmountAfterConversion:number;
   commissionAmount: number;
   commissionType: number;
   status: number;

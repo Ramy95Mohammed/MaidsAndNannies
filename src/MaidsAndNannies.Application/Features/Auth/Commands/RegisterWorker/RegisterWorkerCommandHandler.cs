@@ -6,6 +6,7 @@ using MaidsAndNannies.Domain.Enums;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using ValidationException = MaidsAndNannies.Application.Common.Exceptions.ValidationException;
 
 namespace MaidsAndNannies.Application.Features.Auth.Commands.RegisterWorker;
@@ -45,7 +46,8 @@ public sealed class RegisterWorkerCommandHandler(
             Bio = request.Bio ?? string.Empty,
             ExperienceYears = request.ExperienceYears,
             MonthlyRate = request.MonthlyRate,
-            VerificationStatus = VerificationStatus.Pending
+            VerificationStatus = VerificationStatus.Pending,
+            CurrencyId = await dbContext.Currencies.Select(c => c.Id).FirstOrDefaultAsync()
         };
 
         if (request.SelfieImageContent is not null && request.SelfieImageFileName is not null)

@@ -1,5 +1,6 @@
 using MaidsAndNannies.Domain.Common;
 using MaidsAndNannies.Domain.Entities.Identity;
+using MaidsAndNannies.Domain.Enums;
 using MaidsPlatform.API.Domain.Enums;
 
 namespace MaidsAndNannies.Domain.Entities;
@@ -9,10 +10,14 @@ public class Booking : Entity
     public string WorkerId { get; set; } = string.Empty;
 
     public Specialization ServiceType { get; set; }
+    public BookingType BookingType { get; set; }
+    public int Quantity { get; set; } = 1;
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public decimal MonthlySalary { get; set; }
-
+    public decimal DailySalary { get; set; }
+    public decimal HourlySalary { get; set; }
+    public decimal TotalAmount { get; set; }         // الجديد
     public decimal CommissionAmount { get; set; }
     public CommissionType CommissionType { get; set; }
 

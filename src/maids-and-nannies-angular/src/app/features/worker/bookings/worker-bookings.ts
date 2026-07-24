@@ -20,6 +20,9 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
                         <th>{{ 'COMMON.ID' | translate }}</th>
                         <th>{{ 'BOOKING.START_DATE' | translate }}</th>
                         <th>{{ 'BOOKING.MONTHLY_SALARY' | translate }}</th>
+                        <th>{{ 'BOOKING.TYPE' | translate }}</th>
+                        <th>{{ 'BOOKING.QUANTITY' | translate }}</th>
+                        <th>{{ 'BOOKING.TOTAL_AMOUNT' | translate }}</th>
                         <th>{{ 'BOOKING.STATUS' | translate }}</th>
                     </tr>
                 </ng-template>
@@ -27,7 +30,10 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
                     <tr>
                         <td>{{ booking.id }}</td>
                         <td>{{ booking.startDate | date:'shortDate' }}</td>
-                        <td>{{ booking.monthlySalary | currency:'EGP':'symbol':'1.0-0' }}</td>
+                        <td>{{ booking.monthlySalary | currency:'EGP':'code':'1.0-0' }}</td>
+                        <td>{{ getBookingTypeLabel(booking.bookingType) }}</td>
+                        <td>{{ booking.quantity }}</td>
+                        <td>{{ booking.totalAmount | currency:'EGP':'code':'1.0-0' }}</td>
                         <td><p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag></td>
                     </tr>
                 </ng-template>
@@ -45,6 +51,9 @@ export class WorkerBookings implements OnInit {
         });
     }
 
+        getBookingTypeLabel(type: number): string {
+        return ['يومي', 'شهري', 'ساعي'][type] || '—';
+    }
     getStatusLabel(status: number): string {
        const labels: { [k: number]: string } = {
             0: 'في الانتظار', 1: 'تم تأكيد العاملة', 2: 'بانتظار الدفع',

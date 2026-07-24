@@ -32,8 +32,9 @@ public class WorkerProfile : Entity
 
     // Rates
     public decimal? HourlyRate { get; set; }
+    public decimal? DailyRate { get; set; }
     public decimal? MonthlyRate { get; set; }
-    public int Currency { get; set; }
+    public int CurrencyId { get; set; }
 
     // Location
     public int? StateId { get; set; }
@@ -55,6 +56,7 @@ public class WorkerProfile : Entity
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
+    public Currency Currency { get; set; } = null!;
     public virtual ApplicationUser User { get; set; } = null!;
     public virtual ICollection<WorkerDocument> Documents { get; set; } = new List<WorkerDocument>();
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();

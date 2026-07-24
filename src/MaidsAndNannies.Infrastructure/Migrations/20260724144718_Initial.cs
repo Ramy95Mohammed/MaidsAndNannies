@@ -28,6 +28,26 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Currencies",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Symbol = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    NameAr = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    NameEn = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    RateToEgp = table.Column<decimal>(type: "decimal(18,6)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Currencies", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -81,66 +101,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Roles",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Roles", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Roles_AspNetRoles_Id",
-                        column: x => x.Id,
-                        principalTable: "AspNetRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Bookings",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    HomeownerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    WorkerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ServiceType = table.Column<int>(type: "int", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    MonthlySalary = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CommissionAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CommissionType = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    PaymentMethod = table.Column<int>(type: "int", nullable: true),
-                    PaymentProofImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    PaymentConfirmedBy = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
-                    PaymentConfirmedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsPaid = table.Column<bool>(type: "bit", nullable: false),
-                    PaidAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Bookings", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Bookings_Users_HomeownerId",
-                        column: x => x.HomeownerId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Bookings_Users_WorkerId",
-                        column: x => x.WorkerId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "HomeownerProfiles",
                 columns: table => new
                 {
@@ -148,10 +108,12 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     NationalIdNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    WhatsAppNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NationalIdImage = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     SelfieImage = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     ProofOfAddressImage = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    State = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     District = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     VerificationStatus = table.Column<int>(type: "int", nullable: false),
@@ -216,6 +178,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     PaymentConfirmedBy = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
                     PaymentConfirmedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TransactionReference = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -323,6 +286,8 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     NationalityId = table.Column<int>(type: "int", nullable: false),
                     NationalIdNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    WhatsAppNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    BirthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PassportNumber = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
                     PassportExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     PassportCountry = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
@@ -332,8 +297,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     Languages = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     IsLiveIn = table.Column<bool>(type: "bit", nullable: false),
                     HourlyRate = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    DailyRate = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     MonthlyRate = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    Currency = table.Column<int>(type: "int", nullable: false),
+                    CurrencyId = table.Column<int>(type: "int", nullable: false),
                     StateId = table.Column<int>(type: "int", nullable: true),
                     CountryId = table.Column<int>(type: "int", nullable: true),
                     CityId = table.Column<int>(type: "int", nullable: true),
@@ -342,6 +308,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     TotalReviews = table.Column<int>(type: "int", nullable: false),
                     IsAvailable = table.Column<bool>(type: "bit", nullable: false),
                     VerificationStatus = table.Column<int>(type: "int", nullable: false),
+                    VerificationNotes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     VerifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     VerifiedBy = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -352,9 +319,115 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_WorkerProfiles", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_WorkerProfiles_Currencies_CurrencyId",
+                        column: x => x.CurrencyId,
+                        principalTable: "Currencies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_WorkerProfiles_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Bookings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    HomeownerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    WorkerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ServiceType = table.Column<int>(type: "int", nullable: false),
+                    BookingType = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    MonthlySalary = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CommissionAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CommissionType = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    PaymentMethod = table.Column<int>(type: "int", nullable: true),
+                    PaymentProofImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    PaymentConfirmedBy = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
+                    PaymentConfirmedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsPaid = table.Column<bool>(type: "bit", nullable: false),
+                    PaidAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ReplacementCount = table.Column<int>(type: "int", nullable: false),
+                    OriginalWorkerId = table.Column<int>(type: "int", nullable: true),
+                    AdminNotes = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Bookings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Bookings_Users_HomeownerId",
+                        column: x => x.HomeownerId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Bookings_Users_WorkerId",
+                        column: x => x.WorkerId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Bookings_WorkerProfiles_OriginalWorkerId",
+                        column: x => x.OriginalWorkerId,
+                        principalTable: "WorkerProfiles",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkerDocuments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    WorkerId = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    DocumentImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    VerificationStatus = table.Column<int>(type: "int", nullable: false),
+                    VerifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    VerifiedBy = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkerDocuments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WorkerDocuments_WorkerProfiles_WorkerId",
+                        column: x => x.WorkerId,
+                        principalTable: "WorkerProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkerSpecializationSpecs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    WorkerProfileId = table.Column<int>(type: "int", nullable: false),
+                    WorkerSpecialization = table.Column<int>(type: "int", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkerSpecializationSpecs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WorkerSpecializationSpecs_WorkerProfiles_WorkerProfileId",
+                        column: x => x.WorkerProfileId,
+                        principalTable: "WorkerProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -405,6 +478,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     HomeownerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PaymentMethod = table.Column<int>(type: "int", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CommissionAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     ProofImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     TransactionReference = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     IsConfirmed = table.Column<bool>(type: "bit", nullable: false),
@@ -469,53 +543,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "WorkerDocuments",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    WorkerId = table.Column<int>(type: "int", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    DocumentImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    VerificationStatus = table.Column<int>(type: "int", nullable: false),
-                    VerifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    VerifiedBy = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WorkerDocuments", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_WorkerDocuments_WorkerProfiles_WorkerId",
-                        column: x => x.WorkerId,
-                        principalTable: "WorkerProfiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "WorkerSpecializationSpec",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    WorkerProfileId = table.Column<int>(type: "int", nullable: false),
-                    WorkerSpecialization = table.Column<int>(type: "int", nullable: false),
-                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WorkerSpecializationSpec", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_WorkerSpecializationSpec_WorkerProfiles_WorkerProfileId",
-                        column: x => x.WorkerProfileId,
-                        principalTable: "WorkerProfiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
@@ -527,13 +554,13 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Roles",
-                columns: new[] { "Id", "Description" },
+                table: "Currencies",
+                columns: new[] { "Id", "Code", "CreatedAtUtc", "IsActive", "NameAr", "NameEn", "RateToEgp", "Symbol", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { "admin-role-id", "System Administrator" },
-                    { "homeowner-role-id", "Home Owner" },
-                    { "worker-role-id", "House Worker" }
+                    { 1, "EGP", new DateTime(2026, 7, 24, 14, 47, 17, 731, DateTimeKind.Utc).AddTicks(8085), true, "جنيه مصري", "Egyptian Pound", 1m, "E£", null },
+                    { 2, "USD", new DateTime(2026, 7, 24, 14, 47, 17, 731, DateTimeKind.Utc).AddTicks(8094), true, "دولار أمريكي", "US Dollar", 48.5m, "$", null },
+                    { 3, "SAR", new DateTime(2026, 7, 24, 14, 47, 17, 731, DateTimeKind.Utc).AddTicks(8101), true, "ريال سعودي", "Saudi Riyal", 12.9m, "﷼", null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -547,6 +574,11 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 name: "IX_Bookings_HomeownerId",
                 table: "Bookings",
                 column: "HomeownerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bookings_OriginalWorkerId",
+                table: "Bookings",
+                column: "OriginalWorkerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookings_WorkerId",
@@ -647,14 +679,19 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 column: "WorkerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_WorkerProfiles_CurrencyId",
+                table: "WorkerProfiles",
+                column: "CurrencyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WorkerProfiles_UserId",
                 table: "WorkerProfiles",
                 column: "UserId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_WorkerSpecializationSpec_WorkerProfileId",
-                table: "WorkerSpecializationSpec",
+                name: "IX_WorkerSpecializationSpecs_WorkerProfileId",
+                table: "WorkerSpecializationSpecs",
                 column: "WorkerProfileId");
         }
 
@@ -680,9 +717,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 name: "RoleClaims");
 
             migrationBuilder.DropTable(
-                name: "Roles");
-
-            migrationBuilder.DropTable(
                 name: "Subscriptions");
 
             migrationBuilder.DropTable(
@@ -701,7 +735,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 name: "WorkerDocuments");
 
             migrationBuilder.DropTable(
-                name: "WorkerSpecializationSpec");
+                name: "WorkerSpecializationSpecs");
 
             migrationBuilder.DropTable(
                 name: "Bookings");
@@ -711,6 +745,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "WorkerProfiles");
+
+            migrationBuilder.DropTable(
+                name: "Currencies");
 
             migrationBuilder.DropTable(
                 name: "Users");

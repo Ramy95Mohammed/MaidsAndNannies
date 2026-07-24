@@ -59,7 +59,8 @@
     "CURRENCY": "العملة",
     "LANGUAGES": "اللغات",
     "MAXIMUM_MONTHLY_SALARY":"أقصي أجر شهري",
-    "BIRTHDATE":"تاريخ الميلاد"
+    "BIRTHDATE":"تاريخ الميلاد",
+    "DAILY_RATE": "الأجر اليومي"
   },
   "SPECIALIZATIONS": {
     "CLEANING": "تنظيف",
@@ -99,7 +100,12 @@
     "START": "بدء العمل",
     "COMPLETE": "إنهاء",
      "REPLACEMENT": "الاستبدال",
-    "REPLACEMENT_HINT": "تم استخدام {{count}} من 2 استبدال"
+    "REPLACEMENT_HINT": "تم استخدام {{count}} من 2 استبدال",
+    "TYPE": "نوع الحجز",
+    "QUANTITY": "الكمية",
+    "TOTAL_AMOUNT": "الإجمالي",
+    "TOTAL_AMOUNT_AFTER_CONVERSION":"الإجمالي بعد التحويل",
+    "SALARY":"المرتب"
   },
   "PAYMENT": {
     "UPLOAD_PROOF": "رفع إثبات الدفع",
@@ -208,5 +214,16 @@
     "RENEW": "تجديد",
     "NO_SUBSCRIPTIONS": "لا توجد اشتراكات",
     "DAYS_REMAINING": "باقي {{days}} يوم"
-}
+},
+  "CURRENCY": {
+    "MANAGE": "إدارة العملات",
+    "ADD": "إضافة عملة",
+    "EDIT": "تعديل العملة",
+    "CODE": "الكود",
+    "SYMBOL": "الرمز",
+    "NAME_AR": "الاسم (عربي)",
+    "NAME_EN": "الاسم (إنجليزي)",
+    "RATE": "سعر الصرف مقابل الجنيه",
+    "ACTIVE": "نشط"
+  }
 }

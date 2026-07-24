@@ -14,6 +14,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<WorkerProfile> WorkerProfiles => Set<WorkerProfile>();
     public DbSet<WorkerSpecializationSpec> WorkerSpecializationSpecs => Set<WorkerSpecializationSpec>();
     public DbSet<WorkerDocument> WorkerDocuments => Set<WorkerDocument>();
+    public DbSet<Currency>  Currencies => Set<Currency>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<Message> Messages => Set<Message>();
@@ -107,6 +108,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             b.Property(p => p.PreviousEmployer).HasMaxLength(200);
             b.Property(p => p.Languages).HasMaxLength(500);
             b.Property(p => p.VerifiedBy).HasMaxLength(450);
+            b.Property(p => p.DailyRate).HasColumnType("decimal(18,2)");
             b.Property(p => p.MonthlyRate).HasColumnType("decimal(18,2)");
             b.Property(p => p.HourlyRate).HasColumnType("decimal(18,2)");
             b.Property(p => p.AverageRating).HasColumnType("decimal(3,2)");
@@ -124,11 +126,31 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
              .OnDelete(DeleteBehavior.Cascade);
         });
 
+
+        // Currency configuration
+        builder.Entity<Currency>(b =>
+        {            
+            b.Property(c => c.Code).HasMaxLength(10).IsRequired();
+            b.Property(c => c.Symbol).HasMaxLength(10).IsRequired();
+            b.Property(c => c.NameAr).HasMaxLength(100).IsRequired();
+            b.Property(c => c.NameEn).HasMaxLength(100).IsRequired();
+            b.Property(c => c.RateToEgp).HasColumnType("decimal(18,6)").IsRequired();
+        });
+
+        // Seed currencies
+        builder.Entity<Currency>().HasData(
+            new Currency { Id = 1, Code = "EGP", Symbol = "E£", NameAr = "جنيه مصري", NameEn = "Egyptian Pound", RateToEgp = 1m, IsActive = true },
+            new Currency { Id = 2, Code = "USD", Symbol = "$", NameAr = "دولار أمريكي", NameEn = "US Dollar", RateToEgp = 48.5m, IsActive = true },
+            new Currency { Id = 3, Code = "SAR", Symbol = "﷼", NameAr = "ريال سعودي", NameEn = "Saudi Riyal", RateToEgp = 12.9m, IsActive = true }
+        );
+     
+
         // Booking configuration
         builder.Entity<Booking>(b =>
         {
             b.HasKey(bo => bo.Id);
             b.Property(bo => bo.MonthlySalary).HasColumnType("decimal(18,2)").IsRequired();
+            b.Property(bo => bo.TotalAmount).HasColumnType("decimal(18,2)");
             b.Property(bo => bo.CommissionAmount).HasColumnType("decimal(18,2)");
             b.Property(bo => bo.PaymentProofImageUrl).HasMaxLength(500);
             b.Property(bo => bo.PaymentConfirmedBy).HasMaxLength(450);
@@ -190,6 +212,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             b.Property(n => n.Message).HasMaxLength(2000).IsRequired();
             b.Property(n => n.Type).HasMaxLength(50);
         });
+     
 
         // Seed Admin role
         builder.Entity<IdentityRole>().HasData(

@@ -28,6 +28,7 @@ public sealed class GetBookingByIdQueryHandler(
 
         var worker = dbContext.WorkerProfiles
             .Include(u=>u.User)
+            .Include(c=>c.Currency)
             .Include(d=>d.Documents)
             .FirstOrDefault(w => w.UserId == booking.WorkerId);
         if (worker != null)
@@ -47,9 +48,16 @@ public sealed class GetBookingByIdQueryHandler(
             canRevealDetails ? AbsoluteUrlHelper.ToAbsoluteUrl(worker.Documents.FirstOrDefault(d=>d.Type == Domain.Enums.DocumentType.Selfie).DocumentImageUrl, httpContextAccessor) : null,
             null,
             booking.ServiceType,
+            booking.BookingType,
+            booking.Quantity,
+             worker.Currency.Code,
             booking.StartDate,
             booking.EndDate,
             booking.MonthlySalary,
+            booking.DailySalary,
+            booking.HourlySalary,
+            booking.TotalAmount,
+            (booking.TotalAmount * worker.Currency.RateToEgp),
             booking.CommissionAmount,
             booking.CommissionType,
             booking.Status,

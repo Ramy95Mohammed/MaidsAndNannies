@@ -18,12 +18,13 @@ public interface IApplicationDbContext
     DbSet<WorkerProfile> WorkerProfiles { get; }
     DbSet<WorkerSpecializationSpec> WorkerSpecializationSpecs { get; }
     DbSet<WorkerDocument> WorkerDocuments { get; }
+    DbSet<Currency> Currencies { get; }
     DbSet<Booking> Bookings { get; }
     DbSet<Review> Reviews { get; }
     DbSet<Message> Messages { get; }
     DbSet<PaymentProof> PaymentProofs { get; }
     DbSet<Subscription> Subscriptions { get; }
-    DbSet<Notification> Notifications { get; }
+    DbSet<Notification> Notifications { get; }    
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

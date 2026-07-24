@@ -41,6 +41,7 @@ export class AppMenu {
                     { label: isAr ? 'الحجوزات' : 'Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/admin/bookings'] },
                     { label: isAr ? 'المدفوعات' : 'Payments', icon: 'pi pi-fw pi-dollar', routerLink: ['/admin/payments'] },
                     { label: isAr ? 'الاشتراكات' : 'Subscriptions', icon: 'pi pi-fw pi-credit-card', routerLink: ['/admin/subscriptions'] },
+                    { label: isAr ? 'العملات' : 'Currencies', icon: 'pi pi-fw pi-money-bill', routerLink: ['/admin/currencies'] },
                 ]
             });
         }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MaidsAndNannies.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260723082209_AddBirthDateColumnInWorkerProfile")]
-    partial class AddBirthDateColumnInWorkerProfile
+    [Migration("20260724144718_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,6 +36,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Property<string>("AdminNotes")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("BookingType")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("CommissionAmount")
                         .HasColumnType("decimal(18,2)");
@@ -82,6 +85,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
                     b.Property<int>("ReplacementCount")
                         .HasColumnType("int");
 
@@ -93,6 +99,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -110,6 +119,86 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.HasIndex("WorkerId");
 
                     b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Currency", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("RateToEgp")
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Currencies");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Code = "EGP",
+                            CreatedAtUtc = new DateTime(2026, 7, 24, 14, 47, 17, 731, DateTimeKind.Utc).AddTicks(8085),
+                            IsActive = true,
+                            NameAr = "جنيه مصري",
+                            NameEn = "Egyptian Pound",
+                            RateToEgp = 1m,
+                            Symbol = "E£"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Code = "USD",
+                            CreatedAtUtc = new DateTime(2026, 7, 24, 14, 47, 17, 731, DateTimeKind.Utc).AddTicks(8094),
+                            IsActive = true,
+                            NameAr = "دولار أمريكي",
+                            NameEn = "US Dollar",
+                            RateToEgp = 48.5m,
+                            Symbol = "$"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Code = "SAR",
+                            CreatedAtUtc = new DateTime(2026, 7, 24, 14, 47, 17, 731, DateTimeKind.Utc).AddTicks(8101),
+                            IsActive = true,
+                            NameAr = "ريال سعودي",
+                            NameEn = "Saudi Riyal",
+                            RateToEgp = 12.9m,
+                            Symbol = "﷼"
+                        });
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.HomeownerProfile", b =>
@@ -390,6 +479,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Property<int>("BookingId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("CommissionAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime?>("ConfirmedAt")
                         .HasColumnType("datetime2");
 
@@ -528,6 +620,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("TransactionReference")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("HomeownerId");
@@ -610,8 +705,11 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Currency")
+                    b.Property<int>("CurrencyId")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("DailyRate")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ExperienceYears")
                         .HasColumnType("int");
@@ -687,6 +785,8 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CurrencyId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -1013,11 +1113,19 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.WorkerProfile", b =>
                 {
+                    b.HasOne("MaidsAndNannies.Domain.Entities.Currency", "Currency")
+                        .WithMany()
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", "User")
                         .WithOne("WorkerProfile")
                         .HasForeignKey("MaidsAndNannies.Domain.Entities.WorkerProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Currency");
 
                     b.Navigation("User");
                 });

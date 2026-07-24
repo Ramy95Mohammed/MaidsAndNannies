@@ -1,5 +1,6 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Domain.Entities;
+using MaidsAndNannies.Domain.Enums;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,29 @@ public sealed class CreateBookingCommandHandler(
             .FirstOrDefaultAsync(w => w.Id == request.WorkerId, ct)
             ?? throw new KeyNotFoundException("العاملة غير موجودة");
 
-        var commissionAmount = request.MonthlySalary * 0.1m;
+        var currency = await dbContext.Currencies
+            .FirstOrDefaultAsync(c => c.Id == worker.CurrencyId, ct)
+            ?? throw new KeyNotFoundException("العملة غير موجودة");
+
+        // حساب الإجمالي
+        decimal totalAmount = request.BookingType switch
+        {
+            BookingType.Daily => (worker.DailyRate ?? 0) * request.Quantity,
+            BookingType.Hourly => (worker.HourlyRate ?? 0) * request.Quantity,
+            BookingType.Monthly => request.MonthlySalary,
+            _ => request.MonthlySalary
+        };
+
+        // تحويل إلى EGP لحساب العمولة
+        var totalInEgp = totalAmount * currency.RateToEgp;
+        var commissionAmount = totalInEgp * 0.1m;
+
+        // لو يومي أو ساعي، العمولة OneTime
+        var commissionType = request.BookingType switch
+        {
+            BookingType.Monthly => request.CommissionType,
+            _ => CommissionType.OneTime
+        };
 
         var booking = new Booking
         {
@@ -24,17 +47,22 @@ public sealed class CreateBookingCommandHandler(
             WorkerId = worker.UserId,
             OriginalWorkerId = worker.Id,
             ServiceType = request.ServiceType,
+            BookingType = request.BookingType,
+            Quantity = request.Quantity,
             StartDate = request.StartDate,
             MonthlySalary = request.MonthlySalary,
+            DailySalary = request.DailySalary,
+            HourlySalary = request.HourlySalary,
+            TotalAmount = totalAmount,
             CommissionAmount = commissionAmount,
-            CommissionType = request.CommissionType,
+            CommissionType = commissionType,
             Status = BookingStatus.Pending,
             ReplacementCount = 0
         };
 
         dbContext.Bookings.Add(booking);
 
-        if (request.CommissionType == CommissionType.Subscription)
+        if (commissionType == CommissionType.Subscription)
         {
             dbContext.Subscriptions.Add(new Domain.Entities.Subscription
             {

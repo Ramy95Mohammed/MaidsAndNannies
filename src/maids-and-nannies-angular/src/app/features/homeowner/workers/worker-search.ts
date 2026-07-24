@@ -13,6 +13,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { GlobalizationSpecsService } from '@/core/services/globalization-specs.service';
 import { MessageService } from 'primeng/api';
 import { BookingService } from '@/core/services/booking.service';
+import { CurrencyService } from '@/core/services/currency.service';
 
 @Component({
     selector: 'app-worker-search',
@@ -82,8 +83,12 @@ import { BookingService } from '@/core/services/booking.service';
 
                     <div class="flex align-items-center justify-content-between">
                         <div>
-                            <span class="text-2xl font-bold text-primary">{{ worker.monthlyRate | currency: 'EGP' : 'symbol' : '1.0-0' }}</span>
-                            <span class="text-muted-color text-sm"> / شهرياً</span>
+                            <span class="text-2xl font-bold text-primary">{{ worker.monthlyRate }} {{ currenciesMap()[worker.currency] || 'EGP' }}</span>
+                            <span class="text-muted-color text-sm mx-2"> / شهرياً</span>
+                        </div>
+                         <div class="text-sm text-muted-color mt-1">
+                            <span>يومي: {{ worker.dailyRate  }} {{ currenciesMap()[worker.currency] || 'EGP' }}</span>
+                            <span class="mx-2"> | ساعة: {{ worker.hourlyRate  }} {{ currenciesMap()[worker.currency] || 'EGP' }}</span>
                         </div>
                         <p-button label="حجز" icon="pi pi-calendar" [rounded]="true" (onClick)="$event.stopPropagation(); viewWorker(worker.id)"></p-button>
                     </div>
@@ -110,6 +115,7 @@ import { BookingService } from '@/core/services/booking.service';
 })
 export class WorkerSearch implements OnInit {
     private apiService = inject(ApiService);
+    private currencyService = inject(CurrencyService);
 
     workers = signal<any[]>([]);
     loading = signal(false);
@@ -117,6 +123,7 @@ export class WorkerSearch implements OnInit {
     citiesOptions = signal<any[]>([]); 
     isReplacementMode = signal(false);
     replacementBookingId = signal<number | null>(null);
+    currenciesMap = signal<{ [id: number]: string }>({});
 
 
 
@@ -155,8 +162,10 @@ export class WorkerSearch implements OnInit {
             this.isReplacementMode.set(true);
             this.replacementBookingId.set(Number(params['bookingId']));
         }
-    });
 
+    });
+    
+    this.currencyService.loadCurrencies(this.currenciesMap);
         this.getStatesByCountryId();
         this.search();
     }

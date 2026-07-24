@@ -59,7 +59,8 @@
     "CURRENCY": "Currency",
     "LANGUAGES": "Languages",
     "MAXIMUM_MONTHLY_SALARY":"Maximum monthly salary",
-    "BIRTHDATE":"Birth of date"
+    "BIRTHDATE":"Birth of date",
+    "DAILY_RATE": "Daily Rate"
   },
   "SPECIALIZATIONS": {
     "CLEANING": "Cleaning",
@@ -99,7 +100,12 @@
     "START": "Start Work",
     "COMPLETE": "Complete",
      "REPLACEMENT": "Replacement",
-    "REPLACEMENT_HINT": "Two replacement used"
+    "REPLACEMENT_HINT": "Two replacement used",
+    "TYPE": "Booking Type",
+    "QUANTITY": "Quantity",
+    "TOTAL_AMOUNT": "Total amount",
+    "TOTAL_AMOUNT_AFTER_CONVERSION":"Total amount after conversion",
+    "SALARY":"Salary"
   },
   "PAYMENT": {
     "UPLOAD_PROOF": "Upload Payment Proof",
@@ -208,5 +214,16 @@
     "RENEW": "Renew",
     "NO_SUBSCRIPTIONS": "No Subscriptions",
     "DAYS_REMAINING": "{{days}} days remaining"
-}
+},
+  "CURRENCY": {
+    "MANAGE": "Manage Currencies",
+    "ADD": "Add Currency",
+    "EDIT": "Edit Currency",
+    "CODE": "Code",
+    "SYMBOL": "Symbol",
+    "NAME_AR": "Name (Arabic)",
+    "NAME_EN": "Name (English)",
+    "RATE": "Exchange Rate to EGP",
+    "ACTIVE": "Active"
+  }
 }

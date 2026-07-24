@@ -28,6 +28,8 @@ import { WorkerSpecializationSpec } from '@/core/interfaces/worker-specializatio
 import { GlobalizationSpecsService } from '@/core/services/globalization-specs.service';
 import { WorkerProfile } from '@/core/interfaces/worker-profile';
 import { WorkerService } from '@/core/services/worker-service';
+import { CurrencyService } from '@/core/services/currency.service';
+import { LanguageService } from '@/core/services/language.service';
 
 // -- Domain enums (mirrors backend MaidsPlatform.API.Domain.Enums) --------
 enum Specialization {
@@ -307,8 +309,13 @@ const CURRENCY_KEYS = [
                     </div>
 
                     <div class="flex flex-col gap-2">
+                        <label class="font-bold">{{ 'WORKER.DAILY_RATE' | translate }}</label>
+                        <p-inputnumber formControlName="dailyRate" mode="decimal" [minFractionDigits]="0" [min]="0" class="w-full"></p-inputnumber>
+                    </div>
+
+                    <div class="flex flex-col gap-2">
                         <label class="font-bold">{{ 'WORKER.CURRENCY' | translate }}</label>
-                        <p-select formControlName="currency" [options]="currencyOptions()" optionLabel="label" optionValue="value" class="w-full"></p-select>
+                        <p-select formControlName="currencyId" [options]="currencyOptions()" optionLabel="label" optionValue="value" class="w-full"></p-select>
                     </div>
 
                     <h3>{{ 'WORKER_PROFILE.ACCOUNT_STATUS' | translate }}</h3>
@@ -411,6 +418,8 @@ export class WorkerProfileComponent implements OnInit {
     private messageService = inject(MessageService);
     private translate = inject(TranslateService);
     private router = inject(Router);
+    private currencyService = inject(CurrencyService);
+     langService = inject(LanguageService);
 
     readonly documentType = DocumentType;
 
@@ -436,13 +445,7 @@ export class WorkerProfileComponent implements OnInit {
         }));
     });
 
-    currencyOptions = computed(() => {
-        this.currentLang();
-        return CURRENCY_KEYS.map(o => ({
-            value: o.value,
-            label: this.translate.instant(`WORKER_PROFILE.${o.key}`)
-        }));
-    });
+       currencyOptions = signal<{ value: number; label: string }[]>([]);
 
     userFullName = computed(() => this.authService.currentUser()?.fullName ?? '');    
     userEmail = computed(() => this.authService.currentUser()?.email ?? '');
@@ -500,8 +503,9 @@ export class WorkerProfileComponent implements OnInit {
         isAvailable: [true],
 
         hourlyRate: [null],
+        dailyRate: [null],
         monthlyRate: [null],
-        currency: [0],
+        currencyId: [0],
 
         specializations: this.fb.array([])
     });
@@ -519,6 +523,7 @@ export class WorkerProfileComponent implements OnInit {
     ngOnInit() {
         this.loadCountries();
         this.loadProfile();
+        this.loadCurrencies();
     }
 
     loadCountries() {
@@ -616,8 +621,9 @@ export class WorkerProfileComponent implements OnInit {
             isAvailable: data.isAvailable,
 
             hourlyRate: data.hourlyRate,
+            dailyRate: data.dailyRate,
             monthlyRate: data.monthlyRate,
-            currency: data.currency
+            currencyId: data.currencyId
         });
 
         this.specializationsArray.clear();
@@ -695,8 +701,9 @@ export class WorkerProfileComponent implements OnInit {
             isAvailable: value.isAvailable,
 
             hourlyRate: value.hourlyRate,
+            dailyRate:  value.dailyRate,
             monthlyRate: value.monthlyRate,
-            currency: value.currency,
+            currencyId: value.currencyId,
 
             workerSpecializationSpecs: value.specializations
                 .filter((s: any) => s.specialization !== null && s.specialization !== undefined)
@@ -737,6 +744,18 @@ export class WorkerProfileComponent implements OnInit {
                     summary: this.translate.instant('COMMON.ERROR'),
                     detail: this.translate.instant('WORKER_PROFILE.TOAST_SAVE_ERROR')
                 });
+            }
+        });
+    }
+
+        loadCurrencies() {
+        this.currencyService.getCurrencies().subscribe({
+            next: (data) => {
+                const isAr = this.langService.getCurrentLanguage() === 'ar';
+                this.currencyOptions.set(data.map(c => ({
+                    value: c.id,
+                    label: isAr ? `${c.nameAr} (${c.code})` : `${c.nameEn} (${c.code})`
+                })));
             }
         });
     }
