@@ -40,7 +40,9 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router
-  ) {}
+  ) {
+     this.checkTokenExpired();
+  }
 
   private loadUser(): AuthResponse | null {
     const userJson = localStorage.getItem(this.USER_KEY);
@@ -88,5 +90,24 @@ registerWorker(data: FormData): Observable<{ message: string }> {
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+    private checkTokenExpired(): void {
+    if (this.isTokenExpired()) {
+      this.logout();
+    }
+  }
+
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) return true;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const exp = payload.exp * 1000; // seconds → ms
+      return Date.now() >= exp;
+    } catch {
+      return true;
+    }
   }
 }

@@ -14,6 +14,21 @@ namespace MaidsAndNannies.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AppSettings",
+                columns: table => new
+                {
+                    Key = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Value = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppSettings", x => x.Key);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
                 {
@@ -25,6 +40,27 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetRoles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Countries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    NameAr = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Iso2 = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: false),
+                    Iso3 = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
+                    PhoneCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    Nationality = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    NationalityAr = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    CurrencyCode = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Countries", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -96,6 +132,29 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         name: "FK_RoleClaims_AspNetRoles_RoleId",
                         column: x => x.RoleId,
                         principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "States",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    CountryId = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    NameAr = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Iso2 = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_States", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_States_Countries_CountryId",
+                        column: x => x.CountryId,
+                        principalTable: "Countries",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -333,6 +392,28 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Cities",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    StateId = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    NameAr = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Cities_States_StateId",
+                        column: x => x.StateId,
+                        principalTable: "States",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Bookings",
                 columns: table => new
                 {
@@ -346,6 +427,8 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     MonthlySalary = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DailySalary = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    HourlySalary = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CommissionAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CommissionType = table.Column<int>(type: "int", nullable: false),
@@ -544,6 +627,20 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "AppSettings",
+                columns: new[] { "Key", "Description", "UpdatedAt", "UpdatedBy", "Value" },
+                values: new object[,]
+                {
+                    { "AutoCancelPendingBookingHours", "إلغاء الحجوزات المعلقة تلقائياً بعد (ساعة)", null, null, "48" },
+                    { "CommissionDailyPercent", "نسبة العمولة للحجوزات اليومية (%)", null, null, "10" },
+                    { "CommissionHourlyPercent", "نسبة العمولة للحجوزات بالساعة (%)", null, null, "10" },
+                    { "CommissionMonthlyOneTimePercent", "نسبة العمولة للحجوزات الشهرية (مرة واحدة)", null, null, "10" },
+                    { "CommissionMonthlySubscriptionPercent", "نسبة العمولة للحجوزات الشهرية (اشتراك شهري)", null, null, "10" },
+                    { "MaxActiveBookingsPerHomeowner", "الحد الأقصى للحجوزات النشطة لكل صاحبة منزل", null, null, "5" },
+                    { "MaxReplacementCount", "الحد الأقصى لعدد مرات الاستبدال لكل حجز", null, null, "2" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
@@ -558,9 +655,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 columns: new[] { "Id", "Code", "CreatedAtUtc", "IsActive", "NameAr", "NameEn", "RateToEgp", "Symbol", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, "EGP", new DateTime(2026, 7, 24, 14, 47, 17, 731, DateTimeKind.Utc).AddTicks(8085), true, "جنيه مصري", "Egyptian Pound", 1m, "E£", null },
-                    { 2, "USD", new DateTime(2026, 7, 24, 14, 47, 17, 731, DateTimeKind.Utc).AddTicks(8094), true, "دولار أمريكي", "US Dollar", 48.5m, "$", null },
-                    { 3, "SAR", new DateTime(2026, 7, 24, 14, 47, 17, 731, DateTimeKind.Utc).AddTicks(8101), true, "ريال سعودي", "Saudi Riyal", 12.9m, "﷼", null }
+                    { 1, "EGP", new DateTime(2026, 7, 25, 10, 38, 36, 10, DateTimeKind.Utc).AddTicks(5879), true, "جنيه مصري", "Egyptian Pound", 1m, "E£", null },
+                    { 2, "USD", new DateTime(2026, 7, 25, 10, 38, 36, 10, DateTimeKind.Utc).AddTicks(5884), true, "دولار أمريكي", "US Dollar", 48.5m, "$", null },
+                    { 3, "SAR", new DateTime(2026, 7, 25, 10, 38, 36, 10, DateTimeKind.Utc).AddTicks(5889), true, "ريال سعودي", "Saudi Riyal", 12.9m, "﷼", null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -584,6 +681,17 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 name: "IX_Bookings_WorkerId",
                 table: "Bookings",
                 column: "WorkerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cities_StateId",
+                table: "Cities",
+                column: "StateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Countries_Iso2",
+                table: "Countries",
+                column: "Iso2",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_HomeownerProfiles_UserId",
@@ -640,6 +748,11 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 name: "IX_RoleClaims_RoleId",
                 table: "RoleClaims",
                 column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_States_CountryId",
+                table: "States",
+                column: "CountryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Subscriptions_HomeownerId",
@@ -699,6 +812,12 @@ namespace MaidsAndNannies.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AppSettings");
+
+            migrationBuilder.DropTable(
+                name: "Cities");
+
+            migrationBuilder.DropTable(
                 name: "HomeownerProfiles");
 
             migrationBuilder.DropTable(
@@ -738,10 +857,16 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 name: "WorkerSpecializationSpecs");
 
             migrationBuilder.DropTable(
+                name: "States");
+
+            migrationBuilder.DropTable(
                 name: "Bookings");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Countries");
 
             migrationBuilder.DropTable(
                 name: "WorkerProfiles");

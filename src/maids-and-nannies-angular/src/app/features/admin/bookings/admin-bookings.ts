@@ -57,12 +57,12 @@ interface BookingRow {
                         <td>{{ b.workerName }}</td>
                         <td>{{ (b.bookingType == 0)? b.dailySalary:(b.bookingType == 1)?b.monthlySalary:b.hourlySalary | currency:b.currencyCode:'':'1.0-0' }} {{ b.currencyCode }}</td>
                         <td>{{ ['يومي','شهري','ساعي'][b.bookingType] || '—' }}</td>
-                        <td>{{ b.quantity }}</td>
+                        <td>{{(b.bookingType == 1)?"__": b.quantity }}</td>
                         <td>{{ b.totalAmount | currency:b.currencyCode:'':'1.0-0' }} {{ b.currencyCode }}</td>
                         <td>{{ b.totalAmountAfterConversion | currency:'EGP':'code':'1.0-0' }}</td>
                         <td>{{ b.commissionAmount | currency:'EGP':'code':'1.0-0' }}</td>
                         <td><p-tag [value]="statusLabel(b.status)" [severity]="statusSeverity(b.status)"></p-tag></td>
-                        <td>{{ b.replacementCount }}/2</td>
+                        <td>{{ b.replacementCount }}/{{b.maxReplacement}}</td>
                         <td>
                             <div class="flex gap-1">
                                 <p-button *ngIf="b.status === 0" label="تأكيد العاملة" size="small" (onClick)="confirmWorker(b.id)"></p-button>

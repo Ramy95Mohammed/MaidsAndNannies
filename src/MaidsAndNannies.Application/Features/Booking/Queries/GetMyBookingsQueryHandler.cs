@@ -15,8 +15,8 @@ public sealed class GetMyBookingsQueryHandler(
     {
 
         var bookingList = await dbContext.Bookings
-            .Include(b => b.Worker)
-            .Where(b => b.HomeownerId == request.UserId)
+            .Where(b=>(request.Role == "Worker")?b.WorkerId == request.UserId : b.HomeownerId == request.UserId)
+            .Include(b => b.Worker)            
             .OrderByDescending(b => b.CreatedAt).Select(b => new
             {
                 b.Id,

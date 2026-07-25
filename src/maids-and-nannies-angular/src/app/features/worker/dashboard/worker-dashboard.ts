@@ -28,9 +28,14 @@ import { ApiService } from '../../../core/services/api.service';
                         <div class="flex align-items-center justify-content-center w-12 h-12 border-round bg-green-100">
                             <i class="pi pi-calendar text-green-500 text-xl"></i>
                         </div>
-                        <div>
+                        <!-- <div>
                             <span class="text-muted-color text-sm">الحجوزات النشطة</span>
                             <div class="text-lg font-bold">{{ activeBookings().length }}</div>
+                        </div> -->
+
+                          <div>
+                            <span class="text-muted-color text-sm">الحجوزات المكتملة</span>
+                            <div class="text-lg font-bold">{{ completedBookings().length }}</div>
                         </div>
                     </div>
                 </p-card>
@@ -74,7 +79,7 @@ import { ApiService } from '../../../core/services/api.service';
                                 <th>صاحبة المنزل</th>
                                 <th>التاريخ</th>
                                 <th>المبلغ</th>
-                                <th>الإجراءات</th>
+                                <!-- <th>الإجراءات</th> -->
                             </tr>
                         </ng-template>
                         <ng-template #body let-booking>
@@ -82,10 +87,10 @@ import { ApiService } from '../../../core/services/api.service';
                                 <td>{{ booking.homeownerName }}</td>
                                 <td>{{ booking.startDate | date:'shortDate' }}</td>
                                 <td>{{ booking.monthlySalary | currency:'EGP':'symbol':'1.0-0' }}</td>
-                                <td>
+                                <!-- <td>
                                     <p-button icon="pi pi-check" [rounded]="true" [outlined]="true" class="mr-2" severity="success" (click)="acceptBooking(booking.id)"></p-button>
                                     <p-button icon="pi pi-times" [rounded]="true" [outlined]="true" severity="danger" (click)="rejectBooking(booking.id)"></p-button>
-                                </td>
+                                </td> -->
                             </tr>
                         </ng-template>
                     </p-table>
@@ -100,6 +105,7 @@ export class WorkerDashboard implements OnInit {
     private messageService = inject(MessageService);
 
     activeBookings = signal<any[]>([]);
+    completedBookings = signal<any[]>([]);
     pendingBookings = signal<any[]>([]);
 
     ngOnInit() {
@@ -109,30 +115,31 @@ export class WorkerDashboard implements OnInit {
     loadBookings() {
         this.apiService.getWorkerBookings().subscribe({
             next: (data) => {
-                const all = data.Data || [];
-                this.activeBookings.set(all.filter((b: any) => b.status === 2));
-                this.pendingBookings.set(all.filter((b: any) => b.status === 0));
+                const all: any[] = Array.isArray(data.data) ? data.data : [];
+                this.pendingBookings.set(all.filter((b: any) => b.status === 1 || b.status === 3));
+                this.activeBookings.set(all.filter((b: any) => b.status === 4));
+                this.completedBookings.set(all.filter((b: any) => b.status === 5));
             }
         });
     }
 
-    acceptBooking(id: number) {
-        this.apiService.updateBookingStatus(id, 1).subscribe({
-            next: () => {
-                this.messageService.add({ severity: 'success', summary: 'تم', detail: 'تم قبول الحجز' });
-                this.loadBookings();
-            },
-            error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل قبول الحجز' })
-        });
-    }
+    // acceptBooking(id: number) {
+    //     this.apiService.updateBookingStatus(id, 1).subscribe({
+    //         next: () => {
+    //             this.messageService.add({ severity: 'success', summary: 'تم', detail: 'تم قبول الحجز' });
+    //             this.loadBookings();
+    //         },
+    //         error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل قبول الحجز' })
+    //     });
+    // }
 
-    rejectBooking(id: number) {
-        this.apiService.updateBookingStatus(id, 6).subscribe({
-            next: () => {
-                this.messageService.add({ severity: 'warn', summary: 'تم', detail: 'تم رفض الحجز' });
-                this.loadBookings();
-            },
-            error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل رفض الحجز' })
-        });
-    }
+    // rejectBooking(id: number) {
+    //     this.apiService.updateBookingStatus(id, 6).subscribe({
+    //         next: () => {
+    //             this.messageService.add({ severity: 'warn', summary: 'تم', detail: 'تم رفض الحجز' });
+    //             this.loadBookings();
+    //         },
+    //         error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل رفض الحجز' })
+    //     });
+    // }
 }

@@ -14,11 +14,12 @@ import { GlobalizationSpecsService } from '@/core/services/globalization-specs.s
 import { MessageService } from 'primeng/api';
 import { BookingService } from '@/core/services/booking.service';
 import { CurrencyService } from '@/core/services/currency.service';
+import { Paginator } from "primeng/paginator";
 
 @Component({
     selector: 'app-worker-search',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, RatingModule, ChipModule, TranslatePipe],
+    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, RatingModule, ChipModule, TranslatePipe, Paginator],
     template: `
         <div class="card">
             <h2>البحث عن عاملة</h2>
@@ -100,6 +101,15 @@ import { CurrencyService } from '@/core/services/currency.service';
                 </div>
             </div>
 
+            <div *ngIf="totalCount > pageSize" class="mt-4">
+                <p-paginator
+                    [totalRecords]="totalCount"
+                    [rows]="pageSize"
+                    [first]="(page - 1) * pageSize"
+                    (onPageChange)="onPageChange($event)"
+                ></p-paginator>
+            </div>
+
             <div *ngIf="isReplacementMode()" class="p-3 border-round mb-4 flex align-items-center gap-2">
                 <i class="pi pi-refresh text-orange-500"></i>
                 <span>اختر عاملة بديلة للحجز #{{ replacementBookingId() }}</span>
@@ -124,6 +134,11 @@ export class WorkerSearch implements OnInit {
     isReplacementMode = signal(false);
     replacementBookingId = signal<number | null>(null);
     currenciesMap = signal<{ [id: number]: string }>({});
+
+    //paginator
+    page = 1;
+    pageSize = 12;
+    totalCount = 0;
 
 
 
@@ -178,14 +193,26 @@ export class WorkerSearch implements OnInit {
         if (this.filters.specialization !== null) params.specialization = this.filters.specialization;
         if (this.filters.isLiveIn !== null) params.isLiveIn = this.filters.isLiveIn;
         if (this.filters.maxRate) params.maxRate = this.filters.maxRate;
+        
+        params.page = this.page;
+        params.pageSize = this.pageSize;
 
         this.apiService.getWorkers(params).subscribe({
             next: (data) => {
+                
                 this.workers.set(data.data || []);
+                this.totalCount = data.totalCount || 0;
+
                 this.loading.set(false);
             },
             error: () => this.loading.set(false)
         });
+    }
+
+        onPageChange(event: any) {
+        this.page = (event.first / event.rows) + 1;
+        this.pageSize = event.rows;
+        this.search();
     }
 
     getSpecLabel(value: number): string {

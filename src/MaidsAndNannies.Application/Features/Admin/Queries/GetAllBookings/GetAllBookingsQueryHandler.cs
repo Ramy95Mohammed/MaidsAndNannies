@@ -52,6 +52,13 @@ public sealed class GetAllBookingsQueryHandler(
                }
            }).ToListAsync(ct);
 
+        var maxReplacementStr = await dbContext.AppSettings
+   .Where(s => s.Key == "MaxReplacementCount")
+   .Select(s => s.Value)
+   .FirstOrDefaultAsync(ct);
+
+        var maxReplacement = int.TryParse(maxReplacementStr, out var max) ? max : 2;
+
         var bookingListDto = bookingList
             .Select(b => new AdminBookingListDto(
                 b.Id,
@@ -71,7 +78,8 @@ public sealed class GetAllBookingsQueryHandler(
                 b.CommissionAmount,
                 b.Status,
                 b.IsPaid,
-                b.ReplacementCount,                
+                b.ReplacementCount,
+                maxReplacement,
                 b.CreatedAt))
             .ToList();
         return bookingListDto;

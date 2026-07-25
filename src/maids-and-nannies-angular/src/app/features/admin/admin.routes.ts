@@ -9,4 +9,6 @@ export default <Routes>[
     { path: 'bookings', loadComponent: () => import('./bookings/admin-bookings').then(m => m.AdminBookings) },
     { path: 'subscriptions', loadComponent: () => import('./subscriptions/admin-subscriptions').then(m => m.AdminSubscriptions) },
     { path: 'currencies', loadComponent: () => import('./currencies/admin-currencies').then(m => m.AdminCurrencies) },
+        { path: 'register-homeowner', loadComponent: () => import('./register-homeowner/admin-register-homeowner').then(m => m.AdminRegisterHomeowner) },
+    { path: 'settings', loadComponent: () => import('./settings/admin-settings').then(m => m.AdminSettings) },
 ];

@@ -10,9 +10,11 @@ export interface BookingListDto {
   serviceType: number;
   bookingType: number;
   quantity: number;
+  currencyCode:string,
   startDate: string;
   monthlySalary: number;
   totalAmount: number;
+  totalAmountAfterConversion: number;
   commissionAmount: number;
   status: number;
   isPaid: boolean;
@@ -47,6 +49,7 @@ export interface BookingDetailDto {
   status: number;
   isPaid: boolean;
   replacementCount: number;
+  maxReplacement:number;
   adminNotes: string | null;
   createdAt: string;
 }

@@ -63,7 +63,7 @@ import { BookingService, BookingDetailDto } from '../../../core/services/booking
                             <div class="flex align-items-center justify-content-between">
                                 <div>
                                     <strong>{{ 'BOOKING.REPLACEMENT' | translate }}</strong>
-                                    <p class="text-sm text-muted-color">تم استخدام {{ booking.replacementCount }} من 2 استبدال</p>
+                                    <p class="text-sm text-muted-color">تم استخدام {{ booking.replacementCount }} من {{booking.maxReplacement}} استبدال</p>
                                 </div>
                                 <p-button label="طلب استبدال" icon="pi pi-refresh" severity="warn" (onClick)="requestReplacement()"></p-button>
                             </div>
@@ -206,7 +206,7 @@ export class BookingDetail implements OnInit {
     canRequestReplacement(): boolean {
     return this.booking !== null
                 && (this.booking.status === 3 || this.booking.status === 4)
-                && this.booking.replacementCount < 2;
+                && this.booking.replacementCount < this.booking.maxReplacement;
         }
 
         requestReplacement() {

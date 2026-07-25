@@ -28,6 +28,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<GeoSeeder>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT key is missing.");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -55,6 +56,9 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
+    var geoSeeder = scope.ServiceProvider.GetRequiredService<GeoSeeder>();
+    await geoSeeder.SeedAsync();
+
     if (app.Environment.IsDevelopment())
         await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync();
 

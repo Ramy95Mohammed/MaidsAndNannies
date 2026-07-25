@@ -21,6 +21,26 @@ public sealed class CreateBookingCommandHandler(
             .FirstOrDefaultAsync(c => c.Id == worker.CurrencyId, ct)
             ?? throw new KeyNotFoundException("العملة غير موجودة");
 
+        var settings = await dbContext.AppSettings
+    .ToListAsync(ct);
+
+        var getPercent = (string key, int fallback) =>
+        {
+            var val = settings.FirstOrDefault(s => s.Key == key)?.Value;
+            return int.TryParse(val, out var p) ? p : fallback;
+        };
+
+        var commissionPercent = request.BookingType switch
+        {
+            BookingType.Daily => getPercent("CommissionDailyPercent", 10),
+            BookingType.Hourly => getPercent("CommissionHourlyPercent", 10),
+            BookingType.Monthly => request.CommissionType == CommissionType.OneTime
+                ? getPercent("CommissionMonthlyOneTimePercent", 10)
+                : getPercent("CommissionMonthlySubscriptionPercent", 10),
+            _ => 10
+        };
+        
+
         // حساب الإجمالي
         decimal totalAmount = request.BookingType switch
         {
@@ -32,7 +52,9 @@ public sealed class CreateBookingCommandHandler(
 
         // تحويل إلى EGP لحساب العمولة
         var totalInEgp = totalAmount * currency.RateToEgp;
-        var commissionAmount = totalInEgp * 0.1m;
+
+        var commissionAmount = totalInEgp * commissionPercent / 100m;
+        //var commissionAmount = totalInEgp * 0.1m;
 
         // لو يومي أو ساعي، العمولة OneTime
         var commissionType = request.BookingType switch

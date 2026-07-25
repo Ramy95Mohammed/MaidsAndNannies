@@ -1,73 +1,20 @@
-﻿using MaidsAndNannies.Application.Dtos;
-using Microsoft.AspNetCore.Http;
+﻿using MaidsAndNannies.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System.Net.Http.Headers;
+using Microsoft.EntityFrameworkCore;
 
-namespace MaidsAndNannies.WebApi.Controllers
-{   
-    public class GlobalizationSpecsController : BaseApiController
-    {
-        private readonly IHttpClientFactory _httpClientFactory;
+namespace MaidsAndNannies.WebApi.Controllers;
 
-        public GlobalizationSpecsController(IHttpClientFactory httpClientFactory)
-        {
-            _httpClientFactory = httpClientFactory;
-        }
+public sealed class GlobalizationSpecsController(IApplicationDbContext dbContext) : BaseApiController
+{
+    [HttpGet]
+    public async Task<ActionResult> GetCountries()
+        => Ok(await dbContext.Countries.OrderBy(c => c.Name).ToListAsync());
 
-        [HttpGet]
-        public async Task<ActionResult<List<CountryDto>>> GetCountries()
-        {
-            var client = _httpClientFactory.CreateClient();
+    [HttpGet("{countryId}")]
+    public async Task<ActionResult> GetStatesByCountryId(int countryId)
+        => Ok(await dbContext.States.Where(s => s.CountryId == countryId).OrderBy(s => s.Name).ToListAsync());
 
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                "https://csc.sidsworld.co.in/api/countries");
-           
-            var response = await client.SendAsync(request);
-
-            response.EnsureSuccessStatusCode();
-
-            var countries = await response.Content.ReadFromJsonAsync<CountriesResponseDto>();
-            return Ok(countries.Countries);
-        }
-
-
-        [HttpGet("{countryId}")]
-        public async Task<ActionResult<List<StateDto>>> GetStatesByCountryId(int countryId)
-        {
-            var client = _httpClientFactory.CreateClient();
-
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                "https://csc.sidsworld.co.in/api/states/" + countryId);
-            
-            var response = await client.SendAsync(request);
-
-            response.EnsureSuccessStatusCode();
-
-            var states = await response.Content.ReadFromJsonAsync<StatesResponseDto>();
-            return Ok(states.States);
-        }
-
-
-        [HttpGet("stats/{stateId}")]
-        public async Task<ActionResult<List<StateDto>>> GetCitiesByStateId(int stateId)
-        {
-            var client = _httpClientFactory.CreateClient();
-
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                "https://csc.sidsworld.co.in/api/cities/" + stateId);
-
-            var response = await client.SendAsync(request);
-
-            response.EnsureSuccessStatusCode();
-
-            var cities = await response.Content.ReadFromJsonAsync<CitiesResponseDto>();
-            return Ok(cities.Cities);
-        }
-
-
-
-
-
-    }
+    [HttpGet("stats/{stateId}")]
+    public async Task<ActionResult> GetCitiesByStateId(int stateId)
+        => Ok(await dbContext.Cities.Where(c => c.StateId == stateId).OrderBy(c => c.Name).ToListAsync());
 }

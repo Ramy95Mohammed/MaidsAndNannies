@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MaidsAndNannies.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260724161745_AddDailySalaryAndHourlySalaryColumnsInBookingTable")]
-    partial class AddDailySalaryAndHourlySalaryColumnsInBookingTable
+    [Migration("20260725103838_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,76 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.AppSetting", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("AppSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Key = "MaxReplacementCount",
+                            Description = "الحد الأقصى لعدد مرات الاستبدال لكل حجز",
+                            Value = "2"
+                        },
+                        new
+                        {
+                            Key = "CommissionDailyPercent",
+                            Description = "نسبة العمولة للحجوزات اليومية (%)",
+                            Value = "10"
+                        },
+                        new
+                        {
+                            Key = "CommissionHourlyPercent",
+                            Description = "نسبة العمولة للحجوزات بالساعة (%)",
+                            Value = "10"
+                        },
+                        new
+                        {
+                            Key = "CommissionMonthlyOneTimePercent",
+                            Description = "نسبة العمولة للحجوزات الشهرية (مرة واحدة)",
+                            Value = "10"
+                        },
+                        new
+                        {
+                            Key = "CommissionMonthlySubscriptionPercent",
+                            Description = "نسبة العمولة للحجوزات الشهرية (اشتراك شهري)",
+                            Value = "10"
+                        },
+                        new
+                        {
+                            Key = "AutoCancelPendingBookingHours",
+                            Description = "إلغاء الحجوزات المعلقة تلقائياً بعد (ساعة)",
+                            Value = "48"
+                        },
+                        new
+                        {
+                            Key = "MaxActiveBookingsPerHomeowner",
+                            Description = "الحد الأقصى للحجوزات النشطة لكل صاحبة منزل",
+                            Value = "5"
+                        });
+                });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Booking", b =>
                 {
@@ -127,6 +197,90 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.ToTable("Bookings");
                 });
 
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.City", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("StateId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StateId");
+
+                    b.ToTable("Cities");
+                });
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Country", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CurrencyCode")
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Iso2")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("Iso3")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Nationality")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NationalityAr")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PhoneCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Iso2")
+                        .IsUnique();
+
+                    b.ToTable("Countries");
+                });
+
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Currency", b =>
                 {
                     b.Property<int>("Id")
@@ -176,7 +330,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 1,
                             Code = "EGP",
-                            CreatedAtUtc = new DateTime(2026, 7, 24, 16, 17, 40, 937, DateTimeKind.Utc).AddTicks(4114),
+                            CreatedAtUtc = new DateTime(2026, 7, 25, 10, 38, 36, 10, DateTimeKind.Utc).AddTicks(5879),
                             IsActive = true,
                             NameAr = "جنيه مصري",
                             NameEn = "Egyptian Pound",
@@ -187,7 +341,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 2,
                             Code = "USD",
-                            CreatedAtUtc = new DateTime(2026, 7, 24, 16, 17, 40, 937, DateTimeKind.Utc).AddTicks(4122),
+                            CreatedAtUtc = new DateTime(2026, 7, 25, 10, 38, 36, 10, DateTimeKind.Utc).AddTicks(5884),
                             IsActive = true,
                             NameAr = "دولار أمريكي",
                             NameEn = "US Dollar",
@@ -198,7 +352,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 3,
                             Code = "SAR",
-                            CreatedAtUtc = new DateTime(2026, 7, 24, 16, 17, 40, 937, DateTimeKind.Utc).AddTicks(4129),
+                            CreatedAtUtc = new DateTime(2026, 7, 25, 10, 38, 36, 10, DateTimeKind.Utc).AddTicks(5889),
                             IsActive = true,
                             NameAr = "ريال سعودي",
                             NameEn = "Saudi Riyal",
@@ -577,6 +731,40 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.HasIndex("ReviewerId");
 
                     b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.State", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CountryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Iso2")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NameAr")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CountryId");
+
+                    b.ToTable("States");
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Subscription", b =>
@@ -1002,6 +1190,17 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Navigation("Worker");
                 });
 
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.City", b =>
+                {
+                    b.HasOne("MaidsAndNannies.Domain.Entities.State", "State")
+                        .WithMany()
+                        .HasForeignKey("StateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("State");
+                });
+
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.HomeownerProfile", b =>
                 {
                     b.HasOne("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", "User")
@@ -1093,6 +1292,17 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Navigation("Reviewee");
 
                     b.Navigation("Reviewer");
+                });
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.State", b =>
+                {
+                    b.HasOne("MaidsAndNannies.Domain.Entities.Country", "Country")
+                        .WithMany()
+                        .HasForeignKey("CountryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Country");
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Subscription", b =>

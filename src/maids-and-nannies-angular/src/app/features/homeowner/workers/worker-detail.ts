@@ -84,12 +84,16 @@ import { CurrencyService } from '@/core/services/currency.service';
 
                         <div class="mb-3">
                             <label class="block font-bold mb-2">نوع الحجز</label>
-                            <p-select [(ngModel)]="bookingType" [options]="bookingTypes" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                            <p-select [(ngModel)]="bookingType"
+                            (onChange)="disableOrEnableComissionTypeAndQuantity($event.value)"
+                             [options]="bookingTypes" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
                         </div>
 
                         <div class="mb-3">
                             <label class="block font-bold mb-2">نوع العمولة</label>
-                            <p-select [(ngModel)]="commissionType" [options]="commissionOptions" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                            <p-select [(ngModel)]="commissionType"
+                            [disabled]="commissionTypeIsDisabled"
+                             [options]="commissionOptions" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
                         </div>
 
                         <div class="mb-3">
@@ -99,7 +103,7 @@ import { CurrencyService } from '@/core/services/currency.service';
 
                                                 <div class="mb-3">
                             <label class="block font-bold mb-2">الكمية (عدد الأيام/الساعات)</label>
-                            <input pInputText [(ngModel)]="quantity" type="number" min="1" class="w-full" />
+                            <input pInputText [(ngModel)]="quantity" [disabled]="quantityIsDisabled" type="number" min="1" class="w-full" />
                         </div>
 
                         <div class="mb-3">
@@ -131,10 +135,9 @@ import { CurrencyService } from '@/core/services/currency.service';
 export class WorkerDetail implements OnInit {
     private apiService = inject(ApiService);
     private route = inject(ActivatedRoute);
-    private router = inject(Router);
-    private authService = inject(AuthService);
+    private router = inject(Router);    
     private messageService = inject(MessageService);
-        private currencyService = inject(CurrencyService);
+    private currencyService = inject(CurrencyService);
 
    currenciesMap = signal<{ [id: number]: string }>({});
     worker = signal<any>(null);
@@ -143,6 +146,9 @@ export class WorkerDetail implements OnInit {
     startDate: Date | null = null;
     quantity = 1;
     notes = '';
+
+    commissionTypeIsDisabled:boolean = true;
+    quantityIsDisabled:boolean = false;
 
     bookingTypes = [
         { label: 'يومي', value: 0 },
@@ -199,5 +205,18 @@ export class WorkerDetail implements OnInit {
             },
             error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل إنشاء الحجز' })
         });
+    }
+
+    disableOrEnableComissionTypeAndQuantity(bookingType:number | null){
+      if(bookingType == null) return;
+
+      if(bookingType == 0 || bookingType == 2){
+        this.commissionTypeIsDisabled = true;  
+        this.quantityIsDisabled = false;      
+      }
+      else{
+         this.commissionTypeIsDisabled = false;
+         this.quantityIsDisabled = true;
+      }
     }
 }

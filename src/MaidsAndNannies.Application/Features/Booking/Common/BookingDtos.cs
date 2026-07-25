@@ -42,6 +42,7 @@ public sealed record AdminBookingListDto(
     BookingStatus Status,
     bool IsPaid,
     int ReplacementCount,
+    int MaxReplacement,
     DateTime CreatedAt);
 
 public sealed record BookingDetailDto(
@@ -71,7 +72,8 @@ public sealed record BookingDetailDto(
     BookingStatus Status,
     bool IsPaid,
     int ReplacementCount,
-    string? AdminNotes,
+    int MaxReplacement,
+    string? AdminNotes,    
     DateTime CreatedAt);
 
 

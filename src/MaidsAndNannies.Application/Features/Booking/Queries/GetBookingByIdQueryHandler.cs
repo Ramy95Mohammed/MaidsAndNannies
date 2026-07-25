@@ -36,6 +36,15 @@ public sealed class GetBookingByIdQueryHandler(
             worker.IsAvailable = false;
         }
 
+        var workerSelfieDocument = worker.Documents.FirstOrDefault(d => d.Type == Domain.Enums.DocumentType.Selfie);
+
+        var maxReplacementStr = await dbContext.AppSettings
+    .Where(s => s.Key == "MaxReplacementCount")
+    .Select(s => s.Value)
+    .FirstOrDefaultAsync(ct);
+
+        var maxReplacement = int.TryParse(maxReplacementStr, out var max) ? max : 2;        
+
         return new BookingDetailDto(
             booking.Id,
             booking.HomeownerId,
@@ -45,7 +54,7 @@ public sealed class GetBookingByIdQueryHandler(
             worker.User.FullName,
             canRevealDetails ? worker.User.PhoneNumber : null,
             canRevealDetails ? worker.WhatsAppNumber : null,
-            canRevealDetails ? AbsoluteUrlHelper.ToAbsoluteUrl(worker.Documents.FirstOrDefault(d=>d.Type == Domain.Enums.DocumentType.Selfie).DocumentImageUrl, httpContextAccessor) : null,
+            canRevealDetails ? AbsoluteUrlHelper.ToAbsoluteUrl((workerSelfieDocument!=null)? workerSelfieDocument?.DocumentImageUrl:"", httpContextAccessor) : null,
             null,
             booking.ServiceType,
             booking.BookingType,
@@ -63,6 +72,7 @@ public sealed class GetBookingByIdQueryHandler(
             booking.Status,
             booking.IsPaid,
             booking.ReplacementCount,
+            maxReplacement,
             booking.AdminNotes,
             booking.CreatedAt);
     }

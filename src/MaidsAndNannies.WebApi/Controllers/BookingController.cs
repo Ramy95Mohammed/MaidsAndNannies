@@ -35,7 +35,7 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
     public async Task<IActionResult> GetMyBookings()
     {
         if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
-        return Ok(await sender.Send(new GetMyBookingsQuery(currentUser.UserId)));
+        return Ok(await sender.Send(new GetMyBookingsQuery(currentUser.UserId, currentUser.Role ?? "")));
     }
 
     [HttpGet("{id}")]
@@ -88,7 +88,7 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
     public async Task<IActionResult> GetWorkerBookings()
     {
         if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
-        return Ok(await sender.Send(new GetMyBookingsQuery(currentUser.UserId)));
+        return Ok(await sender.Send(new GetMyBookingsQuery(currentUser.UserId, currentUser.Role ?? "")));
     }
 
     // ── Admin ──

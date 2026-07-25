@@ -225,5 +225,9 @@
     "NAME_EN": "Name (English)",
     "RATE": "Exchange Rate to EGP",
     "ACTIVE": "Active"
+  },
+   "SETTINGS": {
+    "TITLE": "Settings",
+    "REGISTER_HOMEOWNER": "Register Homeowner"
   }
 }

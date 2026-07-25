@@ -15,8 +15,15 @@ public sealed class RequestReplacementCommandHandler(
             .FirstOrDefaultAsync(b => b.Id == request.BookingId && b.HomeownerId == request.HomeownerId, ct)
             ?? throw new KeyNotFoundException("الحجز غير موجود");
 
-        if (booking.ReplacementCount >= 2)
-            throw new InvalidOperationException("تم تجاوز الحد الأقصى للاستبدال (مرتين)");
+        var maxReplacementStr = await dbContext.AppSettings
+    .Where(s => s.Key == "MaxReplacementCount")
+    .Select(s => s.Value)
+    .FirstOrDefaultAsync(ct);
+        var maxReplacement = int.TryParse(maxReplacementStr, out var max) ? max : 2;
+
+        if (booking.ReplacementCount >= maxReplacement)
+            throw new InvalidOperationException($"تم تجاوز الحد الأقصى للاستبدال ({maxReplacement} مرات)");
+
 
         if (booking.Status != BookingStatus.Paid && booking.Status != BookingStatus.Active)
             throw new InvalidOperationException("لا يمكن طلب استبدال في هذه الحالة");

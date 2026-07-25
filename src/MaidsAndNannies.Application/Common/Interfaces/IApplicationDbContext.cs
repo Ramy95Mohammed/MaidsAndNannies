@@ -24,7 +24,13 @@ public interface IApplicationDbContext
     DbSet<Message> Messages { get; }
     DbSet<PaymentProof> PaymentProofs { get; }
     DbSet<Subscription> Subscriptions { get; }
-    DbSet<Notification> Notifications { get; }    
+    DbSet<Notification> Notifications { get; }
+
+    DbSet<AppSetting> AppSettings { get; }
+
+    DbSet<Country> Countries { get; }
+    DbSet<State> States { get; }
+    DbSet<City> Cities { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

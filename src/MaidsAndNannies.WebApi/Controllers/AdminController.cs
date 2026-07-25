@@ -2,6 +2,7 @@ using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Application.Features.Admin.Commands.ApproveHomeowner;
 using MaidsAndNannies.Application.Features.Admin.Commands.ApproveWorker;
 using MaidsAndNannies.Application.Features.Admin.Commands.ConfirmPayment;
+using MaidsAndNannies.Application.Features.Admin.Commands.RegisterHomeowner;
 using MaidsAndNannies.Application.Features.Admin.Commands.RejectHomeowner;
 using MaidsAndNannies.Application.Features.Admin.Commands.RejectPayment;
 using MaidsAndNannies.Application.Features.Admin.Commands.RejectWorker;
@@ -31,6 +32,17 @@ public sealed class AdminController(ISender sender, ICurrentUserService currentU
     [HttpGet("homeowners/pending")]
     public async Task<IActionResult> GetPendingHomeowners()
         => Ok(await sender.Send(new GetPendingHomeownersQuery()));
+
+    [HttpPost("homeowners/register")]
+    public async Task<IActionResult> RegisterHomeowner(AdminRegisterHomeownerRequest request)
+    {
+        var result = await sender.Send(new AdminRegisterHomeownerCommand(
+            request.FullName, request.Email, request.PhoneNumber, request.Password,
+            request.NationalIdNumber, request.City, request.Address, currentUser.UserId!));
+        return Ok(new { Message = "تم تسجيل صاحبة المنزل بنجاح", UserId = result });
+    }
+
+
 
     [HttpPost("workers/{id}/approve")]
     public async Task<IActionResult> ApproveWorker(int id)
@@ -90,4 +102,15 @@ public sealed class AdminController(ISender sender, ICurrentUserService currentU
 public sealed class RejectRequest
 {
     [Required] public required string Reason { get; init; }
+}
+
+public sealed record AdminRegisterHomeownerRequest
+{
+    [Required] public required string FullName { get; init; }
+    [Required] public required string Email { get; init; }
+    [Required] public required string PhoneNumber { get; init; }
+    [Required] public required string Password { get; init; }
+    [Required] public required string NationalIdNumber { get; init; }
+    [Required] public required string City { get; init; }
+    [Required] public required string Address { get; init; }
 }

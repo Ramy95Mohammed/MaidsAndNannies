@@ -42,7 +42,7 @@ export class ApiService {
   }
 
   getMyBookings(): Observable<any> {
-    return this.http.get(`${this.API_URL}/booking/my`);
+        return this.http.get(`${this.API_URL}/booking`);
   }
 
   getWorkerBookings(): Observable<any> {
@@ -139,4 +139,18 @@ confirmPayment(id: number): Observable<any> {
 rejectPayment(id: number, reason?: string): Observable<any> {
     return this.http.post(`${this.API_URL}/admin/payments/${id}/reject`, { reason });
 }
+
+  // Admin: Register Homeowner
+  adminRegisterHomeowner(data: any): Observable<any> {
+    return this.http.post(`${this.API_URL}/admin/homeowners/register`, data);
+  }
+
+ // Settings
+  getSettings(): Observable<any> {
+    return this.http.get(`${this.API_URL}/adminsettings`);
+  }
+
+  updateSettings(settings: any[]): Observable<any> {
+    return this.http.put(`${this.API_URL}/adminsettings`, settings);
+  }
 }

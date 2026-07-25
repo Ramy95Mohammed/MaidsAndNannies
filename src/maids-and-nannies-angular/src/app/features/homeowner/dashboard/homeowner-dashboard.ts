@@ -95,7 +95,7 @@ import { SubscriptionService } from '@/core/services/subscription.service';
                             <tr>
                                 <td>{{ booking.workerName }}</td>
                                 <td>{{ booking.startDate | date:'shortDate' }}</td>
-                                <td>{{ booking.monthlySalary | currency:'EGP':'symbol':'1.0-0' }}</td>
+                                <td>{{ booking.monthlySalary | currency:booking.currencyCode:'':'1.0-0' }} {{booking.currencyCode}}</td>
                                 <td>
                                     <p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag>
                                 </td>
@@ -130,7 +130,7 @@ export class HomeownerDashboard implements OnInit {
 
     loadBookings() {
         this.apiService.getMyBookings().subscribe({
-            next: (data) => this.bookings.set(data.Data || [])
+          next: (data: any) => this.bookings.set(Array.isArray(data) ? data : [])
         });
     }
 

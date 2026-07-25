@@ -21,6 +21,11 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<PaymentProof> PaymentProofs => Set<PaymentProof>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<AppSetting> AppSettings => Set<AppSetting>();
+
+    public DbSet<Country> Countries => Set<Country>();
+    public DbSet<State> States => Set<State>();
+    public DbSet<City> Cities => Set<City>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -212,7 +217,67 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             b.Property(n => n.Message).HasMaxLength(2000).IsRequired();
             b.Property(n => n.Type).HasMaxLength(50);
         });
-     
+
+        // AppSetting configuration
+        builder.Entity<AppSetting>(b =>
+        {
+            b.HasKey(s => s.Key);
+            b.Property(s => s.Key).HasMaxLength(100).IsRequired();
+            b.Property(s => s.Value).HasMaxLength(500).IsRequired();
+            b.Property(s => s.Description).HasMaxLength(500);
+        });
+
+        // Seed settings
+        builder.Entity<AppSetting>().HasData(
+            new AppSetting { Key = "MaxReplacementCount", Value = "2", Description = "الحد الأقصى لعدد مرات الاستبدال لكل حجز" },
+            new AppSetting { Key = "CommissionDailyPercent", Value = "10", Description = "نسبة العمولة للحجوزات اليومية (%)" },
+            new AppSetting { Key = "CommissionHourlyPercent", Value = "10", Description = "نسبة العمولة للحجوزات بالساعة (%)" },
+            new AppSetting { Key = "CommissionMonthlyOneTimePercent", Value = "10", Description = "نسبة العمولة للحجوزات الشهرية (مرة واحدة)" },
+            new AppSetting { Key = "CommissionMonthlySubscriptionPercent", Value = "10", Description = "نسبة العمولة للحجوزات الشهرية (اشتراك شهري)" },
+            new AppSetting { Key = "AutoCancelPendingBookingHours", Value = "48", Description = "إلغاء الحجوزات المعلقة تلقائياً بعد (ساعة)" },
+            new AppSetting { Key = "MaxActiveBookingsPerHomeowner", Value = "5", Description = "الحد الأقصى للحجوزات النشطة لكل صاحبة منزل" }
+        );
+
+
+        builder.Entity<Country>(b =>
+        {
+            b.HasKey(c => c.Id);
+            b.Property(c => c.Id).ValueGeneratedNever();
+            b.Property(c => c.Name).HasMaxLength(100).IsRequired();
+            b.Property(c => c.NameAr).HasMaxLength(100);
+            b.Property(c => c.Iso2).HasMaxLength(2).IsRequired();
+            b.Property(c => c.Iso3).HasMaxLength(3).IsRequired();
+            b.Property(c => c.PhoneCode).HasMaxLength(50);
+            b.Property(c => c.Nationality).HasMaxLength(100);
+            b.Property(c => c.NationalityAr).HasMaxLength(100);
+            b.Property(c => c.CurrencyCode).HasMaxLength(3);
+            b.HasIndex(c => c.Iso2).IsUnique();
+        });
+
+        builder.Entity<State>(b =>
+        {
+            b.HasKey(s => s.Id);
+            b.Property(s => s.Id).ValueGeneratedNever();
+            b.Property(s => s.Name).HasMaxLength(100).IsRequired();
+            b.Property(s => s.NameAr).HasMaxLength(100);
+            b.Property(s => s.Iso2).HasMaxLength(10);
+            b.HasOne(s => s.Country)
+             .WithMany()
+             .HasForeignKey(s => s.CountryId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<City>(b =>
+        {
+            b.HasKey(c => c.Id);
+            b.Property(c => c.Id).ValueGeneratedNever();
+            b.Property(c => c.Name).HasMaxLength(100).IsRequired();
+            b.Property(c => c.NameAr).HasMaxLength(100);
+            b.HasOne(c => c.State)
+             .WithMany()
+             .HasForeignKey(c => c.StateId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
 
         // Seed Admin role
         builder.Entity<IdentityRole>().HasData(
