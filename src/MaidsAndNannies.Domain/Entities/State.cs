@@ -1,14 +1,20 @@
 ﻿using MaidsAndNannies.Domain.Common;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MaidsAndNannies.Domain.Entities;
 
-public class State : Entity
+public class State 
 {
-    public int CountryId { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string? NameAr { get; set; }
-    public string? Iso2 { get; set; }
-    public bool IsActive { get; set; } = true;
-
+    [JsonPropertyName("id")]
+    public int Id { get; init; }
+    [JsonPropertyName("name_en")]
+    public string? Name_en { get; set; }
+    [JsonPropertyName("name_ar")]
+    public string? Name_ar { get; set; }
+    [JsonPropertyName("state_code")]
+    public string? State_code { get; set; }
+    [JsonPropertyName("country_id")]
+    public int? Country_id { get; set; }
     public Country Country { get; set; } = null!;
 }

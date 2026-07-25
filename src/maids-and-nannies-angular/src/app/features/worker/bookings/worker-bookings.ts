@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { BookingService, BookingListDto } from '../../../core/services/booking.service';
 
 @Component({
@@ -43,6 +43,7 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
 })
 export class WorkerBookings implements OnInit {
     private bookingService = inject(BookingService);
+    private translate = inject(TranslateService);
     bookings = signal<BookingListDto[]>([]);
 
     ngOnInit() {
@@ -52,10 +53,20 @@ export class WorkerBookings implements OnInit {
     }
 
         getBookingTypeLabel(type: number): string {
-        return ['يومي', 'شهري', 'ساعي'][type] || '—';
-    }
+    return [this.translate.instant('WORKER_DETAIL.DAILY'),
+            this.translate.instant('WORKER_DETAIL.MONTHLY'),
+            this.translate.instant('WORKER_DETAIL.HOURLY')][type] || '—';
+}
     getStatusLabel(status: number): string {
-               return ['في الانتظار', 'تم تأكيد العاملة', 'تم تأكيد العاملة', 'تم تأكيد العاملة', 'نشط', 'مكتمل', 'ملغي', 'طلب استبدال', 'قيد المراجعة'][status] || '—';
+          return [this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PENDING'),
+            this.translate.instant('ADMIN.WORKER_CONFIRMED'),
+            this.translate.instant('ADMIN.WORKER_CONFIRMED'),
+            this.translate.instant('ADMIN.WORKER_CONFIRMED'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_ACTIVE'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_COMPLETED'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_CANCELLED'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REPLACEMENT'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REVIEW')][status] || '—';               
     }
 
     getStatusSeverity(status: number): any {

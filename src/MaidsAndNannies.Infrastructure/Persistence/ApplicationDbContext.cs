@@ -243,14 +243,14 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         {
             b.HasKey(c => c.Id);
             b.Property(c => c.Id).ValueGeneratedNever();
-            b.Property(c => c.Name).HasMaxLength(100).IsRequired();
-            b.Property(c => c.NameAr).HasMaxLength(100);
-            b.Property(c => c.Iso2).HasMaxLength(2).IsRequired();
-            b.Property(c => c.Iso3).HasMaxLength(3).IsRequired();
-            b.Property(c => c.PhoneCode).HasMaxLength(50);
-            b.Property(c => c.Nationality).HasMaxLength(100);
-            b.Property(c => c.NationalityAr).HasMaxLength(100);
-            b.Property(c => c.CurrencyCode).HasMaxLength(3);
+            b.Property(c => c.Name_ar).HasMaxLength(200);
+            b.Property(c => c.Name_en).HasMaxLength(200);
+            b.Property(c => c.Iso2).HasMaxLength(2);
+            b.Property(c => c.Iso3).HasMaxLength(3);
+            b.Property(c => c.Phone_code).HasMaxLength(100);
+            b.Property(c => c.Nationality_ar).HasMaxLength(200);
+            b.Property(c => c.Nationality_en).HasMaxLength(200);
+            b.Property(c => c.Region).HasMaxLength(200);
             b.HasIndex(c => c.Iso2).IsUnique();
         });
 
@@ -258,25 +258,29 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         {
             b.HasKey(s => s.Id);
             b.Property(s => s.Id).ValueGeneratedNever();
-            b.Property(s => s.Name).HasMaxLength(100).IsRequired();
-            b.Property(s => s.NameAr).HasMaxLength(100);
-            b.Property(s => s.Iso2).HasMaxLength(10);
+            b.Property(s => s.Name_ar).HasMaxLength(200);
+            b.Property(s => s.Name_en).HasMaxLength(200);
+            b.Property(s => s.State_code).HasMaxLength(100);
             b.HasOne(s => s.Country)
              .WithMany()
-             .HasForeignKey(s => s.CountryId)
-             .OnDelete(DeleteBehavior.Cascade);
+             .HasForeignKey(s => s.Country_id)
+             .OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<City>(b =>
         {
             b.HasKey(c => c.Id);
             b.Property(c => c.Id).ValueGeneratedNever();
-            b.Property(c => c.Name).HasMaxLength(100).IsRequired();
-            b.Property(c => c.NameAr).HasMaxLength(100);
+            b.Property(c => c.Name_ar).HasMaxLength(200);
+            b.Property(c => c.Name_en).HasMaxLength(200);
+            b.HasOne(c => c.Country)
+            .WithMany()
+            .HasForeignKey(c => c.Country_id)
+            .OnDelete(DeleteBehavior.Restrict);
             b.HasOne(c => c.State)
              .WithMany()
-             .HasForeignKey(c => c.StateId)
-             .OnDelete(DeleteBehavior.Cascade);
+             .HasForeignKey(c => c.State_id)
+             .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Seed Admin role

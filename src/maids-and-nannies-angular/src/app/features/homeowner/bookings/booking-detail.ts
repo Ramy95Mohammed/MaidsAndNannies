@@ -10,7 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FileUpload } from 'primeng/fileupload';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { BookingService, BookingDetailDto } from '../../../core/services/booking.service';
 
 @Component({
@@ -33,7 +33,7 @@ import { BookingService, BookingDetailDto } from '../../../core/services/booking
                     <p-card header="{{ 'WORKER.REGISTER' | translate }}">
                         <p>{{ booking.workerFullName || '—' }}</p>
                         <p *ngIf="booking.workerPhone">{{ 'AUTH.PHONE' | translate }}: {{ booking.workerPhone }}</p>
-                        <p *ngIf="!booking.workerPhone" class="text-warning">سيظهر رقم العاملة بعد تأكيد الدفع</p>
+                        <p *ngIf="!booking.workerPhone" class="text-warning">{{ 'BOOKING_DETAIL.WORKER_PHONE_WILL_APPEAR' | translate }}</p>
                         <p *ngIf="booking.workerWhatsApp">{{ 'COMMON.WHATSAPP_NUMBER' | translate }}: {{ booking.workerWhatsApp }}</p>
                         <p *ngIf="booking.workerProfileImage">
                             <img [src]="booking.workerProfileImage" alt="Worker" class="w-50 h-50 border-round" />
@@ -63,9 +63,9 @@ import { BookingService, BookingDetailDto } from '../../../core/services/booking
                             <div class="flex align-items-center justify-content-between">
                                 <div>
                                     <strong>{{ 'BOOKING.REPLACEMENT' | translate }}</strong>
-                                    <p class="text-sm text-muted-color">تم استخدام {{ booking.replacementCount }} من {{booking.maxReplacement}} استبدال</p>
+                                    <p class="text-sm text-muted-color">{{ 'BOOKING_DETAIL.REPLACEMENT_USED' | translate:{count: booking.replacementCount, max: booking.maxReplacement} }}</p>
                                 </div>
-                                <p-button label="طلب استبدال" icon="pi pi-refresh" severity="warn" (onClick)="requestReplacement()"></p-button>
+                                <p-button [label]="'BOOKING_DETAIL.REQUEST_REPLACEMENT' | translate" icon="pi pi-refresh" severity="warn" (onClick)="requestReplacement()"></p-button>
                             </div>
                         </p-card>
                     </div>
@@ -101,7 +101,7 @@ import { BookingService, BookingDetailDto } from '../../../core/services/booking
                                     accept="image/*"
                                     maxFileSize="5000000"
                                     [auto]="false"
-                                    chooseLabel="اختر صورة الإيصال"
+                                    [chooseLabel]="'BOOKING_DETAIL.CHOOSE_RECEIPT' | translate"
                                     (onSelect)="onProofSelected($event)">
                                 </p-fileupload>
                                 <span *ngIf="proofFileName" class="text-sm text-muted-color">{{ proofFileName }}</span>
@@ -124,8 +124,8 @@ import { BookingService, BookingDetailDto } from '../../../core/services/booking
                     <p-card>
                         <div class="text-center py-4">
                             <i class="pi pi-check-circle text-4xl text-green-500 mb-3"></i>
-                            <p class="text-lg font-bold">تم استلام إثبات الدفع</p>
-                            <p class="text-muted-color">بانتظار مراجعة الإدارة وتأكيد الدفع</p>
+                            <p class="text-lg font-bold">{{ 'BOOKING_DETAIL.PROOF_RECEIVED' | translate }}</p>
+                            <p class="text-muted-color">{{ 'BOOKING_DETAIL.PENDING_REVIEW' | translate }}</p>
                         </div>
                     </p-card>
                 </div>
@@ -139,6 +139,7 @@ export class BookingDetail implements OnInit {
     private bookingService = inject(BookingService);
     private messageService = inject(MessageService);
     private router = inject(Router);
+    private translate = inject(TranslateService);
 
     booking: BookingDetailDto | null = null;
     isSubmitting = false;
@@ -150,6 +151,7 @@ export class BookingDetail implements OnInit {
         { label: 'انستاباي', value: 1 }
     ];
 
+
     paymentForm: FormGroup = this.fb.group({
         paymentMethod: [null, Validators.required],
         amount: [0, [Validators.required, Validators.min(1)]],
@@ -160,6 +162,11 @@ export class BookingDetail implements OnInit {
     ngOnInit() {
         const id = Number(this.route.snapshot.paramMap.get('id'));
         this.loadBooking(id);
+
+        this.paymentMethods = [
+    { label: this.translate.instant('PAYMENT.VODAFONE_CASH'), value: 0 },
+    { label: this.translate.instant('PAYMENT.INSTAPAY'), value: 1 }
+];
     }
 
     private loadBooking(id: number) {
@@ -192,12 +199,12 @@ export class BookingDetail implements OnInit {
 
         this.bookingService.uploadPaymentProof(this.booking.id, fd).subscribe({
             next: () => {
-                this.messageService.add({ severity: 'success', detail: 'تم رفع إثبات الدفع بنجاح' });
+                this.messageService.add({ severity: 'success', detail: this.translate.instant('BOOKING_DETAIL.TOAST_UPLOAD_SUCCESS') });
                 this.isSubmitting = false;
                 this.loadBooking(this.booking!.id);
             },
             error: () => {
-                this.messageService.add({ severity: 'error', detail: 'فشل رفع إثبات الدفع' });
+                this.messageService.add({ severity: 'error', detail: this.translate.instant('BOOKING_DETAIL.TOAST_UPLOAD_ERROR') });
                 this.isSubmitting = false;
             }
         });
@@ -215,13 +222,23 @@ export class BookingDetail implements OnInit {
             });
         }
 
-            getBookingTypeLabel(type: number): string {
-        return ['يومي', 'شهري', 'ساعي'][type] || '—';
-    }
+     getBookingTypeLabel(type: number): string {
+    return [this.translate.instant('WORKER_DETAIL.DAILY'),
+            this.translate.instant('WORKER_DETAIL.MONTHLY'),
+            this.translate.instant('WORKER_DETAIL.HOURLY')][type] || '—';
+}
 
     statusLabel(s: number): string {
-        return ['في الانتظار','تم تأكيد العاملة','بانتظار الدفع','مدفوع','نشط','مكتمل','ملغي','طلب استبدال','قيد المراجعة'][s]||'—';
-    }
+    return [this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PENDING'),
+            this.translate.instant('ADMIN.WORKER_CONFIRMED'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_WAITING_PAYMENT'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PAID'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_ACTIVE'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_COMPLETED'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_CANCELLED'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REPLACEMENT'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REVIEW')][s] || '—';
+}
     statusSeverity(s: number): any {
         return ['warn','info','warn','success','info','success','danger','warn','info'][s]||'secondary';
     }

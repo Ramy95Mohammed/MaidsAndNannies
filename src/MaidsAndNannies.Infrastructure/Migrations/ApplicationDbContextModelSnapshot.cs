@@ -197,29 +197,40 @@ namespace MaidsAndNannies.Infrastructure.Migrations
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.City", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "id");
 
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                    b.Property<int?>("Country_id")
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "country_id");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                    b.Property<string>("Latitude")
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "latitude");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<string>("Longitude")
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "longitude");
 
-                    b.Property<string>("NameAr")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<string>("Name_ar")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name_ar");
 
-                    b.Property<int>("StateId")
-                        .HasColumnType("int");
+                    b.Property<string>("Name_en")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name_en");
+
+                    b.Property<int?>("State_id")
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "state_id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StateId");
+                    b.HasIndex("Country_id");
+
+                    b.HasIndex("State_id");
 
                     b.ToTable("Cities");
                 });
@@ -227,53 +238,66 @@ namespace MaidsAndNannies.Infrastructure.Migrations
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Country", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "id");
 
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Capital")
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "capital");
 
-                    b.Property<string>("CurrencyCode")
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
+                    b.Property<string>("Capital_ar")
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "capital_ar");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                    b.Property<string>("Currency")
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "currency");
 
                     b.Property<string>("Iso2")
-                        .IsRequired()
                         .HasMaxLength(2)
-                        .HasColumnType("nvarchar(2)");
+                        .HasColumnType("nvarchar(2)")
+                        .HasAnnotation("Relational:JsonPropertyName", "iso2");
 
                     b.Property<string>("Iso3")
-                        .IsRequired()
                         .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
+                        .HasColumnType("nvarchar(3)")
+                        .HasAnnotation("Relational:JsonPropertyName", "iso3");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
+                    b.Property<string>("Name_ar")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name_ar");
+
+                    b.Property<string>("Name_en")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name_en");
+
+                    b.Property<string>("Nationality_ar")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "nationality_ar");
+
+                    b.Property<string>("Nationality_en")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "nationality_en");
+
+                    b.Property<string>("Phone_code")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasAnnotation("Relational:JsonPropertyName", "phone_code");
 
-                    b.Property<string>("NameAr")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Nationality")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("NationalityAr")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("PhoneCode")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<string>("Region")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "region");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Iso2")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Iso2] IS NOT NULL");
 
                     b.ToTable("Countries");
                 });
@@ -327,7 +351,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 1,
                             Code = "EGP",
-                            CreatedAtUtc = new DateTime(2026, 7, 25, 10, 43, 19, 597, DateTimeKind.Utc).AddTicks(456),
+                            CreatedAtUtc = new DateTime(2026, 7, 25, 18, 7, 48, 576, DateTimeKind.Utc).AddTicks(707),
                             IsActive = true,
                             NameAr = "جنيه مصري",
                             NameEn = "Egyptian Pound",
@@ -338,7 +362,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 2,
                             Code = "USD",
-                            CreatedAtUtc = new DateTime(2026, 7, 25, 10, 43, 19, 597, DateTimeKind.Utc).AddTicks(467),
+                            CreatedAtUtc = new DateTime(2026, 7, 25, 18, 7, 48, 576, DateTimeKind.Utc).AddTicks(713),
                             IsActive = true,
                             NameAr = "دولار أمريكي",
                             NameEn = "US Dollar",
@@ -349,7 +373,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 3,
                             Code = "SAR",
-                            CreatedAtUtc = new DateTime(2026, 7, 25, 10, 43, 19, 597, DateTimeKind.Utc).AddTicks(475),
+                            CreatedAtUtc = new DateTime(2026, 7, 25, 18, 7, 48, 576, DateTimeKind.Utc).AddTicks(716),
                             IsActive = true,
                             NameAr = "ريال سعودي",
                             NameEn = "Saudi Riyal",
@@ -733,33 +757,31 @@ namespace MaidsAndNannies.Infrastructure.Migrations
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.State", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "id");
 
-                    b.Property<int>("CountryId")
-                        .HasColumnType("int");
+                    b.Property<int?>("Country_id")
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "country_id");
 
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Name_ar")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name_ar");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                    b.Property<string>("Name_en")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name_en");
 
-                    b.Property<string>("Iso2")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
+                    b.Property<string>("State_code")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("NameAr")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasAnnotation("Relational:JsonPropertyName", "state_code");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CountryId");
+                    b.HasIndex("Country_id");
 
                     b.ToTable("States");
                 });
@@ -1189,11 +1211,17 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.City", b =>
                 {
+                    b.HasOne("MaidsAndNannies.Domain.Entities.Country", "Country")
+                        .WithMany()
+                        .HasForeignKey("Country_id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("MaidsAndNannies.Domain.Entities.State", "State")
                         .WithMany()
-                        .HasForeignKey("StateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("State_id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Country");
 
                     b.Navigation("State");
                 });
@@ -1295,9 +1323,8 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                 {
                     b.HasOne("MaidsAndNannies.Domain.Entities.Country", "Country")
                         .WithMany()
-                        .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Country_id")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Country");
                 });

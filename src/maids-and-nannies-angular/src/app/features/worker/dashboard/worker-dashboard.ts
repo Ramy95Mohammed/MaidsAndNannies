@@ -9,17 +9,18 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-worker-dashboard',
     standalone: true,
-    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TableModule, TagModule, ToastModule],
+    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TableModule, TagModule, ToastModule , TranslatePipe],
     providers: [MessageService],
     template: `
         <p-toast></p-toast>
         <div class="grid grid-cols-12 gap-8">
             <div class="col-span-12">
-                <h2>مرحباً {{ authService.currentUser()?.fullName }}</h2>
+                <h2>{{ 'WORKER_DASHBOARD.WELCOME' | translate:{name: authService.currentUser()?.fullName} }}</h2>
             </div>
 
             <div class="col-span-12 md:col-span-4">
@@ -34,7 +35,7 @@ import { ApiService } from '../../../core/services/api.service';
                         </div> -->
 
                           <div>
-                            <span class="text-muted-color text-sm">الحجوزات المكتملة</span>
+                            <span class="text-muted-color text-sm">{{ 'WORKER_DASHBOARD.COMPLETED_BOOKINGS' | translate }}</span>
                             <div class="text-lg font-bold">{{ completedBookings().length }}</div>
                         </div>
                     </div>
@@ -47,7 +48,7 @@ import { ApiService } from '../../../core/services/api.service';
                         <i class="pi pi-clock text-orange-500 text-xl"></i>
                     </div>
                     <div>
-                        <span class="text-muted-color text-sm">طلبات جديدة</span>
+                        <span class="text-muted-color text-sm">{{ 'WORKER_DASHBOARD.NEW_REQUESTS' | translate }}</span>
                         <div class="text-lg font-bold">{{ pendingBookings().length }}</div>
                     </div>
                 </p-card>
@@ -59,7 +60,7 @@ import { ApiService } from '../../../core/services/api.service';
                         <i class="pi pi-star text-purple-500 text-xl"></i>
                     </div>
                     <div>
-                        <span class="text-muted-color text-sm">التقييم</span>
+                        <span class="text-muted-color text-sm">{{ 'WORKER_DASHBOARD.RATING' | translate }}</span>
                         <div class="text-lg font-bold">-</div>
                     </div>
                 </p-card>
@@ -69,16 +70,16 @@ import { ApiService } from '../../../core/services/api.service';
                 <p-card>
                     <ng-template #header>
                         <div class="flex align-items-center justify-content-between px-4 pt-4">
-                            <h5 class="m-0">طلبات الحجز الواردة</h5>
-                            <p-button label="تعديل الملف" routerLink="/worker/profile" size="small" [text]="true"></p-button>
+                            <h5 class="m-0">{{ 'WORKER_DASHBOARD.INCOMING_BOOKINGS' | translate }}</h5>
+                            <p-button [label]="'WORKER_DASHBOARD.EDIT_PROFILE' | translate" routerLink="/worker/profile" size="small" [text]="true"></p-button>
                         </div>
                     </ng-template>
                     <p-table [value]="pendingBookings()" [rows]="5" [tableStyle]="{ 'min-width': '40rem' }">
                         <ng-template #header>
                             <tr>
-                                <th>صاحبة المنزل</th>
-                                <th>التاريخ</th>
-                                <th>المبلغ</th>
+                                <th>{{ 'WORKER_DASHBOARD.HOMEOWNER' | translate }}</th>
+                                <th>{{ 'WORKER_DASHBOARD.DATE' | translate }}</th>
+                                <th>{{ 'WORKER_DASHBOARD.AMOUNT' | translate }}</th>
                                 <!-- <th>الإجراءات</th> -->
                             </tr>
                         </ng-template>

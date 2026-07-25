@@ -22,8 +22,7 @@ import { Paginator } from "primeng/paginator";
     imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, RatingModule, ChipModule, TranslatePipe, Paginator],
     template: `
         <div class="card">
-            <h2>البحث عن عاملة</h2>
-
+           <h2>{{ 'WORKERS.SEARCH' | translate }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div>
                     <label class="block font-bold mb-2">{{ 'COMMON.STATE' | translate }}</label>
@@ -47,14 +46,15 @@ import { Paginator } from "primeng/paginator";
 
                 <div>
                     <label class="block font-bold mb-2">{{ 'WORKER_PROFILE.SPECIALIZATIONS_TITLE' | translate }}</label>
-                    <p-select [(ngModel)]="filters.specialization" [showClear]="true" [options]="specializations" optionLabel="label" optionValue="value" placeholder="الكل" (onChange)="search()" styleClass="w-full"></p-select>
+                    <p-select [(ngModel)]="filters.specialization" [showClear]="true" [options]="specializations" optionLabel="label" optionValue="value" [placeholder]="'COMMON.ALL' | translate" (onChange)="search()" styleClass="w-full"></p-select>
                 </div>
                 <div>
                     <label class="block font-bold mb-2">{{ 'WORKER.IS_LIVEIN' | translate }}</label>
-                    <p-select [(ngModel)]="filters.isLiveIn" [options]="liveInOptions" optionLabel="label" optionValue="value" placeholder="الكل" (onChange)="search()" styleClass="w-full"></p-select>
+                    <p-select [(ngModel)]="filters.isLiveIn" [options]="liveInOptions" optionLabel="label" optionValue="value" [placeholder]="'COMMON.ALL' | translate" (onChange)="search()" styleClass="w-full"></p-select>
                 </div>
                 <div>
-                    <label class="block font-bold mb-2">أقصى أجر شهري</label>
+                    <label class="block font-bold mb-2">{{ 'WORKER.MAXIMUM_MONTHLY_SALARY' | translate }}</label>
+
                     <input pInputText [(ngModel)]="filters.maxRate" type="number" placeholder="5000" class="w-full" (input)="search()" />
                 </div>
             </div>
@@ -78,25 +78,27 @@ import { Paginator } from "primeng/paginator";
 
                     <div class="flex flex-wrap gap-2 mb-3">
                         <p-chip [label]="getSpecLabel(worker.specialization)"></p-chip>
-                        <p-chip *ngIf="worker.isLiveIn" label="مقيمة"></p-chip>
-                        <p-chip *ngIf="!worker.isLiveIn" label="يومية"></p-chip>
+                        <p-chip *ngIf="worker.isLiveIn" [label]="'COMMON.YES' | translate"></p-chip>
+                        <p-chip *ngIf="!worker.isLiveIn" [label]="'WORKER_DETAIL.DAILY' | translate"></p-chip>
+
                     </div>
 
                     <div class="flex align-items-center justify-content-between">
                         <div>
                             <span class="text-2xl font-bold text-primary">{{ worker.monthlyRate }} {{ currenciesMap()[worker.currency] || 'EGP' }}</span>
-                            <span class="text-muted-color text-sm mx-2"> / شهرياً</span>
+                            <span class="text-muted-color text-sm mx-2">{{ 'COMMON.PER_MONTH' | translate }}</span>
+
                         </div>
                          <div class="text-sm text-muted-color mt-1">
-                            <span>يومي: {{ worker.dailyRate  }} {{ currenciesMap()[worker.currency] || 'EGP' }}</span>
-                            <span class="mx-2"> | ساعة: {{ worker.hourlyRate  }} {{ currenciesMap()[worker.currency] || 'EGP' }}</span>
+                            <span>{{ 'WORKER_DETAIL.DAILY' | translate }}: {{ worker.dailyRate  }} {{ currenciesMap()[worker.currency] || 'EGP' }}</span>
+                            <span class="mx-2"> |  {{ 'WORKER_DETAIL.HOURLY' | translate }}: {{ worker.hourlyRate  }} {{ currenciesMap()[worker.currency] || 'EGP' }}</span>
                         </div>
-                        <p-button label="حجز" icon="pi pi-calendar" [rounded]="true" (onClick)="$event.stopPropagation(); viewWorker(worker.id)"></p-button>
+                        <p-button [label]="'WORKERS.BOOK' | translate" icon="pi pi-calendar" [rounded]="true" (onClick)="$event.stopPropagation(); viewWorker(worker.id)"></p-button>
                     </div>
 
                     <div class="text-sm text-muted-color mt-2">
-                        <i class="pi pi-map-marker mr-1"></i>{{ worker.city || 'غير محدد' }}
-                        <span class="ml-2">خبرة {{ worker.experienceYears }} سنوات</span>
+                        <i class="pi pi-map-marker mr-1"></i>{{ worker.city || ('COMMON.UNSPECIFIED' | translate) }}
+                        <span class="ml-2">{{ 'COMMON.EXPERIENCE_YEARS' | translate:{years: worker.experienceYears} }}</span>
                     </div>
                 </div>
             </div>
@@ -112,13 +114,13 @@ import { Paginator } from "primeng/paginator";
 
             <div *ngIf="isReplacementMode()" class="p-3 border-round mb-4 flex align-items-center gap-2">
                 <i class="pi pi-refresh text-orange-500"></i>
-                <span>اختر عاملة بديلة للحجز #{{ replacementBookingId() }}</span>
-                <p-button label="إلغاء" size="small" severity="secondary" (onClick)="router.navigate(['/homeowner/bookings', replacementBookingId()!])" class="mr-auto"></p-button>
+                <span>{{ 'BOOKING_DETAIL.REPLACEMENT_SELECT' | translate:{id: replacementBookingId()} }}</span>
+                <p-button [label]="'COMMON.CANCEL' | translate" size="small" severity="secondary" (onClick)="router.navigate(['/homeowner/bookings', replacementBookingId()!])" class="mr-auto"></p-button>
             </div>
 
             <div *ngIf="workers().length === 0 && !loading()" class="text-center py-8">
                 <i class="pi pi-search text-4xl text-muted-color mb-4"></i>
-                <p class="text-muted-color">لا توجد نتائج</p>
+                <p class="text-muted-color">{{ 'COMMON.NO_DATA' | translate }}</p>
             </div>
         </div>
     `
@@ -157,13 +159,18 @@ export class WorkerSearch implements OnInit {
         maxRate: null
     };
 
-    specializations = [
-        { label: 'تنظيف', value: 0 },
-        { label: 'طبخ', value: 1 },
-        { label: 'رعاية أطفال', value: 2 },
-        { label: 'رعاية مسنين', value: 3 },
-        { label: 'عمل منزلي عام', value: 4 }
+   specializations = this.getSpecializations();
+
+private getSpecializations() {
+    const t = this.translate;
+    return [
+        { label: t.instant('SPECIALIZATIONS.CLEANING'), value: 0 },
+        { label: t.instant('SPECIALIZATIONS.COOKING'), value: 1 },
+        { label: t.instant('SPECIALIZATIONS.CHILDCARE'), value: 2 },
+        { label: t.instant('SPECIALIZATIONS.ELDERLYCARE'), value: 3 },
+        { label: t.instant('SPECIALIZATIONS.GENERALHOUSEKEEPING'), value: 4 }
     ];
+}
 
     liveInOptions = [
         { label: 'الكل', value: null },
@@ -177,6 +184,8 @@ export class WorkerSearch implements OnInit {
             this.isReplacementMode.set(true);
             this.replacementBookingId.set(Number(params['bookingId']));
         }
+
+        this.getSpecializations();
 
     });
     
@@ -216,9 +225,16 @@ export class WorkerSearch implements OnInit {
     }
 
     getSpecLabel(value: number): string {
-        const labels: { [k: number]: string } = { 0: 'تنظيف', 1: 'طبخ', 2: 'رعاية أطفال', 3: 'رعاية مسنين', 4: 'عمل منزلي' };
-        return labels[value] || 'غير محدد';
-    }
+    // بدل hardcoded, إستخدم translate
+    const map: {[k: number]: string} = {
+        0: this.translate.instant('SPECIALIZATIONS.CLEANING'),
+        1: this.translate.instant('SPECIALIZATIONS.COOKING'),
+        2: this.translate.instant('SPECIALIZATIONS.CHILDCARE'),
+        3: this.translate.instant('SPECIALIZATIONS.ELDERLYCARE'),
+        4: this.translate.instant('SPECIALIZATIONS.GENERALHOUSEKEEPING')
+    };
+    return map[value] || this.translate.instant('COMMON.UNSPECIFIED');
+}
 
    
 

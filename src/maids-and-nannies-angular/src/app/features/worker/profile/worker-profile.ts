@@ -138,7 +138,7 @@ const CURRENCY_KEYS = [
                             formControlName="nationalityId"
                             [options]="countriesOptions()"
                             [filter]="true"
-                            [filterFields]="['nationality', 'native']"
+                            [filterFields]="['nationality_ar', 'nationality_en']"
                             optionValue="id"
                             optionLabel="nationality"
                             [placeholder]="'WORKER.NATIONALITY' | translate"
@@ -147,15 +147,13 @@ const CURRENCY_KEYS = [
                             <ng-template #selectedItem let-selectedOption>
                                 @if (selectedOption) {
                                     <div class="flex items-center gap-3">
-                                        <div>{{ selectedOption.nationality }}</div>
-                                        <div class="text-color-secondary">{{ selectedOption.native }}</div>
+                                        <div>{{ isAr ? selectedOption.nationality_ar:selectedOption.nationality_en }}</div>
                                     </div>
                                 }
                             </ng-template>
                             <ng-template let-country #item>
                                 <div class="flex items-center gap-3">
-                                    <div>{{ country.nationality }}</div>
-                                    <div class="text-color-secondary">{{ country.native }}</div>
+                                    <div>{{ isAr ? country.nationality_ar:country.nationality_en }}</div>
                                 </div>
                             </ng-template>
                             <ng-template #dropdownicon>
@@ -196,7 +194,7 @@ const CURRENCY_KEYS = [
                             formControlName="countryId"
                             [options]="countriesOptions()"
                              [filter]="true"
-                            [filterFields]="['nationality', 'native']"
+                            [filterFields]="['name_ar', 'name_en']"
                             optionValue="id"
                             optionLabel="name"
                             (onChange)="onCountryChange($event.value)"
@@ -205,15 +203,13 @@ const CURRENCY_KEYS = [
                         > <ng-template #selectedItem let-selectedOption>
                                 @if (selectedOption) {
                                     <div class="flex items-center gap-3">
-                                        <div>{{ selectedOption.nationality }}</div>
-                                        <div class="text-color-secondary">{{ selectedOption.native }}</div>
+                                        <div>{{ isAr ? selectedOption.name_ar:selectedOption.name_en }}</div>
                                     </div>
                                 }
                             </ng-template>
                             <ng-template let-country #item>
                                 <div class="flex items-center gap-3">
-                                    <div>{{ country.nationality }}</div>
-                                    <div class="text-color-secondary">{{ country.native }}</div>
+                                   <div>{{ isAr ? country.name_ar:country.name_en }}</div>
                                 </div>
                             </ng-template>
                             <ng-template #dropdownicon>
@@ -242,12 +238,28 @@ const CURRENCY_KEYS = [
                             formControlName="cityId"
                             [options]="citiesOptions()"
                             [filter]="true"
-                            optionValue="id"
-                            optionLabel="name"
+                            [filterFields]="['Name_ar' , 'name_en']"
+                            optionValue="id"                            
                             [disabled]="!form.value.stateId"
                             [placeholder]="'WORKER_PROFILE.CITY_PLACEHOLDER' | translate"
                             class="w-full"
-                        ></p-select>
+                        >
+                        <ng-template #selectedItem let-selectedOption>
+                                @if (selectedOption) {
+                                    <div class="flex items-center gap-3">
+                                        <div>{{ isAr ? selectedOption.name_ar:selectedOption.name_en }}</div>
+                                    </div>
+                                }
+                            </ng-template>
+                            <ng-template let-country #item>
+                                <div class="flex items-center gap-3">
+                                   <div>{{ isAr ? country.name_ar:country.name_en }}</div>
+                                </div>
+                            </ng-template>
+                            <ng-template #dropdownicon>
+                                <i class="pi pi-flag"></i>
+                            </ng-template>
+                        </p-select>
                     </div>
 
                     <div class="flex flex-col gap-2">
@@ -431,6 +443,8 @@ export class WorkerProfileComponent implements OnInit {
     statesOptions = signal<any[]>([]);
     citiesOptions = signal<any[]>([]);
 
+    isAr:boolean = true;
+
     // Bumped whenever the active language changes, so the computed()s below
     // (which read translate.instant()) re-run and pick up the new strings.
     private currentLang = signal<string>(
@@ -521,6 +535,7 @@ export class WorkerProfileComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.isAr = this.langService.getCurrentLanguage() === 'ar';
         this.loadCountries();
         this.loadProfile();
         this.loadCurrencies();

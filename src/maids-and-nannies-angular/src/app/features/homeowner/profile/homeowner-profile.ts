@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { FileUpload } from 'primeng/fileupload';
 import { Toast } from 'primeng/toast';
 import { MessageModule } from 'primeng/message';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -13,7 +12,7 @@ import { HomeownerService, HomeownerProfile } from '../../../core/services/homeo
 @Component({
     selector: 'app-homeowner-profile',
     standalone: true,
-    imports: [CommonModule, FormsModule, ButtonModule, InputTextModule, FileUpload, Toast, MessageModule, TranslatePipe],
+    imports: [CommonModule, FormsModule, ButtonModule, InputTextModule, Toast, MessageModule, TranslatePipe],
     providers: [MessageService],
     template: `
         <div class="card">

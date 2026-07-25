@@ -8,18 +8,19 @@ import { TagModule } from 'primeng/tag';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
 import { SubscriptionService } from '@/core/services/subscription.service';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-homeowner-dashboard',
     standalone: true,
-    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TableModule, TagModule],
+    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TableModule, TagModule , TranslatePipe],
     template: `
         <div class="grid grid-cols-12 gap-8">
             <div class="col-span-12">
-                <h2>مرحباً {{ authService.currentUser()?.fullName }}</h2>
+                <h2>{{ 'HOMEOWNER_DASHBOARD.WELCOME' | translate:{name: authService.currentUser()?.fullName} }}</h2>
                 <p class="text-muted-color" *ngIf="authService.currentUser()?.verificationStatus != 1">
-                    حسابك بانتظار التأكيد من الإدارة
-                </p>
+                {{ 'HOMEOWNER_DASHBOARD.PENDING_VERIFICATION' | translate }}                            
+            </p>
             </div>
 
             <div class="col-span-12 md:col-span-4">
@@ -29,8 +30,8 @@ import { SubscriptionService } from '@/core/services/subscription.service';
                             <i class="pi pi-search text-blue-500 text-xl"></i>
                         </div>
                         <div>
-                            <span class="text-muted-color text-sm">البحث عن عاملة</span>
-                            <div class="text-lg font-bold">ابحثي الآن</div>
+                            <span class="text-muted-color text-sm">{{ 'HOMEOWNER_DASHBOARD.SEARCH_WORKER' | translate }}</span>
+                            <div class="text-lg font-bold">{{ 'HOMEOWNER_DASHBOARD.SEARCH_NOW' | translate }}</div>
                         </div>
                     </div>
                 </p-card>
@@ -43,7 +44,7 @@ import { SubscriptionService } from '@/core/services/subscription.service';
                             <i class="pi pi-calendar text-green-500 text-xl"></i>
                         </div>
                         <div>
-                            <span class="text-muted-color text-sm">حجوزاتي</span>
+                            <span class="text-muted-color text-sm">{{ 'HOMEOWNER_DASHBOARD.MY_BOOKINGS' | translate }}</span>
                             <div class="text-lg font-bold">{{ bookings().length }}</div>
                         </div>
                     </div>
@@ -57,7 +58,7 @@ import { SubscriptionService } from '@/core/services/subscription.service';
                             <i class="pi pi-envelope text-purple-500 text-xl"></i>
                         </div>
                         <div>
-                            <span class="text-muted-color text-sm">الرسائل</span>
+                            <span class="text-muted-color text-sm">{{ 'HOMEOWNER_DASHBOARD.MESSAGES' | translate }}</span>
                             <div class="text-lg font-bold">0</div>
                         </div>
                     </div>
@@ -69,7 +70,7 @@ import { SubscriptionService } from '@/core/services/subscription.service';
                     <div class="flex align-items-center gap-2">
                         <i class="pi pi-exclamation-triangle text-orange-500"></i>
                         <span>{{ subscriptionWarning() }}</span>
-                        <p-button routerLink="/homeowner/subscriptions" label="تجديد" size="small" class="mr-auto"></p-button>
+                        <p-button routerLink="/homeowner/subscriptions" [label]="'HOMEOWNER_DASHBOARD.RENEW' | translate" size="small" class="mr-auto"></p-button>
                     </div>
                 </p-card>
             </div>
@@ -78,17 +79,17 @@ import { SubscriptionService } from '@/core/services/subscription.service';
                 <p-card>
                     <ng-template #header>
                         <div class="flex align-items-center justify-content-between px-4 pt-4">
-                            <h5 class="m-0">حجوزاتي الأخيرة</h5>
-                            <p-button label="بحث عن عاملة" routerLink="/homeowner/workers" size="small"></p-button>
+                            <h5 class="m-0">{{ 'HOMEOWNER_DASHBOARD.RECENT_BOOKINGS' | translate }}</h5>
+                            <p-button [label]="'HOMEOWNER_DASHBOARD.SEARCH_BUTTON' | translate" routerLink="/homeowner/workers" size="small"></p-button>
                         </div>
                     </ng-template>
                     <p-table [value]="bookings()" [rows]="5" [tableStyle]="{ 'min-width': '40rem' }">
                         <ng-template #header>
                             <tr>
-                                <th>العاملة</th>
-                                <th>التاريخ</th>
-                                <th>المبلغ</th>
-                                <th>الحالة</th>
+                                 <th>{{ 'ADMIN.TABLE_WORKER' | translate }}</th>
+                                 <th>{{ 'HOMEOWNER_DASHBOARD.DATE' | translate }}</th>
+                                <th>{{ 'ADMIN.TABLE_AMOUNT' | translate }}</th>
+                                <th>{{ 'ADMIN.TABLE_STATUS' | translate }}</th>
                             </tr>
                         </ng-template>
                         <ng-template #body let-booking>

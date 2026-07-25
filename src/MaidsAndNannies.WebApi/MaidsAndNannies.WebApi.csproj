@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <Content Remove="wwwroot\Json\Countries.json" />
+    <Content Remove="wwwroot\json\Cities.json" />
+    <Content Remove="wwwroot\json\Countries.json" />
+    <Content Remove="wwwroot\json\States.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,12 +22,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\Json\Countries.json" />
+    <Folder Include="wwwroot\uploads\homeowners\" />
+    <Folder Include="wwwroot\uploads\payments\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\uploads\homeowners\" />
-    <Folder Include="wwwroot\uploads\payments\" />
+    <None Include="wwwroot\json\Cities.json" />
+    <None Include="wwwroot\json\Countries.json" />
+    <None Include="wwwroot\json\States.json" />
   </ItemGroup>
 
   <PropertyGroup>
