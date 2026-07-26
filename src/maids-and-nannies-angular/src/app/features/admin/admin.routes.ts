@@ -11,4 +11,5 @@ export default <Routes>[
     { path: 'currencies', loadComponent: () => import('./currencies/admin-currencies').then(m => m.AdminCurrencies) },
         { path: 'register-homeowner', loadComponent: () => import('./register-homeowner/admin-register-homeowner').then(m => m.AdminRegisterHomeowner) },
     { path: 'settings', loadComponent: () => import('./settings/admin-settings').then(m => m.AdminSettings) },
+    { path: 'job-posts', loadComponent: () => import('./jobs/admin-job-posts').then(m => m.AdminJobPosts) },
 ];

@@ -21,4 +21,6 @@ public sealed class ApplicationUser : IdentityUser
     public  ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
     public  ICollection<Review> ReviewsWritten { get; set; } = new List<Review>();
     public  ICollection<Review> ReviewsReceived { get; set; } = new List<Review>();
+    public  ICollection<JobPost> JobPosts { get; set; } = new List<JobPost>();
+    public  ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
 }

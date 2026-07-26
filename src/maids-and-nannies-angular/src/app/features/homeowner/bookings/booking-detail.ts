@@ -1,6 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
@@ -12,15 +12,20 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { BookingService, BookingDetailDto } from '../../../core/services/booking.service';
+import { ApiService } from '@/core/services/api.service';
+import { TableModule } from "primeng/table";
+import { Rating } from "primeng/rating";
 
 @Component({
     selector: 'app-booking-detail',
     standalone: true,
     imports: [
-        CommonModule, ReactiveFormsModule, CardModule, TagModule,
-        ButtonModule, SelectModule, InputTextModule, FileUpload,
-        ToastModule, RouterModule, TranslatePipe
-    ],
+    CommonModule, ReactiveFormsModule, CardModule, TagModule,
+    ButtonModule, SelectModule, InputTextModule, FileUpload,
+    ToastModule, RouterModule, TranslatePipe,
+    TableModule,
+    Rating , FormsModule
+],
     providers: [MessageService],
     template: `
         <p-toast />
@@ -70,6 +75,34 @@ import { BookingService, BookingDetailDto } from '../../../core/services/booking
                         </p-card>
                     </div>
 
+                    <!-- Job Applicants for Replacement -->
+                    <div class="col-span-12" *ngIf="booking.jobPostId && canRequestReplacement()">
+                    <p-card header="{{ 'JOB_POST.APPLICATIONS' | translate }}">
+                        <p-table [value]="applicants()" *ngIf="applicants().length > 0">
+                        <ng-template #header>
+                            <tr>
+                            <th>{{ 'ADMIN.NAME' | translate }}</th>
+                            <th>{{ 'REVIEW.RATING' | translate }}</th>
+                            <th>{{ 'ADMIN.TABLE_ACTIONS' | translate }}</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template #body let-a>
+                            <tr>
+                            <td>{{ a.workerName }}</td>
+                            <td><p-rating [(ngModel)]="a.workerRating" [readonly]="true"></p-rating></td>
+                            <td>
+                                <p-button label="{{ 'BOOKING_DETAIL.SET_AS_REPLACEMENT' | translate }}"
+                                size="small" severity="warn" (onClick)="replaceWithApplicant(a.id)"></p-button>
+                            </td>
+                            </tr>
+                        </ng-template>
+                        </p-table>
+                        <p *ngIf="applicants().length === 0" class="text-muted-color">
+                        {{ 'JOB_POST.NO_APPLICANTS' | translate }}
+                        </p>
+                    </p-card>
+                    </div>
+
                 <!-- Payment Proof Upload (only when WaitingPayment) -->
                 <div class="col-span-12" *ngIf="booking.status === 2">
                     <p-card header="{{ 'PAYMENT.UPLOAD_PROOF' | translate }}">
@@ -84,7 +117,7 @@ import { BookingService, BookingDetailDto } from '../../../core/services/booking
                                     [placeholder]="'PAYMENT.METHOD' | translate"
                                     class="w-full">
                                 </p-select>
-                            </div>
+                            </div>                             
                             <div class="col-span-12 md:col-span-4">
                                 <label class="block font-bold mb-1">{{ 'PAYMENT.AMOUNT' | translate }}</label>
                                 <input pInputText formControlName="commissionAmount" type="number" class="w-full" />
@@ -146,6 +179,10 @@ export class BookingDetail implements OnInit {
     proofFile: File | null = null;
     proofFileName = '';
 
+    private api = inject(ApiService);
+        applicants = signal<any[]>([]);
+        showApplicants = signal(false);
+
     paymentMethods = [
         { label: 'فودافون كاش', value: 0 },
         { label: 'انستاباي', value: 1 }
@@ -154,7 +191,7 @@ export class BookingDetail implements OnInit {
 
     paymentForm: FormGroup = this.fb.group({
         paymentMethod: [null, Validators.required],
-        amount: [0, [Validators.required, Validators.min(1)]],
+        // amount: [0, [Validators.required, Validators.min(1)]],
         commissionAmount: [0, [Validators.required, Validators.min(1)]],
         transactionReference: ['']
     });
@@ -171,12 +208,33 @@ export class BookingDetail implements OnInit {
 
     private loadBooking(id: number) {
         this.bookingService.getBookingById(id).subscribe({
-            next: (data) => {
+            next: (data:BookingDetailDto) => {
                 this.booking = data;
+                if (data.jobPostId) {
+                this.loadApplicants(data.jobPostId);
+                }
                 this.paymentForm.patchValue({ amount: data.monthlySalary , commissionAmount:data.commissionAmount });
             }
         });
     }
+
+    
+loadApplicants(postId: number) {
+  this.api.getJobApplications(postId).subscribe({
+    next: (d) => this.applicants.set(d.filter((a: any) => a.status === 0))
+  });
+}
+
+replaceWithApplicant(applicationId: number) {
+    if(this.booking != null)
+  this.bookingService.requestReplacement(this.booking.id, null, applicationId).subscribe({
+    next: () => {
+      this.messageService.add({ severity: 'success', detail: 'تم طلب الاستبدال بنجاح' });      
+      if(this.booking != null)
+      this.loadBooking(this.booking.id);
+    }
+  });
+}
 
     onProofSelected(event: any) {
         const file = event.currentFiles?.[0];
@@ -190,9 +248,10 @@ export class BookingDetail implements OnInit {
         if (this.paymentForm.invalid || !this.proofFile || !this.booking) return;
 
         this.isSubmitting = true;
+        
         const fd = new FormData();
         fd.append('PaymentMethod', this.paymentForm.get('paymentMethod')?.value);
-        fd.append('Amount', this.paymentForm.get('amount')?.value);
+        // fd.append('Amount', this.paymentForm.get('amount')?.value);
         fd.append('CommissionAmount', this.paymentForm.get('commissionAmount')?.value);
         fd.append('TransactionReference', this.paymentForm.get('transactionReference')?.value || '');
         fd.append('proofImage', this.proofFile);

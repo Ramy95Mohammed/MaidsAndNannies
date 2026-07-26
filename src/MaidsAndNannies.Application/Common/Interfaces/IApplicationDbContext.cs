@@ -31,6 +31,8 @@ public interface IApplicationDbContext
     DbSet<Country> Countries { get; }
     DbSet<State> States { get; }
     DbSet<City> Cities { get; }
+    DbSet<JobPost> JobPosts { get; }
+    DbSet<JobApplication> JobApplications { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

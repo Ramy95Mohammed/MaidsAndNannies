@@ -74,6 +74,7 @@ public sealed class GetBookingByIdQueryHandler(
             booking.ReplacementCount,
             maxReplacement,
             booking.AdminNotes,
-            booking.CreatedAt);
+            booking.CreatedAt,
+            booking.JobPostId);
     }
 }

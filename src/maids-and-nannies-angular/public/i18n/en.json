@@ -325,7 +325,8 @@
     "STATUS_LABEL_COMPLETED": "Completed",
     "STATUS_LABEL_CANCELLED": "Cancelled",
     "STATUS_LABEL_REPLACEMENT": "Replacement",
-    "STATUS_LABEL_REVIEW": "Under Review"
+    "STATUS_LABEL_REVIEW": "Under Review",
+    "SET_AS_REPLACEMENT": "Assign as an alternative"
   },
   "ADMIN": {
     "TITLE": "Admin Panel",
@@ -390,6 +391,31 @@
     "SPECIALIZATION_CHILDCARE": "Childcare",
     "SPECIALIZATION_ELDERLY_CARE": "Elderly Care",
     "SPECIALIZATION_GENERAL": "General Housekeeping"
+  },
+  "JOB_POST": {
+    "CREATE": "Create Job Post",
+    "MY_POSTS": "My Job Posts",
+    "DETAIL": "Job Post",
+    "DESCRIPTION": "Description",
+    "DESC_PLACEHOLDER": "Write job details here... You can include your phone number for contact",
+    "SUBMIT": "Submit for Review",
+    "APPLICATIONS": "Applications",
+    "APPLY": "Apply for this Job",
+    "MY_APPLICATIONS": "My Applications",
+    "BROWSE": "Browse Jobs",
+    "REVIEW_TITLE": "Review Job Posts",
+    "REVIEW": "Review Post",
+    "ORIGINAL_DESC": "Original Description",
+    "SANITIZED_DESC": "Sanitized Description (without phone numbers)",
+    "SANITIZED_HINT": "Edit this to remove any contact information before approving",
+    "VIEW_APPLICATIONS": "View Applications",
+    "REJECTION_REASON": "Rejection Reason",
+    "MESSAGE": "Message (optional)",
+    "MESSAGE_PLACEHOLDER": "Write a message to the homeowner...",
+    "SUBMIT_APPLICATION": "Submit Application",
+    "DATE": "Date",
+    "POST_ID": "Post #",
+    "NO_APPLICANTS": "There are no new applicants."
   },
   "MENU": {
     "ADMIN": "Admin",

@@ -4,5 +4,7 @@ export default <Routes>[
     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     { path: 'dashboard', loadComponent: () => import('./dashboard/worker-dashboard').then(m => m.WorkerDashboard) },
     { path: 'profile', loadComponent: () => import('./profile/worker-profile').then(m => m.WorkerProfileComponent) },
-    { path: 'bookings', loadComponent: () => import('./bookings/worker-bookings').then(m => m.WorkerBookings) }
+    { path: 'bookings', loadComponent: () => import('./bookings/worker-bookings').then(m => m.WorkerBookings) },
+    { path: 'jobs', loadComponent: () => import('./jobs/job-browse').then(m => m.JobBrowse) },
+    { path: 'applications', loadComponent: () => import('./jobs/worker-applications').then(m => m.WorkerApplications) },
 ];

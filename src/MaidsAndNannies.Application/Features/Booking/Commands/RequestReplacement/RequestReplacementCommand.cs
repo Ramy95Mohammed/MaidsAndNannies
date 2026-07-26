@@ -5,4 +5,4 @@ namespace MaidsAndNannies.Application.Features.Bookings.Commands.RequestReplacem
 public sealed record RequestReplacementCommand(
     int BookingId,
     string HomeownerId,
-    int NewWorkerId) : IRequest<Unit>;
+    int NewWorkerId , int? ApplicationId) : IRequest<Unit>;

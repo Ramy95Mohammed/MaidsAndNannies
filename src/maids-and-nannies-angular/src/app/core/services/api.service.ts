@@ -145,6 +145,39 @@ rejectPayment(id: number, reason?: string): Observable<any> {
     return this.http.post(`${this.API_URL}/admin/homeowners/register`, data);
   }
 
+
+  // ── Job Posts ──
+createJobPost(data: any): Observable<any> {
+  return this.http.post(`${this.API_URL}/jobposts`, data);
+}
+getMyJobPosts(): Observable<any> {
+  return this.http.get(`${this.API_URL}/jobposts/my`);
+}
+getJobPostById(id: number): Observable<any> {
+  return this.http.get(`${this.API_URL}/jobposts/${id}`);
+}
+getApprovedJobPosts(): Observable<any> {
+  return this.http.get(`${this.API_URL}/jobposts`);
+}
+applyForJob(postId: number, message?: string): Observable<any> {
+  return this.http.post(`${this.API_URL}/jobposts/${postId}/apply`, { message });
+}
+getJobApplications(postId: number): Observable<any> {
+  return this.http.get(`${this.API_URL}/jobposts/${postId}/applications`);
+}
+acceptApplication(postId: number, appId: number): Observable<any> {
+  return this.http.post(`${this.API_URL}/jobposts/${postId}/applications/${appId}/accept`, {});
+}
+getMyApplications(): Observable<any> {
+  return this.http.get(`${this.API_URL}/jobposts/my-applications`);
+}
+getPendingJobPosts(): Observable<any> {
+  return this.http.get(`${this.API_URL}/adminjobposts/pending`);
+}
+reviewJobPost(id: number, data: any): Observable<any> {
+  return this.http.put(`${this.API_URL}/adminjobposts/${id}/review`, data);
+}
+
  // Settings
   getSettings(): Observable<any> {
     return this.http.get(`${this.API_URL}/adminsettings`);

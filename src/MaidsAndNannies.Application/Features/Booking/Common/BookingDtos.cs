@@ -74,7 +74,8 @@ public sealed record BookingDetailDto(
     int ReplacementCount,
     int MaxReplacement,
     string? AdminNotes,    
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    int? JobPostId);
 
 
 public sealed record CreateBookingRequest(

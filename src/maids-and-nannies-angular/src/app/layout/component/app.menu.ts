@@ -43,6 +43,7 @@ export class AppMenu {
                     { label: isAr ? 'الاشتراكات' : 'Subscriptions', icon: 'pi pi-fw pi-credit-card', routerLink: ['/admin/subscriptions'] },
                     { label: isAr ? 'العملات' : 'Currencies', icon: 'pi pi-fw pi-money-bill', routerLink: ['/admin/currencies'] },
                     { label: isAr ? 'الإعدادات' : 'Settings', icon: 'pi pi-fw pi-cog', routerLink: ['/admin/settings'] },
+                    { label: isAr ? 'إعلانات الوظائف' : 'Job Posts', icon: 'pi pi-fw pi-briefcase', routerLink: ['/admin/job-posts'] },
                     { label: isAr ? 'تسجيل صاحبة منزل' : 'Register Homeowner', icon: 'pi pi-fw pi-user-plus', routerLink: ['/admin/register-homeowner'] },
                 ]
             });
@@ -55,6 +56,7 @@ export class AppMenu {
                     { label: isAr ? 'لوحة التحكم' : 'Dashboard', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/homeowner/dashboard'] },
                     { label: isAr ? 'ملفي الشخصي' : 'My Profile', icon: 'pi pi-fw pi-user', routerLink: ['/homeowner/profile'] },
                     { label: isAr ? 'بحث عن عاملة' : 'Search Workers', icon: 'pi pi-fw pi-search', routerLink: ['/homeowner/workers'] },
+                    { label: isAr ? 'إعلاناتي' : 'My Job Posts', icon: 'pi pi-fw pi-briefcase', routerLink: ['/homeowner/jobs'] },
                     { label: isAr ? 'حجوزاتي' : 'My Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/homeowner/bookings'] },                    
                     { label: isAr ? 'اشتراكاتي' : 'My Subscriptions', icon: 'pi pi-fw pi-credit-card', routerLink: ['/homeowner/subscriptions'] },
                 ]
@@ -67,7 +69,9 @@ export class AppMenu {
                 items: [
                     { label: isAr ? 'لوحة التحكم' : 'Dashboard', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/worker/dashboard'] },
                     { label: isAr ? 'ملفي الشخصي' : 'My Profile', icon: 'pi pi-fw pi-user', routerLink: ['/worker/profile'] },
-                    { label: isAr ? 'حجوزاتي' : 'My Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/worker/bookings'] }
+                    { label: isAr ? 'حجوزاتي' : 'My Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/worker/bookings'] },
+                    { label: isAr ? 'وظائف' : 'Browse Jobs', icon: 'pi pi-fw pi-briefcase', routerLink: ['/worker/jobs'] },
+                    { label: isAr ? 'طلباتي' : 'My Applications', icon: 'pi pi-fw pi-file', routerLink: ['/worker/applications'] },
                 ]
             });
         }

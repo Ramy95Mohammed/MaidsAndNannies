@@ -328,7 +328,8 @@
     "STATUS_LABEL_COMPLETED": "مكتمل",
     "STATUS_LABEL_CANCELLED": "ملغي",
     "STATUS_LABEL_REPLACEMENT": "طلب استبدال",
-    "STATUS_LABEL_REVIEW": "قيد المراجعة"
+    "STATUS_LABEL_REVIEW": "قيد المراجعة",
+    "SET_AS_REPLACEMENT": "تعيين كبديلة"
   },
   "ADMIN": {
     "TITLE": "لوحة الإدارة",
@@ -393,6 +394,31 @@
     "SPECIALIZATION_CHILDCARE": "رعاية أطفال",
     "SPECIALIZATION_ELDERLY_CARE": "رعاية مسنين",
     "SPECIALIZATION_GENERAL": "عمل منزلي عام"
+  },
+  "JOB_POST": {
+    "CREATE": "إنشاء إعلان وظيفة",
+    "MY_POSTS": "إعلاناتي",
+    "DETAIL": "تفاصيل الإعلان",
+    "DESCRIPTION": "تفاصيل الوظيفة",
+    "DESC_PLACEHOLDER": "اكتب تفاصيل الوظيفة هنا... يمكنك كتابة رقم هاتف للتواصل",
+    "SUBMIT": "إرسال للمراجعة",
+    "APPLICATIONS": "المتقدمون",
+    "APPLY": "التقدم لهذه الوظيفة",
+    "MY_APPLICATIONS": "طلباتي",
+    "BROWSE": "تصفح الوظائف",
+    "REVIEW_TITLE": "مراجعة إعلانات الوظائف",
+    "REVIEW": "مراجعة الإعلان",
+    "ORIGINAL_DESC": "الوصف الأصلي",
+    "SANITIZED_DESC": "الوصف المعدل (بدون أرقام تواصل)",
+    "SANITIZED_HINT": "عدّل النص لحذف أي معلومات تواصل قبل الاعتماد",
+    "VIEW_APPLICATIONS": "عرض المتقدمين",
+    "REJECTION_REASON": "سبب الرفض",
+    "MESSAGE": "رسالة (اختياري)",
+    "MESSAGE_PLACEHOLDER": "اكتب رسالة لصاحبة المنزل...",
+    "SUBMIT_APPLICATION": "تقديم الطلب",
+    "DATE": "التاريخ",
+    "POST_ID": "إعلان #",
+    "NO_APPLICANTS": "لا يوجد متقدمون جدد"
   },
   "MENU": {
     "ADMIN": "الإدارة",

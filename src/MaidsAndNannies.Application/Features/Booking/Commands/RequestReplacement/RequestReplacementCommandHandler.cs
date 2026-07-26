@@ -9,35 +9,41 @@ public sealed class RequestReplacementCommandHandler(
     IApplicationDbContext dbContext)
     : IRequestHandler<RequestReplacementCommand, Unit>
 {
-    public async Task<Unit> Handle(RequestReplacementCommand request, CancellationToken ct)
+
+    public async Task<Unit> Handle(RequestReplacementCommand r, CancellationToken ct)
     {
         var booking = await dbContext.Bookings
-            .FirstOrDefaultAsync(b => b.Id == request.BookingId && b.HomeownerId == request.HomeownerId, ct)
+            .FirstOrDefaultAsync(b => b.Id == r.BookingId && b.HomeownerId == r.HomeownerId, ct)
             ?? throw new KeyNotFoundException("الحجز غير موجود");
 
-        var maxReplacementStr = await dbContext.AppSettings
-    .Where(s => s.Key == "MaxReplacementCount")
-    .Select(s => s.Value)
-    .FirstOrDefaultAsync(ct);
-        var maxReplacement = int.TryParse(maxReplacementStr, out var max) ? max : 2;
+        var maxSetting = await dbContext.AppSettings
+            .FirstOrDefaultAsync(s => s.Key == "MaxReplacementCount", ct);
+        var max = int.TryParse(maxSetting?.Value, out var m) ? m : 2;
+        if (booking.ReplacementCount >= max)
+            throw new InvalidOperationException($"تم تجاوز الحد الأقصى للاستبدال ({max} مرات)");
 
-        if (booking.ReplacementCount >= maxReplacement)
-            throw new InvalidOperationException($"تم تجاوز الحد الأقصى للاستبدال ({maxReplacement} مرات)");
+        string newWorkerId;
+        if (r.ApplicationId.HasValue)
+        {
+            var app = await dbContext.JobApplications
+                .FirstOrDefaultAsync(a => a.Id == r.ApplicationId && a.JobPostId == booking.JobPostId, ct)
+                ?? throw new KeyNotFoundException("الطلب غير موجود");
+            newWorkerId = app.WorkerId;
+        }
+        else
+        {
+            var worker = await dbContext.WorkerProfiles
+                .FirstOrDefaultAsync(w => w.Id == r.NewWorkerId, ct)
+                ?? throw new KeyNotFoundException("العاملة غير موجودة");
+            newWorkerId = worker.UserId;
+        }
 
-
-        if (booking.Status != BookingStatus.Paid && booking.Status != BookingStatus.Active)
-            throw new InvalidOperationException("لا يمكن طلب استبدال في هذه الحالة");
-
-        var newWorker = await dbContext.WorkerProfiles
-            .FirstOrDefaultAsync(w => w.Id == request.NewWorkerId, ct)
-            ?? throw new KeyNotFoundException("العاملة غير موجودة");
-
-        booking.WorkerId = newWorker.UserId;
+        booking.WorkerId = newWorkerId;
         booking.ReplacementCount++;
-        booking.Status = BookingStatus.ReplacementRequested;
+        booking.Status = BookingStatus.Pending;
         booking.UpdatedAt = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync(ct);
         return Unit.Value;
-    }
+    }   
 }

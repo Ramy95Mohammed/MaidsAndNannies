@@ -52,6 +52,7 @@ export interface BookingDetailDto {
   maxReplacement:number;
   adminNotes: string | null;
   createdAt: string;
+  jobPostId:number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -81,9 +82,9 @@ export class BookingService {
     return this.http.post(`${this.API_URL}/booking/${id}/upload-proof`, formData);
   }
 
-  requestReplacement(id: number, newWorkerId: number): Observable<any> {
-    return this.http.post(`${this.API_URL}/booking/${id}/replace`, { newWorkerId });
-  }
+requestReplacement(id: number, newWorkerId?: number | null, applicationId?: number | null): Observable<any> {
+  return this.http.post(`${this.API_URL}/booking/${id}/replace`, { newWorkerId, applicationId });
+}
 
   // Worker
   getWorkerBookings(): Observable<BookingListDto[]> {

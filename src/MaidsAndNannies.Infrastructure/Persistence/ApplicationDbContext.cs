@@ -26,6 +26,9 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Country> Countries => Set<Country>();
     public DbSet<State> States => Set<State>();
     public DbSet<City> Cities => Set<City>();
+
+    public DbSet<JobPost> JobPosts => Set<JobPost>();
+    public DbSet<JobApplication> JobApplications => Set<JobApplication>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -160,6 +163,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             b.Property(bo => bo.PaymentProofImageUrl).HasMaxLength(500);
             b.Property(bo => bo.PaymentConfirmedBy).HasMaxLength(450);
             b.Property(bo => bo.AdminNotes).HasMaxLength(2000);
+            b.Property(j => j.JobPostId);
         });
 
         // Review configuration
@@ -280,6 +284,42 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             b.HasOne(c => c.State)
              .WithMany()
              .HasForeignKey(c => c.State_id)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // JobPost configuration
+        builder.Entity<JobPost>(b =>
+        {
+            b.HasKey(j => j.Id);
+            b.Property(j => j.Description).HasMaxLength(5000).IsRequired();
+            b.Property(j => j.SanitizedDescription).HasMaxLength(5000);
+            b.Property(j => j.MonthlySalary).HasColumnType("decimal(18,2)");
+            b.Property(j => j.DailySalary).HasColumnType("decimal(18,2)");
+            b.Property(j => j.HourlySalary).HasColumnType("decimal(18,2)");
+            b.Property(j => j.RejectionReason).HasMaxLength(1000);
+            b.Property(j => j.CurrencyId).IsRequired();
+            b.HasOne(c => c.Currency)
+           .WithMany()
+           .HasForeignKey(c => c.CurrencyId)
+           .OnDelete(DeleteBehavior.Restrict);
+            b.HasOne(j => j.Homeowner)
+             .WithMany(u => u.JobPosts)
+             .HasForeignKey(j => j.HomeownerId)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // JobApplication configuration
+        builder.Entity<JobApplication>(b =>
+        {
+            b.HasKey(a => a.Id);
+            b.Property(a => a.Message).HasMaxLength(2000);
+            b.HasOne(a => a.JobPost)
+             .WithMany(j => j.Applications)
+             .HasForeignKey(a => a.JobPostId)
+             .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(a => a.Worker)
+             .WithMany(u => u.JobApplications)
+             .HasForeignKey(a => a.WorkerId)
              .OnDelete(DeleteBehavior.Restrict);
         });
 
