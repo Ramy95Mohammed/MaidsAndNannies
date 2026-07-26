@@ -27,7 +27,7 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
                         <th>{{ 'BOOKING.QUANTITY' | translate }}</th>
                         <th>{{ 'BOOKING.TOTAL_AMOUNT' | translate }}</th>
                         <th>{{ 'BOOKING.STATUS' | translate }}</th>
-                        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+                        <th>{{ 'COMMON.TABLE_ACTIONS' | translate }}</th>
                     </tr>
                 </ng-template>
                 <ng-template #body let-booking>

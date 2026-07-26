@@ -153,7 +153,7 @@ export class WorkerDetail implements OnInit {
     commissionTypeIsDisabled:boolean = true;
     quantityIsDisabled:boolean = false;
 
-    bookingTypes = [
+    bookingTypes:any = [
         { label: 'يومي', value: 0 },
         { label: 'شهري', value: 1 },
         { label: 'ساعي', value: 2 }
@@ -177,16 +177,19 @@ export class WorkerDetail implements OnInit {
 
          this.currencyService.loadCurrencies(this.currenciesMap);
 
+         setTimeout(() => {
          this.bookingTypes = [
-    { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
-    { label: this.translate.instant('WORKER_DETAIL.MONTHLY'), value: 1 },
-    { label: this.translate.instant('WORKER_DETAIL.HOURLY'), value: 2 }
-    ];
-
+                    { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
+                    { label: this.translate.instant('WORKER_DETAIL.MONTHLY'), value: 1 },
+                    { label: this.translate.instant('WORKER_DETAIL.HOURLY'), value: 2 }
+                    ];
+                            
     this.commissionOptions = [
         { label: this.translate.instant('WORKER_DETAIL.COMMISSION_ONETIME'), value: 0 },
         { label: this.translate.instant('WORKER_DETAIL.COMMISSION_SUBSCRIPTION'), value: 1 }
     ];
+    }, 1000);
+    
 
 
     }

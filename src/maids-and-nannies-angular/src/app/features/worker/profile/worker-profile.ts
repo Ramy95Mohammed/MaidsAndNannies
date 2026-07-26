@@ -224,24 +224,11 @@ const CURRENCY_KEYS = [
                             formControlName="stateId"
                             [options]="statesOptions()"
                             [filter]="true"
+                             [filterFields]="['name_ar' , 'name_en']"
                             optionValue="id"
                             optionLabel="name"
                             (onChange)="onStateChange($event.value)"
                             [placeholder]="'WORKER_PROFILE.STATE_PLACEHOLDER' | translate"
-                            class="w-full"
-                        ></p-select>
-                    </div>
-
-                    <div class="flex flex-col gap-2">
-                        <label class="font-bold">{{ 'HOMEOWNER.CITY' | translate }}</label>
-                        <p-select
-                            formControlName="cityId"
-                            [options]="citiesOptions()"
-                            [filter]="true"
-                            [filterFields]="['Name_ar' , 'name_en']"
-                            optionValue="id"                            
-                            [disabled]="!form.value.stateId"
-                            [placeholder]="'WORKER_PROFILE.CITY_PLACEHOLDER' | translate"
                             class="w-full"
                         >
                         <ng-template #selectedItem let-selectedOption>
@@ -251,9 +238,41 @@ const CURRENCY_KEYS = [
                                     </div>
                                 }
                             </ng-template>
-                            <ng-template let-country #item>
+                            <ng-template let-satate #item>
                                 <div class="flex items-center gap-3">
-                                   <div>{{ isAr ? country.name_ar:country.name_en }}</div>
+                                   <div>{{ isAr ? satate.name_ar:satate.name_en }}</div>
+                                </div>
+                            </ng-template>
+                            <ng-template #dropdownicon>
+                                <i class="pi pi-flag"></i>
+                            </ng-template>
+                        </p-select>
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <label class="font-bold">{{ 'HOMEOWNER.CITY' | translate }}</label>
+                        <p-select
+                            formControlName="cityId"
+                            [options]="citiesOptions()"
+                            [filter]="true"
+                            [filterFields]="['name_ar' , 'name_en']"
+                            optionValue="id"                            
+                            [disabled]="!form.value.stateId"
+                            [placeholder]="'WORKER_PROFILE.CITY_PLACEHOLDER' | translate"
+                            class="w-full"
+                        >
+                        <ng-template #selectedItem let-selectedOption>
+                                @if (selectedOption) {
+                                    <div class="flex items-center gap-3">
+                                          <div>{{ selectedOption.name_ar  }}</div>
+                                   <div>{{ selectedOption.name_en }}</div>                                        
+                                    </div>
+                                }
+                            </ng-template>
+                            <ng-template let-city #item>
+                                <div class="flex items-center gap-3">
+                                   <div>{{ city.name_ar  }}</div>
+                                   <div>{{ city.name_en }}</div>
                                 </div>
                             </ng-template>
                             <ng-template #dropdownicon>

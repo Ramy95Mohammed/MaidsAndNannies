@@ -36,7 +36,7 @@ import { SubscriptionService, SubscriptionDto } from '../../../core/services/sub
                         <th>{{ 'SUBSCRIPTION.START_DATE' | translate }}</th>
                         <th>{{ 'SUBSCRIPTION.END_DATE' | translate }}</th>
                         <th>{{ 'SUBSCRIPTION.STATUS' | translate }}</th>
-                        <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+                        <th>{{ 'COMMON.TABLE_ACTIONS' | translate }}</th>
                     </tr>
                 </ng-template>
                 <ng-template #body let-s>

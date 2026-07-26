@@ -167,7 +167,8 @@
     "EXPERIENCE_YEARS": "خبرة {{years}} سنوات",
     "AGE": "العمر: {{years}} سنة",
     "RATING_COUNT": "({{count}} تقييم)",
-    "UNSPECIFIED": "غير محدد"
+    "UNSPECIFIED": "غير محدد",
+    "TABLE_ACTIONS": "إجراءات"
   },
   "LANGUAGE": {
     "AR": "العربية",
