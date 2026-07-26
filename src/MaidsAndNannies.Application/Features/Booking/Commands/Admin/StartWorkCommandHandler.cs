@@ -18,13 +18,7 @@ public sealed class StartWorkCommandHandler(
             throw new InvalidOperationException("يجب تأكيد الدفع أولاً");
 
         booking.Status = BookingStatus.Active;
-        booking.UpdatedAt = DateTime.UtcNow;
-
-        var worker = await dbContext.WorkerProfiles.FirstOrDefaultAsync(w => w.UserId == booking.WorkerId , ct);
-        if(worker != null)
-        {
-            worker.IsAvailable = false;
-        }
+        booking.UpdatedAt = DateTime.UtcNow;      
 
         await dbContext.SaveChangesAsync(ct);
         return Unit.Value;

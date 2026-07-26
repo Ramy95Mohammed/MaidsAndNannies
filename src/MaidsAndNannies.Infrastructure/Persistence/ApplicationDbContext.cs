@@ -164,6 +164,11 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             b.Property(bo => bo.PaymentConfirmedBy).HasMaxLength(450);
             b.Property(bo => bo.AdminNotes).HasMaxLength(2000);
             b.Property(j => j.JobPostId);
+            b.Property(bo => bo.CurrencyId);
+            b.HasOne(bo => bo.Currency)
+             .WithMany()
+             .HasForeignKey(bo => bo.CurrencyId)
+             .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Review configuration
@@ -321,7 +326,11 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
              .WithMany(u => u.JobApplications)
              .HasForeignKey(a => a.WorkerId)
              .OnDelete(DeleteBehavior.Restrict);
-        });
+
+                b.HasIndex(x => new { x.JobPostId, x.WorkerId })
+            .IsUnique()
+            .HasFilter("[Status] <> 2");
+            });
 
         // Seed Admin role
         builder.Entity<IdentityRole>().HasData(

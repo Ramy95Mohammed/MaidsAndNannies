@@ -38,11 +38,13 @@ public class Booking : Entity
     public string? AdminNotes { get; set; }
 
     public int? JobPostId { get; set; }
+    public int? CurrencyId { get; set; }
+    public virtual Currency? Currency { get; set; }
 
     public virtual ApplicationUser Homeowner { get; set; } = null!;
     public virtual ApplicationUser Worker { get; set; } = null!;
     public virtual WorkerProfile OriginalWorker { get; set; } = null!;
-    public virtual JobPost JobPost { get; set; } = null!;
+    public virtual JobPost? JobPost { get; set; }
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();    
 
 }

@@ -16,11 +16,25 @@ public sealed class RequestReplacementCommandHandler(
             .FirstOrDefaultAsync(b => b.Id == r.BookingId && b.HomeownerId == r.HomeownerId, ct)
             ?? throw new KeyNotFoundException("الحجز غير موجود");
 
+        var oldWorker = await dbContext.WorkerProfiles
+    .FirstOrDefaultAsync(w => w.UserId == booking.WorkerId, ct);
+        if (oldWorker is not null)
+            oldWorker.IsAvailable = true;
+
         var maxSetting = await dbContext.AppSettings
             .FirstOrDefaultAsync(s => s.Key == "MaxReplacementCount", ct);
         var max = int.TryParse(maxSetting?.Value, out var m) ? m : 2;
-        if (booking.ReplacementCount >= max)
+
+        // تحديث آمن مع منع السباق
+        var rows = await dbContext.Bookings
+            .Where(b => b.Id == r.BookingId && b.ReplacementCount < max)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(b => b.ReplacementCount, b => b.ReplacementCount + 1), ct);
+        if (rows == 0)
             throw new InvalidOperationException($"تم تجاوز الحد الأقصى للاستبدال ({max} مرات)");
+
+        // إعادة قراءة الحجز بعد التحديث
+        booking = await dbContext.Bookings.FirstAsync(b => b.Id == r.BookingId, ct);
 
         string newWorkerId;
         if (r.ApplicationId.HasValue)
@@ -39,11 +53,10 @@ public sealed class RequestReplacementCommandHandler(
         }
 
         booking.WorkerId = newWorkerId;
-        booking.ReplacementCount++;
-        booking.Status = BookingStatus.Pending;
+        booking.Status = booking.IsPaid ? BookingStatus.ReplacementRequested : BookingStatus.Pending;
         booking.UpdatedAt = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync(ct);
         return Unit.Value;
-    }   
+    }
 }

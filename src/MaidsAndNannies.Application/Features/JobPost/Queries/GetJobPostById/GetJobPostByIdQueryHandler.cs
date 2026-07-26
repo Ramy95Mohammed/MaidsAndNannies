@@ -1,5 +1,6 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Application.Features.JobPosts.Common;
+using MaidsAndNannies.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,16 +11,23 @@ public sealed class GetJobPostByIdQueryHandler(IApplicationDbContext dbContext)
 {
     public async Task<JobPostDetailDto> Handle(GetJobPostByIdQuery r, CancellationToken ct)
     {
-        var j = await dbContext.JobPosts.Include(p=>p.Currency)
+        var j = await dbContext.JobPosts.Include(p => p.Currency)
             .FirstOrDefaultAsync(j => j.Id == r.Id, ct)
             ?? throw new KeyNotFoundException("الإعلان غير موجود");
 
         var isOwner = j.HomeownerId == r.UserId;
         var isAdmin = r.Role == "Admin";
 
+        string? description;
+        if (isOwner || isAdmin)
+            description = j.Description;
+        else if (j.PostStatus != JobPostStatus.Approved)
+            description = "الإعلان غير متاح حالياً";
+        else
+            description = j.SanitizedDescription;
+
         return new JobPostDetailDto(
-            j.Id,
-            isOwner || isAdmin ? j.Description : j.SanitizedDescription,
+            j.Id, description,
             j.MonthlySalary, j.DailySalary, j.HourlySalary,
             j.Specialization, j.BookingType, j.CommissionType,
             j.StartDate, j.Quantity, j.PostStatus, j.RejectionReason,

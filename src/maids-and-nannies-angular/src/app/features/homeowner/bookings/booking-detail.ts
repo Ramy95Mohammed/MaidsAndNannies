@@ -210,10 +210,11 @@ export class BookingDetail implements OnInit {
         this.bookingService.getBookingById(id).subscribe({
             next: (data:BookingDetailDto) => {
                 this.booking = data;
+                
+                this.paymentForm.patchValue({ amount: data.monthlySalary , commissionAmount:data.commissionAmount });
                 if (data.jobPostId) {
                 this.loadApplicants(data.jobPostId);
                 }
-                this.paymentForm.patchValue({ amount: data.monthlySalary , commissionAmount:data.commissionAmount });
             }
         });
     }

@@ -17,12 +17,20 @@ public sealed class CreateBookingCommandHandler(
             .FirstOrDefaultAsync(w => w.Id == request.WorkerId, ct)
             ?? throw new KeyNotFoundException("العاملة غير موجودة");
 
+        // تحديث ذري: نضع IsAvailable=false فقط إذا كانت true
+        var rows = await dbContext.WorkerProfiles
+            .Where(w => w.Id == request.WorkerId && w.IsAvailable)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(w => w.IsAvailable, false), ct);
+
+        if (rows == 0)
+            throw new InvalidOperationException("العاملة غير متاحة حالياً");
+
         var currency = await dbContext.Currencies
             .FirstOrDefaultAsync(c => c.Id == worker.CurrencyId, ct)
             ?? throw new KeyNotFoundException("العملة غير موجودة");
 
-        var settings = await dbContext.AppSettings
-    .ToListAsync(ct);
+        var settings = await dbContext.AppSettings.ToListAsync(ct);
 
         var getPercent = (string key, int fallback) =>
         {
@@ -39,9 +47,7 @@ public sealed class CreateBookingCommandHandler(
                 : getPercent("CommissionMonthlySubscriptionPercent", 10),
             _ => 10
         };
-        
 
-        // حساب الإجمالي
         decimal totalAmount = request.BookingType switch
         {
             BookingType.Daily => (worker.DailyRate ?? 0) * request.Quantity,
@@ -50,13 +56,9 @@ public sealed class CreateBookingCommandHandler(
             _ => request.MonthlySalary
         };
 
-        // تحويل إلى EGP لحساب العمولة
         var totalInEgp = totalAmount * currency.RateToEgp;
-
         var commissionAmount = totalInEgp * commissionPercent / 100m;
-        //var commissionAmount = totalInEgp * 0.1m;
 
-        // لو يومي أو ساعي، العمولة OneTime
         var commissionType = request.BookingType switch
         {
             BookingType.Monthly => request.CommissionType,
@@ -79,7 +81,8 @@ public sealed class CreateBookingCommandHandler(
             CommissionAmount = commissionAmount,
             CommissionType = commissionType,
             Status = BookingStatus.Pending,
-            ReplacementCount = 0
+            ReplacementCount = 0,
+            CurrencyId = worker.CurrencyId,
         };
 
         dbContext.Bookings.Add(booking);

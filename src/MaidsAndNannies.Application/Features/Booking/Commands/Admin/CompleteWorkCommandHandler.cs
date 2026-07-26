@@ -24,7 +24,13 @@ public sealed class CompleteWorkCommandHandler(
         var worker = await dbContext.WorkerProfiles
                 .FirstOrDefaultAsync(w => w.UserId == booking.WorkerId, ct);
         if (worker is not null)
-            worker.IsAvailable = false;
+            worker.IsAvailable = true;
+
+        // إلغاء الاشتراك إذا كان موجود
+        var subscription = await dbContext.Subscriptions
+            .FirstOrDefaultAsync(s => s.HomeownerId == booking.HomeownerId && s.IsActive, ct);
+        if (subscription is not null)
+            subscription.IsActive = false;
 
         await dbContext.SaveChangesAsync(ct);
         return Unit.Value;

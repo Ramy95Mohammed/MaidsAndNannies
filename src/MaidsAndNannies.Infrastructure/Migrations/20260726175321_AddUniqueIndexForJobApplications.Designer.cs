@@ -4,6 +4,7 @@ using MaidsAndNannies.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MaidsAndNannies.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726175321_AddUniqueIndexForJobApplications")]
+    partial class AddUniqueIndexForJobApplications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -119,9 +122,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CurrencyId")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("DailySalary")
                         .HasColumnType("decimal(18,2)");
 
@@ -190,8 +190,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CurrencyId");
 
                     b.HasIndex("HomeownerId");
 
@@ -361,7 +359,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 1,
                             Code = "EGP",
-                            CreatedAtUtc = new DateTime(2026, 7, 26, 18, 54, 7, 708, DateTimeKind.Utc).AddTicks(6223),
+                            CreatedAtUtc = new DateTime(2026, 7, 26, 17, 53, 19, 253, DateTimeKind.Utc).AddTicks(1589),
                             IsActive = true,
                             NameAr = "جنيه مصري",
                             NameEn = "Egyptian Pound",
@@ -372,7 +370,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 2,
                             Code = "USD",
-                            CreatedAtUtc = new DateTime(2026, 7, 26, 18, 54, 7, 708, DateTimeKind.Utc).AddTicks(6246),
+                            CreatedAtUtc = new DateTime(2026, 7, 26, 17, 53, 19, 253, DateTimeKind.Utc).AddTicks(1593),
                             IsActive = true,
                             NameAr = "دولار أمريكي",
                             NameEn = "US Dollar",
@@ -383,7 +381,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 3,
                             Code = "SAR",
-                            CreatedAtUtc = new DateTime(2026, 7, 26, 18, 54, 7, 708, DateTimeKind.Utc).AddTicks(6252),
+                            CreatedAtUtc = new DateTime(2026, 7, 26, 17, 53, 19, 253, DateTimeKind.Utc).AddTicks(1600),
                             IsActive = true,
                             NameAr = "ريال سعودي",
                             NameEn = "Saudi Riyal",
@@ -1123,8 +1121,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("CurrencyId");
 
-                    b.HasIndex("NationalityId");
-
                     b.HasIndex("UserId")
                         .IsUnique();
 
@@ -1310,11 +1306,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Booking", b =>
                 {
-                    b.HasOne("MaidsAndNannies.Domain.Entities.Currency", "Currency")
-                        .WithMany()
-                        .HasForeignKey("CurrencyId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", "Homeowner")
                         .WithMany("BookingsAsHomeowner")
                         .HasForeignKey("HomeownerId")
@@ -1334,8 +1325,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .HasForeignKey("WorkerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Currency");
 
                     b.Navigation("Homeowner");
 
@@ -1534,12 +1523,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MaidsAndNannies.Domain.Entities.Country", "Nationality")
-                        .WithMany()
-                        .HasForeignKey("NationalityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", "User")
                         .WithOne("WorkerProfile")
                         .HasForeignKey("MaidsAndNannies.Domain.Entities.WorkerProfile", "UserId")
@@ -1547,8 +1530,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Currency");
-
-                    b.Navigation("Nationality");
 
                     b.Navigation("User");
                 });

@@ -15,17 +15,26 @@ public sealed class ApplyForJobCommandHandler(IApplicationDbContext dbContext)
             .FirstOrDefaultAsync(j => j.Id == r.JobPostId && j.PostStatus == JobPostStatus.Approved, ct)
             ?? throw new KeyNotFoundException("الإعلان غير موجود أو غير معتمد");
 
-        var already = await dbContext.JobApplications
-            .AnyAsync(a => a.JobPostId == r.JobPostId && a.WorkerId == r.WorkerId, ct);
-        if (already) throw new InvalidOperationException("لقد تقدمت لهذا الإعلان مسبقاً");
+        var alreadyAccepted = await dbContext.JobApplications
+            .AnyAsync(a => a.JobPostId == r.JobPostId && a.WorkerId == r.WorkerId && a.Status == ApplicationStatus.Accepted, ct);
+        if (alreadyAccepted)
+            throw new InvalidOperationException("لديك طلب مقبول مسبقاً لهذا الإعلان");
 
-        dbContext.JobApplications.Add(new JobApplication
+        try
         {
-            JobPostId = r.JobPostId,
-            WorkerId = r.WorkerId,
-            Message = r.Message
-        });
-        await dbContext.SaveChangesAsync(ct);
+            dbContext.JobApplications.Add(new JobApplication
+            {
+                JobPostId = r.JobPostId,
+                WorkerId = r.WorkerId,
+                Message = r.Message
+            });
+            await dbContext.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException) when (ct.IsCancellationRequested == false)
+        {
+            // Unique constraint violation => duplicate
+            throw new InvalidOperationException("لقد تقدمت لهذا الإعلان مسبقاً");
+        }
         return Unit.Value;
     }
 }
