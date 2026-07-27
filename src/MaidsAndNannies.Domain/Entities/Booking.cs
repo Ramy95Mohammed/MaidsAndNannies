@@ -19,6 +19,7 @@ public class Booking : Entity
     public decimal HourlySalary { get; set; }
     public decimal TotalAmount { get; set; }         // الجديد
     public decimal CommissionAmount { get; set; }
+    public decimal OutstandingAmount { get; set; }
     public CommissionType CommissionType { get; set; }
 
     public BookingStatus Status { get; set; } = BookingStatus.Pending;

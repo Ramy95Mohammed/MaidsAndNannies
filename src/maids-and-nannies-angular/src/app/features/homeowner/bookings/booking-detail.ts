@@ -191,7 +191,7 @@ export class BookingDetail implements OnInit {
 
     paymentForm: FormGroup = this.fb.group({
         paymentMethod: [null, Validators.required],
-        // amount: [0, [Validators.required, Validators.min(1)]],
+        amount: [0, [Validators.required, Validators.min(1)]],
         commissionAmount: [0, [Validators.required, Validators.min(1)]],
         transactionReference: ['']
     });
@@ -200,10 +200,12 @@ export class BookingDetail implements OnInit {
         const id = Number(this.route.snapshot.paramMap.get('id'));
         this.loadBooking(id);
 
-        this.paymentMethods = [
-    { label: this.translate.instant('PAYMENT.VODAFONE_CASH'), value: 0 },
-    { label: this.translate.instant('PAYMENT.INSTAPAY'), value: 1 }
-];
+        setTimeout(() => {
+            this.paymentMethods = [
+                { label: this.translate.instant('PAYMENT.VODAFONE_CASH'), value: 0 },
+                { label: this.translate.instant('PAYMENT.INSTAPAY'), value: 1 }
+            ];
+        }, 1000);        
     }
 
     private loadBooking(id: number) {
@@ -252,7 +254,7 @@ replaceWithApplicant(applicationId: number) {
         
         const fd = new FormData();
         fd.append('PaymentMethod', this.paymentForm.get('paymentMethod')?.value);
-        // fd.append('Amount', this.paymentForm.get('amount')?.value);
+        fd.append('Amount', this.paymentForm.get('amount')?.value);
         fd.append('CommissionAmount', this.paymentForm.get('commissionAmount')?.value);
         fd.append('TransactionReference', this.paymentForm.get('transactionReference')?.value || '');
         fd.append('proofImage', this.proofFile);

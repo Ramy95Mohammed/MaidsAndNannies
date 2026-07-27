@@ -15,6 +15,7 @@ import { MessageService } from 'primeng/api';
 import { BookingService } from '@/core/services/booking.service';
 import { CurrencyService } from '@/core/services/currency.service';
 import { Paginator } from "primeng/paginator";
+import { LanguageService } from '@/core/services/language.service';
 
 @Component({
     selector: 'app-worker-search',
@@ -30,18 +31,57 @@ import { Paginator } from "primeng/paginator";
                         [(ngModel)]="filters.stateId"
                         [options]="statesOptions()"
                         [filter]="true"
+                        [filterFields]="['name_ar' , 'name_en']" 
                         [showClear]="true"
                         optionValue="id"
                         optionLabel="name"
                         (onChange)="onStateChange($event.value); search()"
-                        [placeholder]="'WORKER_PROFILE.STATE_PLACEHOLDER' | translate"
+                        [placeholder]="'COMMON.STATE' | translate"
                         class="w-full"
-                    ></p-select>
+                    >
+                      <ng-template #selectedItem let-selectedOption>
+                                            @if (selectedOption) {
+                                                <div class="flex items-center gap-3">
+                                                    <div>{{ isAr ? selectedOption.name_ar:selectedOption.name_en }}</div>
+                                                </div>
+                                            }
+                                        </ng-template>
+                                        <ng-template let-state #item>
+                                            <div class="flex items-center gap-3">
+                                                  <div>{{ isAr ? state.name_ar:state.name_en }}</div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template #dropdownicon>
+                                            <i class="pi pi-map"></i>
+                                        </ng-template>
+                    </p-select>
                 </div>
 
                 <div>
                     <label class="block font-bold mb-2">{{ 'HOMEOWNER.CITY' | translate }}</label>
-                    <p-select [(ngModel)]="filters.cityId" [showClear]="true" [options]="citiesOptions()" [filter]="true" optionValue="id" optionLabel="name" (onChange)="search()" [placeholder]="'WORKER_PROFILE.CITY_PLACEHOLDER' | translate" class="w-full"></p-select>
+                    <p-select [(ngModel)]="filters.cityId" [showClear]="true"
+                     [options]="citiesOptions()" 
+                      [filterFields]="['name_ar' , 'name_en']"
+                    [filter]="true" optionValue="id" optionLabel="name" (onChange)="search()" 
+                    [placeholder]="'WORKER_PROFILE.CITY_PLACEHOLDER' | translate" class="w-full">
+                     <ng-template #selectedItem let-selectedOption>
+                                @if (selectedOption) {
+                                    <div class="flex items-center gap-3">
+                                          <div>{{ selectedOption.name_ar  }}</div>
+                                   <div>{{ selectedOption.name_en }}</div>                                        
+                                    </div>
+                                }
+                            </ng-template>
+                            <ng-template let-city #item>
+                                <div class="flex items-center gap-3">
+                                   <div>{{ city.name_ar  }}</div>
+                                   <div>{{ city.name_en }}</div>
+                                </div>
+                            </ng-template>
+                            <ng-template #dropdownicon>
+                                <i class="pi pi-flag"></i>
+                            </ng-template>
+                    </p-select>
                 </div>
 
                 <div>
@@ -85,13 +125,13 @@ import { Paginator } from "primeng/paginator";
 
                     <div class="flex align-items-center justify-content-between">
                         <div>
-                            <span class="text-2xl font-bold text-primary">{{ worker.monthlyRate }} {{ currenciesMap()[worker.currency] || 'EGP' }}</span>
+                            <span class="text-2xl font-bold text-primary">{{ worker.monthlyRate }} {{ currenciesMap()[worker.currencyId] || 'EGP' }}</span>
                             <span class="text-muted-color text-sm mx-2">{{ 'COMMON.PER_MONTH' | translate }}</span>
 
                         </div>
                          <div class="text-sm text-muted-color mt-1">
-                            <span>{{ 'WORKER_DETAIL.DAILY' | translate }}: {{ worker.dailyRate  }} {{ currenciesMap()[worker.currency] || 'EGP' }}</span>
-                            <span class="mx-2"> |  {{ 'WORKER_DETAIL.HOURLY' | translate }}: {{ worker.hourlyRate  }} {{ currenciesMap()[worker.currency] || 'EGP' }}</span>
+                            <span>{{ 'WORKER_DETAIL.DAILY' | translate }}: {{ worker.dailyRate  }} {{ currenciesMap()[worker.currencyId] || 'EGP' }}</span>
+                            <span class="mx-2"> |  {{ 'WORKER_DETAIL.HOURLY' | translate }}: {{ worker.hourlyRate  }} {{ currenciesMap()[worker.currencyId] || 'EGP' }}</span>
                         </div>
                         <p-button [label]="'WORKERS.BOOK' | translate" icon="pi pi-calendar" [rounded]="true" (onClick)="$event.stopPropagation(); viewWorker(worker.id)"></p-button>
                     </div>
@@ -128,6 +168,9 @@ import { Paginator } from "primeng/paginator";
 export class WorkerSearch implements OnInit {
     private apiService = inject(ApiService);
     private currencyService = inject(CurrencyService);
+    langService = inject(LanguageService);
+
+    isAr:boolean = true;
 
     workers = signal<any[]>([]);
     loading = signal(false);
@@ -179,6 +222,9 @@ private getSpecializations() {
     ];
 
     ngOnInit() {
+
+        this.isAr = this.langService.getCurrentLanguage() === 'ar';
+
          this.route.queryParams.subscribe(params => {
         if (params['mode'] === 'replacement' && params['bookingId']) {
             this.isReplacementMode.set(true);

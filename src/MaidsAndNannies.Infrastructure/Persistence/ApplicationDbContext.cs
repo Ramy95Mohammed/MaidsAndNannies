@@ -169,6 +169,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
              .WithMany()
              .HasForeignKey(bo => bo.CurrencyId)
              .OnDelete(DeleteBehavior.Restrict);
+            b.Property(bo => bo.OutstandingAmount).HasColumnType("decimal(18,2)");
         });
 
         // Review configuration
