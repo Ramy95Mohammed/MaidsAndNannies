@@ -10,7 +10,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { TextareaModule } from 'primeng/textarea';
 import { MessageModule } from 'primeng/message';
 import { StepperModule } from 'primeng/stepper';
-import { translate, TranslatePipe } from '@ngx-translate/core';
+import { translate, TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageService } from '../../core/services/language.service';
@@ -109,28 +109,26 @@ import { Toast } from 'primeng/toast';
                                 <div>
                                     <label class="block font-bold mb-2">{{ 'WORKER.NATIONALITY' | translate }}</label>
                                     <p-select
-                                        (onChange)="getStateByCountryId($event.value)"
+                                        
                                         [options]="countriesOptions"
                                         [filter]="true"
-                                        [filterFields]="['nationality', 'native']"
+                                        [filterFields]="['nationality_ar', 'nationality_en']"
                                         [(ngModel)]="formData.nationalityId"
                                         optionValue="id"
                                         optionLabel="name"
-                                        [placeholder]="'COMMON.COUNTRY' | translate"
+                                        [placeholder]="'WORKER.NATIONALITY' | translate"
                                         class="w-full"
                                     >
                                         <ng-template #selectedItem let-selectedOption>
                                             @if (selectedOption) {
                                                 <div class="flex items-center gap-3">
-                                                    <div>{{ selectedOption.nationality }}</div>
-                                                    <div>{{ selectedOption.native }}</div>
+                                                    <div>{{ isAr ? selectedOption.nationality_ar:selectedOption.nationality_en }}</div>                                                   
                                                 </div>
                                             }
                                         </ng-template>
                                         <ng-template let-country #item>
                                             <div class="flex items-center gap-3">
-                                                <div>{{ country.nationality }}</div>
-                                                <div>{{ country.native }}</div>
+                                                <div>{{ isAr ? country.nationality_ar:country.nationality_en }}</div>  
                                             </div>
                                         </ng-template>
                                         <ng-template #dropdownicon>
@@ -139,19 +137,50 @@ import { Toast } from 'primeng/toast';
                                     </p-select>
                                 </div>
 
+                                 <div >
+                        <label class="font-bold">{{ 'COMMON.COUNTRY' | translate }}</label>
+                        <p-select
+                        [(ngModel)]="formData.countryId"                            
+                            [options]="countriesOptions"
+                             [filter]="true"
+                            [filterFields]="['name_ar', 'name_en']"
+                            optionValue="id"
+                            optionLabel="name"
+                            (onChange)="getStateByCountryId($event.value)"
+                            [placeholder]="'COMMON.COUNTRY' | translate"
+                            class="w-full"
+                        > <ng-template #selectedItem let-selectedOption>
+                                @if (selectedOption) {
+                                    <div class="flex items-center gap-3">
+                                        <div>{{ isAr ? selectedOption.name_ar:selectedOption.name_en }}</div>
+                                    </div>
+                                }
+                            </ng-template>
+                            <ng-template let-country #item>
+                                <div class="flex items-center gap-3">
+                                   <div>{{ isAr ? country.name_ar:country.name_en }}</div>
+                                </div>
+                            </ng-template>
+                            <ng-template #dropdownicon>
+                                <i class="pi pi-flag"></i>
+                            </ng-template>
+                        </p-select>
+                    </div>
+
+
                                 <div>
                                     <label class="block font-bold mb-2">{{ 'COMMON.STATE' | translate }}</label>
-                                    <p-select [options]="statesOptions" [filter]="true" [filterBy]="'name'" [(ngModel)]="formData.stateId" optionValue="id" optionLabel="name" [placeholder]="'COMMON.STATE' | translate" class="w-full">
+                                    <p-select [options]="statesOptions" [filter]="true" [filterFields]="['name_ar' , 'name_en']" [(ngModel)]="formData.stateId" optionValue="id" optionLabel="name" [placeholder]="'COMMON.STATE' | translate" class="w-full">
                                         <ng-template #selectedItem let-selectedOption>
                                             @if (selectedOption) {
                                                 <div class="flex items-center gap-3">
-                                                    <div>{{ selectedOption.name }}</div>
+                                                    <div>{{ isAr ? selectedOption.name_ar:selectedOption.name_en }}</div>
                                                 </div>
                                             }
                                         </ng-template>
                                         <ng-template let-state #item>
                                             <div class="flex items-center gap-3">
-                                                <div>{{ state.name }}</div>
+                                                  <div>{{ isAr ? state.name_ar:state.name_en }}</div>
                                             </div>
                                         </ng-template>
                                         <ng-template #dropdownicon>
@@ -222,6 +251,8 @@ export class Register implements OnInit {
     countriesOptions!: Country[];
     statesOptions!: State[];
 
+    isAr:boolean = true;
+
     //file
 
     selfiePreviewUrl: string | null = null;
@@ -230,6 +261,7 @@ export class Register implements OnInit {
     langService = inject(LanguageService);
     private globalizationSpecsService = inject(GlobalizationSpecsService);
     private router = inject(Router);
+    private translate = inject(TranslateService);
 
     selfieImageFile: File | null = null;
 
@@ -249,12 +281,13 @@ export class Register implements OnInit {
 
     register() {
         if (this.formData.password !== this.formData.confirmPassword) {
-            this.errorMessage = 'كلمتا المرور غير متطابقتين';
+            this.errorMessage = this.translate.instant('AUTH.PASSWORDS_MISMATCH');
             return;
         }
         
         if (!this.selfieImageFile) {
-            this.errorMessage = 'الرجاء رفع الصورة الشخصية';
+            this.errorMessage = this.translate.instant('WORKER_PROFILE.SELFIE_REQUIRED');
+
             return;
         }
 
@@ -268,7 +301,7 @@ export class Register implements OnInit {
         fd.append('password', this.formData.password);
         fd.append('confirmPassword', this.formData.confirmPassword);
         fd.append('nationalityId', this.formData.nationalityId);
-        fd.append('countryId', this.formData.nationalityId);
+        fd.append('countryId', this.formData.countryId);
         fd.append('stateId', this.formData.stateId);
         fd.append('experienceYears', this.formData.experienceYears);
         fd.append('monthlyRate', this.formData.monthlyRate);
@@ -284,13 +317,16 @@ export class Register implements OnInit {
             },
             error: (error) => {
                 this.isLoading = false;
-                this.errorMessage = error.error?.message || 'فشل التسجيل';
+                this.errorMessage = error.error?.message || this.translate.instant('AUTH.REGISTRATION_FAILED');
+
             }
         });
     }
 
     ngOnInit(): void {
         this.getCountries();
+
+        this.isAr = this.langService.getCurrentLanguage() === 'ar';
     }
 
     getCountries() {
@@ -299,7 +335,7 @@ export class Register implements OnInit {
                 this.countriesOptions = response;
             },
             error: (error) => {
-                this.errorMessage = error.error?.message || 'Get globalization data failed';
+this.errorMessage = error.error?.message || this.translate.instant('WORKER_PROFILE.TOAST_LOAD_COUNTRIES_ERROR');
             }
         });
     }
@@ -311,7 +347,8 @@ export class Register implements OnInit {
                 this.statesOptions = response;
             },
             error: (error) => {
-                this.errorMessage = error.error?.message || 'Get globalization data failed';
+                this.errorMessage = error.error?.message || this.translate.instant('WORKER_PROFILE.TOAST_LOAD_COUNTRIES_ERROR');
+
             }
         });
     }

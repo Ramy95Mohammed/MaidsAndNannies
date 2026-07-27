@@ -3,8 +3,12 @@ namespace MaidsPlatform.API.Domain.Enums;
 public enum BookingStatus
 {
     Pending = 0,
-    Accepted = 1,
-    Active = 2,
-    Completed = 3,
-    Cancelled = 4
+    WorkerConfirmed = 1,
+    WaitingPayment = 2,
+    Paid = 3,
+    Active = 4,
+    Completed = 5,
+    Cancelled = 6,
+    ReplacementRequested = 7,
+    PaymentSubmitted = 8
 }

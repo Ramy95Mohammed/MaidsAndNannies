@@ -22,6 +22,76 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.AppSetting", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("AppSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Key = "MaxReplacementCount",
+                            Description = "الحد الأقصى لعدد مرات الاستبدال لكل حجز",
+                            Value = "2"
+                        },
+                        new
+                        {
+                            Key = "CommissionDailyPercent",
+                            Description = "نسبة العمولة للحجوزات اليومية (%)",
+                            Value = "10"
+                        },
+                        new
+                        {
+                            Key = "CommissionHourlyPercent",
+                            Description = "نسبة العمولة للحجوزات بالساعة (%)",
+                            Value = "10"
+                        },
+                        new
+                        {
+                            Key = "CommissionMonthlyOneTimePercent",
+                            Description = "نسبة العمولة للحجوزات الشهرية (مرة واحدة)",
+                            Value = "10"
+                        },
+                        new
+                        {
+                            Key = "CommissionMonthlySubscriptionPercent",
+                            Description = "نسبة العمولة للحجوزات الشهرية (اشتراك شهري)",
+                            Value = "10"
+                        },
+                        new
+                        {
+                            Key = "AutoCancelPendingBookingHours",
+                            Description = "إلغاء الحجوزات المعلقة تلقائياً بعد (ساعة)",
+                            Value = "48"
+                        },
+                        new
+                        {
+                            Key = "MaxActiveBookingsPerHomeowner",
+                            Description = "الحد الأقصى للحجوزات النشطة لكل صاحبة منزل",
+                            Value = "5"
+                        });
+                });
+
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Booking", b =>
                 {
                     b.Property<int>("Id")
@@ -29,6 +99,13 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("BookingType")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("CommissionAmount")
                         .HasColumnType("decimal(18,2)");
@@ -42,6 +119,12 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CurrencyId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("DailySalary")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2");
 
@@ -49,10 +132,22 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<decimal>("HourlySalary")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<bool>("IsPaid")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("JobPostId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("MonthlySalary")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("OriginalWorkerId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("OutstandingAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("PaidAt")
@@ -72,6 +167,12 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReplacementCount")
+                        .HasColumnType("int");
+
                     b.Property<int>("ServiceType")
                         .HasColumnType("int");
 
@@ -80,6 +181,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -90,11 +194,205 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CurrencyId");
+
                     b.HasIndex("HomeownerId");
+
+                    b.HasIndex("JobPostId");
+
+                    b.HasIndex("OriginalWorkerId");
 
                     b.HasIndex("WorkerId");
 
                     b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.City", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "id");
+
+                    b.Property<int?>("Country_id")
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "country_id");
+
+                    b.Property<string>("Latitude")
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "latitude");
+
+                    b.Property<string>("Longitude")
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "longitude");
+
+                    b.Property<string>("Name_ar")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name_ar");
+
+                    b.Property<string>("Name_en")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name_en");
+
+                    b.Property<int?>("State_id")
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "state_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Country_id");
+
+                    b.HasIndex("State_id");
+
+                    b.ToTable("Cities");
+                });
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Country", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "id");
+
+                    b.Property<string>("Capital")
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "capital");
+
+                    b.Property<string>("Capital_ar")
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "capital_ar");
+
+                    b.Property<string>("Currency")
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "currency");
+
+                    b.Property<string>("Iso2")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)")
+                        .HasAnnotation("Relational:JsonPropertyName", "iso2");
+
+                    b.Property<string>("Iso3")
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)")
+                        .HasAnnotation("Relational:JsonPropertyName", "iso3");
+
+                    b.Property<string>("Name_ar")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name_ar");
+
+                    b.Property<string>("Name_en")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name_en");
+
+                    b.Property<string>("Nationality_ar")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "nationality_ar");
+
+                    b.Property<string>("Nationality_en")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "nationality_en");
+
+                    b.Property<string>("Phone_code")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasAnnotation("Relational:JsonPropertyName", "phone_code");
+
+                    b.Property<string>("Region")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "region");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Iso2")
+                        .IsUnique()
+                        .HasFilter("[Iso2] IS NOT NULL");
+
+                    b.ToTable("Countries");
+                });
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Currency", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("RateToEgp")
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Currencies");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Code = "EGP",
+                            CreatedAtUtc = new DateTime(2026, 7, 27, 11, 26, 3, 978, DateTimeKind.Utc).AddTicks(9393),
+                            IsActive = true,
+                            NameAr = "جنيه مصري",
+                            NameEn = "Egyptian Pound",
+                            RateToEgp = 1m,
+                            Symbol = "E£"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Code = "USD",
+                            CreatedAtUtc = new DateTime(2026, 7, 27, 11, 26, 3, 978, DateTimeKind.Utc).AddTicks(9399),
+                            IsActive = true,
+                            NameAr = "دولار أمريكي",
+                            NameEn = "US Dollar",
+                            RateToEgp = 48.5m,
+                            Symbol = "$"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Code = "SAR",
+                            CreatedAtUtc = new DateTime(2026, 7, 27, 11, 26, 3, 978, DateTimeKind.Utc).AddTicks(9406),
+                            IsActive = true,
+                            NameAr = "ريال سعودي",
+                            NameEn = "Saudi Riyal",
+                            RateToEgp = 12.9m,
+                            Symbol = "﷼"
+                        });
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.HomeownerProfile", b =>
@@ -147,6 +445,10 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -167,6 +469,10 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Property<string>("VerifiedBy")
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("WhatsAppNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -265,6 +571,118 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.JobApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("JobPostId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WorkerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkerId");
+
+                    b.HasIndex("JobPostId", "WorkerId")
+                        .IsUnique()
+                        .HasFilter("[Status] <> 2");
+
+                    b.ToTable("JobApplications");
+                });
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.JobPost", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BookingType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CommissionType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CurrencyId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("DailySalary")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HomeownerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("HourlySalary")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MonthlySalary")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("PostStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("SanitizedDescription")
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Specialization")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CurrencyId");
+
+                    b.HasIndex("HomeownerId");
+
+                    b.ToTable("JobPosts");
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Message", b =>
@@ -367,6 +785,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Property<int>("BookingId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("CommissionAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime?>("ConfirmedAt")
                         .HasColumnType("datetime2");
 
@@ -458,6 +879,38 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.ToTable("Reviews");
                 });
 
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.State", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "id");
+
+                    b.Property<int?>("Country_id")
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "country_id");
+
+                    b.Property<string>("Name_ar")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name_ar");
+
+                    b.Property<string>("Name_en")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name_en");
+
+                    b.Property<string>("State_code")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasAnnotation("Relational:JsonPropertyName", "state_code");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Country_id");
+
+                    b.ToTable("States");
+                });
+
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Subscription", b =>
                 {
                     b.Property<int>("Id")
@@ -504,6 +957,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("TransactionReference")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -572,6 +1028,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<DateTime>("BirthDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("CityId")
                         .HasColumnType("int");
 
@@ -584,8 +1043,11 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Currency")
+                    b.Property<int>("CurrencyId")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("DailyRate")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ExperienceYears")
                         .HasColumnType("int");
@@ -642,6 +1104,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("VerificationNotes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("VerificationStatus")
                         .HasColumnType("int");
 
@@ -653,10 +1118,15 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("WhatsAppNumber")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CurrencyId");
+
+                    b.HasIndex("NationalityId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -685,7 +1155,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerSpecializationSpec");
+                    b.ToTable("WorkerSpecializationSpecs");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -714,7 +1184,25 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.ToTable("AspNetRoles", (string)null);
 
-                    b.UseTptMappingStrategy();
+                    b.HasData(
+                        new
+                        {
+                            Id = "admin-role-id",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "homeowner-role-id",
+                            Name = "Homeowner",
+                            NormalizedName = "HOMEOWNER"
+                        },
+                        new
+                        {
+                            Id = "worker-role-id",
+                            Name = "Worker",
+                            NormalizedName = "WORKER"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -823,46 +1311,26 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.ToTable("UserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.ApplicationRole", b =>
-                {
-                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRole");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.ToTable("Roles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "admin-role-id",
-                            Name = "Admin",
-                            NormalizedName = "ADMIN",
-                            Description = "System Administrator"
-                        },
-                        new
-                        {
-                            Id = "homeowner-role-id",
-                            Name = "Homeowner",
-                            NormalizedName = "HOMEOWNER",
-                            Description = "Home Owner"
-                        },
-                        new
-                        {
-                            Id = "worker-role-id",
-                            Name = "Worker",
-                            NormalizedName = "WORKER",
-                            Description = "House Worker"
-                        });
-                });
-
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Booking", b =>
                 {
+                    b.HasOne("MaidsAndNannies.Domain.Entities.Currency", "Currency")
+                        .WithMany()
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", "Homeowner")
                         .WithMany("BookingsAsHomeowner")
                         .HasForeignKey("HomeownerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("MaidsAndNannies.Domain.Entities.JobPost", "JobPost")
+                        .WithMany()
+                        .HasForeignKey("JobPostId");
+
+                    b.HasOne("MaidsAndNannies.Domain.Entities.WorkerProfile", "OriginalWorker")
+                        .WithMany("Bookings")
+                        .HasForeignKey("OriginalWorkerId");
 
                     b.HasOne("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", "Worker")
                         .WithMany("BookingsAsWorker")
@@ -870,9 +1338,32 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Currency");
+
                     b.Navigation("Homeowner");
 
+                    b.Navigation("JobPost");
+
+                    b.Navigation("OriginalWorker");
+
                     b.Navigation("Worker");
+                });
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.City", b =>
+                {
+                    b.HasOne("MaidsAndNannies.Domain.Entities.Country", "Country")
+                        .WithMany()
+                        .HasForeignKey("Country_id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("MaidsAndNannies.Domain.Entities.State", "State")
+                        .WithMany()
+                        .HasForeignKey("State_id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Country");
+
+                    b.Navigation("State");
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.HomeownerProfile", b =>
@@ -884,6 +1375,44 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.JobApplication", b =>
+                {
+                    b.HasOne("MaidsAndNannies.Domain.Entities.JobPost", "JobPost")
+                        .WithMany("Applications")
+                        .HasForeignKey("JobPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", "Worker")
+                        .WithMany("JobApplications")
+                        .HasForeignKey("WorkerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("JobPost");
+
+                    b.Navigation("Worker");
+                });
+
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.JobPost", b =>
+                {
+                    b.HasOne("MaidsAndNannies.Domain.Entities.Currency", "Currency")
+                        .WithMany()
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", "Homeowner")
+                        .WithMany("JobPosts")
+                        .HasForeignKey("HomeownerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Currency");
+
+                    b.Navigation("Homeowner");
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Message", b =>
@@ -968,6 +1497,16 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Navigation("Reviewer");
                 });
 
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.State", b =>
+                {
+                    b.HasOne("MaidsAndNannies.Domain.Entities.Country", "Country")
+                        .WithMany()
+                        .HasForeignKey("Country_id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Country");
+                });
+
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Subscription", b =>
                 {
                     b.HasOne("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", "Homeowner")
@@ -992,11 +1531,27 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.WorkerProfile", b =>
                 {
+                    b.HasOne("MaidsAndNannies.Domain.Entities.Currency", "Currency")
+                        .WithMany()
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MaidsAndNannies.Domain.Entities.Country", "Nationality")
+                        .WithMany()
+                        .HasForeignKey("NationalityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", "User")
                         .WithOne("WorkerProfile")
                         .HasForeignKey("MaidsAndNannies.Domain.Entities.WorkerProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Currency");
+
+                    b.Navigation("Nationality");
 
                     b.Navigation("User");
                 });
@@ -1063,15 +1618,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.ApplicationRole", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithOne()
-                        .HasForeignKey("MaidsAndNannies.Domain.Entities.ApplicationRole", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Booking", b =>
                 {
                     b.Navigation("Reviews");
@@ -1085,6 +1631,10 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.Navigation("HomeownerProfile");
 
+                    b.Navigation("JobApplications");
+
+                    b.Navigation("JobPosts");
+
                     b.Navigation("ReceivedMessages");
 
                     b.Navigation("ReviewsReceived");
@@ -1096,8 +1646,15 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
+            modelBuilder.Entity("MaidsAndNannies.Domain.Entities.JobPost", b =>
+                {
+                    b.Navigation("Applications");
+                });
+
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.WorkerProfile", b =>
                 {
+                    b.Navigation("Bookings");
+
                     b.Navigation("Documents");
 
                     b.Navigation("WorkerSpecializationSpecs");

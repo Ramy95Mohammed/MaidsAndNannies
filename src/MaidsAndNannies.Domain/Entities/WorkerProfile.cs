@@ -12,7 +12,8 @@ public class WorkerProfile : Entity
     // Personal Info
     public int NationalityId { get; set; }//
     public string NationalIdNumber { get; set; } = string.Empty;
-    public string? WhatsAppNumber { get; set; }
+    public string WhatsAppNumber { get; set; } = string.Empty;
+    public DateTime BirthDate { get; set; }
 
     // Passport (optional for foreign workers)
     public string? PassportNumber { get; set; }
@@ -31,8 +32,9 @@ public class WorkerProfile : Entity
 
     // Rates
     public decimal? HourlyRate { get; set; }
+    public decimal? DailyRate { get; set; }
     public decimal? MonthlyRate { get; set; }
-    public int Currency { get; set; }
+    public int CurrencyId { get; set; }
 
     // Location
     public int? StateId { get; set; }
@@ -47,14 +49,18 @@ public class WorkerProfile : Entity
     // Status
     public bool IsAvailable { get; set; } = true;
     public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.Pending;
+    public string? VerificationNotes { get; set; }
     public DateTime? VerifiedAt { get; set; }
     public string? VerifiedBy { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
+    public Currency Currency { get; set; } = null!;
     public virtual ApplicationUser User { get; set; } = null!;
     public virtual ICollection<WorkerDocument> Documents { get; set; } = new List<WorkerDocument>();
+    public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public virtual Country? Nationality { get; set; }
 }
 
 

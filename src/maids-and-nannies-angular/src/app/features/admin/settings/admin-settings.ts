@@ -1,0 +1,92 @@
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { TranslatePipe } from '@ngx-translate/core';
+import { ApiService } from '../../../core/services/api.service';
+
+interface SettingGroup {
+    title: string;
+    settings: { key: string; label: string; value: number; description: string }[];
+}
+
+@Component({
+    selector: 'app-admin-settings',
+    standalone: true,
+    imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, InputNumberModule, ToastModule, TranslatePipe],
+    providers: [MessageService],
+    template: `
+        <p-toast />
+        <div class="card">
+            <div class="flex justify-content-between mb-4">
+                <h2>{{ 'SETTINGS.TITLE' | translate }}</h2>
+                <p-button [label]="'COMMON.SAVE' | translate" icon="pi pi-save" (onClick)="save()"></p-button>
+            </div>
+
+            <div *ngFor="let group of groups" class="mb-5">
+                <h3 class="text-lg font-bold mb-3">{{ group.title }}</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div *ngFor="let s of group.settings" class="card p-3">
+                        <label class="block font-bold mb-1">{{ s.label }}</label>
+                        <p-inputnumber [(ngModel)]="s.value" [min]="0" class="w-full"></p-inputnumber>
+                        <small class="text-muted-color">{{ s.description }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `
+})
+export class AdminSettings implements OnInit {
+    private apiService = inject(ApiService);
+    private messageService = inject(MessageService);
+
+    groups: SettingGroup[] = [
+        {
+            title: 'نسب العمولة',
+            settings: [
+                { key: 'CommissionDailyPercent', label: 'عمولة يومي (%)', value: 10, description: 'نسبة العمولة للحجوزات اليومية' },
+                { key: 'CommissionHourlyPercent', label: 'عمولة ساعي (%)', value: 10, description: 'نسبة العمولة للحجوزات بالساعة' },
+                { key: 'CommissionMonthlyOneTimePercent', label: 'عمولة شهري - مرة واحدة (%)', value: 10, description: 'نسبة العمولة للحجز الشهري (مرة واحدة)' },
+                { key: 'CommissionMonthlySubscriptionPercent', label: 'عمولة شهري - اشتراك (%)', value: 10, description: 'نسبة العمولة للحجز الشهري (اشتراك شهري)' },
+            ]
+        },
+        {
+            title: 'الحدود',
+            settings: [
+                { key: 'MaxReplacementCount', label: 'الحد الأقصى للاستبدال', value: 2, description: 'عدد مرات الاستبدال المسموح بها لكل حجز' },
+                { key: 'MaxActiveBookingsPerHomeowner', label: 'أقصى حجوزات نشطة', value: 5, description: 'الحد الأقصى للحجوزات النشطة لكل صاحبة منزل' },
+                { key: 'AutoCancelPendingBookingHours', label: 'إلغاء الحجز المعلق بعد (ساعة)', value: 48, description: 'إلغاء الحجوزات المعلقة تلقائياً بعد هذه المدة' },
+            ]
+        }
+    ];
+
+    ngOnInit() {
+        this.apiService.getSettings().subscribe({
+            next: (data: any[]) => {
+                for (const g of this.groups) {
+                    for (const s of g.settings) {
+                        const found = data.find((d: any) => d.key === s.key);
+                        if (found) s.value = parseInt(found.value) || 0;
+                    }
+                }
+            }
+        });
+    }
+
+    save() {
+        const items: any[] = [];
+        for (const g of this.groups) {
+            for (const s of g.settings) {
+                items.push({ key: s.key, value: String(s.value) });
+            }
+        }
+        this.apiService.updateSettings(items).subscribe({
+            next: () => this.messageService.add({ severity: 'success', detail: 'تم حفظ الإعدادات' })
+        });
+    }
+}

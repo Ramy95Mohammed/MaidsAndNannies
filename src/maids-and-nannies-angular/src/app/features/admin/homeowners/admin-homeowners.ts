@@ -7,7 +7,7 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
@@ -25,13 +25,13 @@ import { ApiService } from '../../../core/services/api.service';
             <p-table [value]="homeowners()" [rows]="10" [paginator]="true" [tableStyle]="{ 'min-width': '60rem' }">
                 <ng-template #header>
                     <tr>
-                        <th>الاسم</th>
-                        <th>البريد</th>
-                        <th>الهاتف</th>
-                        <th>الرقم القومي</th>
-                        <th>المدينة</th>
-                        <th>التاريخ</th>
-                        <th>الإجراءات</th>
+                        <th>{{ 'ADMIN.NAME' | translate }}</th>
+                        <th>{{ 'ADMIN.EMAIL' | translate }}</th>
+                        <th>{{ 'ADMIN.PHONE' | translate }}</th>
+                        <th>{{ 'ADMIN.NATIONAL_ID' | translate }}</th>
+                        <th>{{ 'ADMIN.CITY' | translate }}</th>
+                        <th>{{ 'ADMIN.DATE' | translate }}</th>
+                        <th>{{ 'ADMIN.TABLE_ACTIONS' | translate }}</th>
                     </tr>
                 </ng-template>
                 <ng-template #body let-homeowner>
@@ -56,6 +56,7 @@ export class AdminHomeowners implements OnInit {
     private apiService = inject(ApiService);
     private messageService = inject(MessageService);
     private confirmationService = inject(ConfirmationService);
+    private translate = inject(TranslateService);
 
     homeowners = signal<any[]>([]);
 
@@ -71,13 +72,13 @@ export class AdminHomeowners implements OnInit {
 
     verifyHomeowner(id: number) {
         this.confirmationService.confirm({
-            message: 'هل أنت متأكد من تأكيد صاحبة المنزل؟',
-            header: 'تأكيد',
+            message: this.translate.instant('ADMIN.CONFIRM_HOMEOWNER'),
+            header: this.translate.instant('ADMIN.CONFIRM'),
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.apiService.verifyHomeowner(id).subscribe({
                     next: () => {
-                        this.messageService.add({ severity: 'success', summary: 'تم', detail: 'تم تأكيد صاحبة المنزل' });
+                        this.messageService.add({ severity: 'success', summary: this.translate.instant('COMMON.SUCCESS'), detail: this.translate.instant('ADMIN.HOMEOWNER_CONFIRMED') });
                         this.loadData();
                     }
                 });
@@ -87,13 +88,13 @@ export class AdminHomeowners implements OnInit {
 
     rejectHomeowner(id: number) {
         this.confirmationService.confirm({
-            message: 'هل أنت متأكد من رفض طلب التسجيل؟',
-            header: 'رفض',
+            message: this.translate.instant('ADMIN.REJECT_HOMEOWNER'),
+            header: this.translate.instant('ADMIN.REJECT'),
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.apiService.rejectHomeowner(id, 'تم الرفض من الإدارة').subscribe({
                     next: () => {
-                        this.messageService.add({ severity: 'info', summary: 'تم', detail: 'تم رفض الطلب' });
+                        this.messageService.add({ severity: 'info', summary: this.translate.instant('COMMON.SUCCESS'), detail: this.translate.instant('ADMIN.REQUEST_REJECTED') });
                         this.loadData();
                     }
                 });

@@ -3,11 +3,12 @@ import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-access',
     standalone: true,
-    imports: [ButtonModule, RouterModule, RippleModule, AppFloatingConfigurator, ButtonModule],
+    imports: [ButtonModule, RouterModule, RippleModule, AppFloatingConfigurator, ButtonModule , TranslatePipe],
     template: ` <app-floating-configurator />
         <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-screen overflow-hidden">
             <div class="flex flex-col items-center justify-center">
@@ -17,8 +18,8 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
                             <div class="flex justify-center items-center border-2 border-orange-500 rounded-full" style="width: 3.2rem; height: 3.2rem">
                                 <i class="text-orange-500 pi pi-fw pi-lock text-2xl!"></i>
                             </div>
-                            <h1 class="text-surface-900 dark:text-surface-0 font-bold text-4xl lg:text-5xl mb-2">Access Denied</h1>
-                            <span class="text-muted-color mb-8">You do not have the necessary permisions. Please contact admins.</span>
+                            <h1 class="text-surface-900 dark:text-surface-0 font-bold text-4xl lg:text-5xl mb-2">{{ 'ERROR_PAGES.ACCESS_DENIED' | translate }}</h1>
+                            <span class="text-muted-color mb-8">{{ 'ERROR_PAGES.ACCESS_DENIED_MSG' | translate }}</span>
                             <img src="https://primefaces.org/cdn/templates/sakai/auth/asset-access.svg" alt="Access denied" class="mb-8" width="80%" />
                             <div class="col-span-12 mt-8 text-center">
                                 <p-button label="Go to Dashboard" routerLink="/" severity="warn" />

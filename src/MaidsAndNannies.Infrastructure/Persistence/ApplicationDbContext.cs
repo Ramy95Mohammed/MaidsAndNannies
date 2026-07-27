@@ -1,3 +1,4 @@
+using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Domain.Entities;
 using MaidsAndNannies.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
@@ -7,24 +8,33 @@ using Microsoft.EntityFrameworkCore;
 namespace MaidsAndNannies.Infrastructure.Persistence;
 
 public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : IdentityDbContext<ApplicationUser>(options)
+    : IdentityDbContext<ApplicationUser>(options), IApplicationDbContext
 {
     public DbSet<HomeownerProfile> HomeownerProfiles => Set<HomeownerProfile>();
     public DbSet<WorkerProfile> WorkerProfiles => Set<WorkerProfile>();
+    public DbSet<WorkerSpecializationSpec> WorkerSpecializationSpecs => Set<WorkerSpecializationSpec>();
     public DbSet<WorkerDocument> WorkerDocuments => Set<WorkerDocument>();
+    public DbSet<Currency>  Currencies => Set<Currency>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<PaymentProof> PaymentProofs => Set<PaymentProof>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<AppSetting> AppSettings => Set<AppSetting>();
+
+    public DbSet<Country> Countries => Set<Country>();
+    public DbSet<State> States => Set<State>();
+    public DbSet<City> Cities => Set<City>();
+
+    public DbSet<JobPost> JobPosts => Set<JobPost>();
+    public DbSet<JobApplication> JobApplications => Set<JobApplication>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
         // Custom table names
-        builder.Entity<ApplicationUser>().ToTable("Users");
-        builder.Entity<ApplicationRole>().ToTable("Roles");
+        builder.Entity<ApplicationUser>().ToTable("Users");        
         builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
         builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims");
         builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins");
@@ -106,6 +116,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             b.Property(p => p.PreviousEmployer).HasMaxLength(200);
             b.Property(p => p.Languages).HasMaxLength(500);
             b.Property(p => p.VerifiedBy).HasMaxLength(450);
+            b.Property(p => p.DailyRate).HasColumnType("decimal(18,2)");
             b.Property(p => p.MonthlyRate).HasColumnType("decimal(18,2)");
             b.Property(p => p.HourlyRate).HasColumnType("decimal(18,2)");
             b.Property(p => p.AverageRating).HasColumnType("decimal(3,2)");
@@ -123,14 +134,42 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
              .OnDelete(DeleteBehavior.Cascade);
         });
 
+
+        // Currency configuration
+        builder.Entity<Currency>(b =>
+        {            
+            b.Property(c => c.Code).HasMaxLength(10).IsRequired();
+            b.Property(c => c.Symbol).HasMaxLength(10).IsRequired();
+            b.Property(c => c.NameAr).HasMaxLength(100).IsRequired();
+            b.Property(c => c.NameEn).HasMaxLength(100).IsRequired();
+            b.Property(c => c.RateToEgp).HasColumnType("decimal(18,6)").IsRequired();
+        });
+
+        // Seed currencies
+        builder.Entity<Currency>().HasData(
+            new Currency { Id = 1, Code = "EGP", Symbol = "E£", NameAr = "جنيه مصري", NameEn = "Egyptian Pound", RateToEgp = 1m, IsActive = true },
+            new Currency { Id = 2, Code = "USD", Symbol = "$", NameAr = "دولار أمريكي", NameEn = "US Dollar", RateToEgp = 48.5m, IsActive = true },
+            new Currency { Id = 3, Code = "SAR", Symbol = "﷼", NameAr = "ريال سعودي", NameEn = "Saudi Riyal", RateToEgp = 12.9m, IsActive = true }
+        );
+     
+
         // Booking configuration
         builder.Entity<Booking>(b =>
         {
             b.HasKey(bo => bo.Id);
             b.Property(bo => bo.MonthlySalary).HasColumnType("decimal(18,2)").IsRequired();
+            b.Property(bo => bo.TotalAmount).HasColumnType("decimal(18,2)");
             b.Property(bo => bo.CommissionAmount).HasColumnType("decimal(18,2)");
             b.Property(bo => bo.PaymentProofImageUrl).HasMaxLength(500);
             b.Property(bo => bo.PaymentConfirmedBy).HasMaxLength(450);
+            b.Property(bo => bo.AdminNotes).HasMaxLength(2000);
+            b.Property(j => j.JobPostId);
+            b.Property(bo => bo.CurrencyId);
+            b.HasOne(bo => bo.Currency)
+             .WithMany()
+             .HasForeignKey(bo => bo.CurrencyId)
+             .OnDelete(DeleteBehavior.Restrict);
+            b.Property(bo => bo.OutstandingAmount).HasColumnType("decimal(18,2)");
         });
 
         // Review configuration
@@ -189,28 +228,130 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             b.Property(n => n.Type).HasMaxLength(50);
         });
 
+        // AppSetting configuration
+        builder.Entity<AppSetting>(b =>
+        {
+            b.HasKey(s => s.Key);
+            b.Property(s => s.Key).HasMaxLength(100).IsRequired();
+            b.Property(s => s.Value).HasMaxLength(500).IsRequired();
+            b.Property(s => s.Description).HasMaxLength(500);
+        });
+
+        // Seed settings
+        builder.Entity<AppSetting>().HasData(
+            new AppSetting { Key = "MaxReplacementCount", Value = "2", Description = "الحد الأقصى لعدد مرات الاستبدال لكل حجز" },
+            new AppSetting { Key = "CommissionDailyPercent", Value = "10", Description = "نسبة العمولة للحجوزات اليومية (%)" },
+            new AppSetting { Key = "CommissionHourlyPercent", Value = "10", Description = "نسبة العمولة للحجوزات بالساعة (%)" },
+            new AppSetting { Key = "CommissionMonthlyOneTimePercent", Value = "10", Description = "نسبة العمولة للحجوزات الشهرية (مرة واحدة)" },
+            new AppSetting { Key = "CommissionMonthlySubscriptionPercent", Value = "10", Description = "نسبة العمولة للحجوزات الشهرية (اشتراك شهري)" },
+            new AppSetting { Key = "AutoCancelPendingBookingHours", Value = "48", Description = "إلغاء الحجوزات المعلقة تلقائياً بعد (ساعة)" },
+            new AppSetting { Key = "MaxActiveBookingsPerHomeowner", Value = "5", Description = "الحد الأقصى للحجوزات النشطة لكل صاحبة منزل" }
+        );
+
+
+        builder.Entity<Country>(b =>
+        {
+            b.HasKey(c => c.Id);
+            b.Property(c => c.Id).ValueGeneratedNever();
+            b.Property(c => c.Name_ar).HasMaxLength(200);
+            b.Property(c => c.Name_en).HasMaxLength(200);
+            b.Property(c => c.Iso2).HasMaxLength(2);
+            b.Property(c => c.Iso3).HasMaxLength(3);
+            b.Property(c => c.Phone_code).HasMaxLength(100);
+            b.Property(c => c.Nationality_ar).HasMaxLength(200);
+            b.Property(c => c.Nationality_en).HasMaxLength(200);
+            b.Property(c => c.Region).HasMaxLength(200);
+            b.HasIndex(c => c.Iso2).IsUnique();
+        });
+
+        builder.Entity<State>(b =>
+        {
+            b.HasKey(s => s.Id);
+            b.Property(s => s.Id).ValueGeneratedNever();
+            b.Property(s => s.Name_ar).HasMaxLength(200);
+            b.Property(s => s.Name_en).HasMaxLength(200);
+            b.Property(s => s.State_code).HasMaxLength(100);
+            b.HasOne(s => s.Country)
+             .WithMany()
+             .HasForeignKey(s => s.Country_id)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<City>(b =>
+        {
+            b.HasKey(c => c.Id);
+            b.Property(c => c.Id).ValueGeneratedNever();
+            b.Property(c => c.Name_ar).HasMaxLength(200);
+            b.Property(c => c.Name_en).HasMaxLength(200);
+            b.HasOne(c => c.Country)
+            .WithMany()
+            .HasForeignKey(c => c.Country_id)
+            .OnDelete(DeleteBehavior.Restrict);
+            b.HasOne(c => c.State)
+             .WithMany()
+             .HasForeignKey(c => c.State_id)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // JobPost configuration
+        builder.Entity<JobPost>(b =>
+        {
+            b.HasKey(j => j.Id);
+            b.Property(j => j.Description).HasMaxLength(5000).IsRequired();
+            b.Property(j => j.SanitizedDescription).HasMaxLength(5000);
+            b.Property(j => j.MonthlySalary).HasColumnType("decimal(18,2)");
+            b.Property(j => j.DailySalary).HasColumnType("decimal(18,2)");
+            b.Property(j => j.HourlySalary).HasColumnType("decimal(18,2)");
+            b.Property(j => j.RejectionReason).HasMaxLength(1000);
+            b.Property(j => j.CurrencyId).IsRequired();
+            b.HasOne(c => c.Currency)
+           .WithMany()
+           .HasForeignKey(c => c.CurrencyId)
+           .OnDelete(DeleteBehavior.Restrict);
+            b.HasOne(j => j.Homeowner)
+             .WithMany(u => u.JobPosts)
+             .HasForeignKey(j => j.HomeownerId)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // JobApplication configuration
+        builder.Entity<JobApplication>(b =>
+        {
+            b.HasKey(a => a.Id);
+            b.Property(a => a.Message).HasMaxLength(2000);
+            b.HasOne(a => a.JobPost)
+             .WithMany(j => j.Applications)
+             .HasForeignKey(a => a.JobPostId)
+             .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(a => a.Worker)
+             .WithMany(u => u.JobApplications)
+             .HasForeignKey(a => a.WorkerId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasIndex(x => new { x.JobPostId, x.WorkerId })
+            .IsUnique()
+            .HasFilter("[Status] <> 2");
+            });
+
         // Seed Admin role
-        builder.Entity<ApplicationRole>().HasData(
-            new ApplicationRole
+        builder.Entity<IdentityRole>().HasData(
+            new IdentityRole()
             {
                 Id = "admin-role-id",
                 Name = "Admin",
-                NormalizedName = "ADMIN",
-                Description = "System Administrator"
+                NormalizedName = "ADMIN",                
             },
-            new ApplicationRole
+            new IdentityRole
             {
                 Id = "homeowner-role-id",
                 Name = "Homeowner",
-                NormalizedName = "HOMEOWNER",
-                Description = "Home Owner"
+                NormalizedName = "HOMEOWNER",                
             },
-            new ApplicationRole
+            new IdentityRole
             {
                 Id = "worker-role-id",
                 Name = "Worker",
-                NormalizedName = "WORKER",
-                Description = "House Worker"
+                NormalizedName = "WORKER",                
             }
         );
     }

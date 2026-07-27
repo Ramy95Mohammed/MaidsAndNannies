@@ -42,7 +42,7 @@ export class ApiService {
   }
 
   getMyBookings(): Observable<any> {
-    return this.http.get(`${this.API_URL}/booking/my`);
+        return this.http.get(`${this.API_URL}/booking`);
   }
 
   getWorkerBookings(): Observable<any> {
@@ -73,6 +73,9 @@ export class ApiService {
     return this.http.put(`${this.API_URL}/booking/${id}/complete`, {});
   }
 
+  getAllBookings(): Observable<any> {
+    return this.http.get(`${this.API_URL}/admin/bookings`);
+  }
   // Reviews
   createReview(data: any): Observable<any> {
     return this.http.post(`${this.API_URL}/review`, data);
@@ -103,47 +106,84 @@ export class ApiService {
   // Admin
   getAdminDashboard(): Observable<any> {
     return this.http.get(`${this.API_URL}/admin/dashboard`);
-  }
+}
 
-  getPendingHomeowners(): Observable<any> {
+getPendingHomeowners(): Observable<any> {
     return this.http.get(`${this.API_URL}/admin/homeowners/pending`);
-  }
+}
 
-  verifyHomeowner(id: number): Observable<any> {
-    return this.http.put(`${this.API_URL}/admin/homeowners/${id}/verify`, {});
-  }
+verifyHomeowner(id: number): Observable<any> {
+    return this.http.post(`${this.API_URL}/admin/homeowners/${id}/approve`, {});
+}
 
-  rejectHomeowner(id: number, reason: string): Observable<any> {
-    return this.http.put(`${this.API_URL}/admin/homeowners/${id}/reject`, { reason });
-  }
+rejectHomeowner(id: number, reason: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/admin/homeowners/${id}/reject`, { reason });
+}
 
-  getPendingWorkers(): Observable<any> {
+getPendingWorkers(): Observable<any> {
     return this.http.get(`${this.API_URL}/admin/workers/pending`);
+}
+
+verifyWorker(id: number): Observable<any> {
+    return this.http.post(`${this.API_URL}/admin/workers/${id}/approve`, {});
+}
+
+getPendingPayments(): Observable<any> {
+    return this.http.get(`${this.API_URL}/admin/payments/pending`);
+}
+
+confirmPayment(id: number): Observable<any> {
+    return this.http.post(`${this.API_URL}/admin/payments/${id}/confirm`, {});
+}
+
+rejectPayment(id: number, reason?: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/admin/payments/${id}/reject`, { reason });
+}
+
+  // Admin: Register Homeowner
+  adminRegisterHomeowner(data: any): Observable<any> {
+    return this.http.post(`${this.API_URL}/admin/homeowners/register`, data);
   }
 
-  verifyWorker(id: number): Observable<any> {
-    return this.http.put(`${this.API_URL}/admin/workers/${id}/verify`, {});
+
+  // ── Job Posts ──
+createJobPost(data: any): Observable<any> {
+  return this.http.post(`${this.API_URL}/jobposts`, data);
+}
+getMyJobPosts(): Observable<any> {
+  return this.http.get(`${this.API_URL}/jobposts/my`);
+}
+getJobPostById(id: number): Observable<any> {
+  return this.http.get(`${this.API_URL}/jobposts/${id}`);
+}
+getApprovedJobPosts(): Observable<any> {
+  return this.http.get(`${this.API_URL}/jobposts`);
+}
+applyForJob(postId: number, message?: string): Observable<any> {
+  return this.http.post(`${this.API_URL}/jobposts/${postId}/apply`, { message });
+}
+getJobApplications(postId: number): Observable<any> {
+  return this.http.get(`${this.API_URL}/jobposts/${postId}/applications`);
+}
+acceptApplication(postId: number, appId: number): Observable<any> {
+  return this.http.post(`${this.API_URL}/jobposts/${postId}/applications/${appId}/accept`, {});
+}
+getMyApplications(): Observable<any> {
+  return this.http.get(`${this.API_URL}/jobposts/my-applications`);
+}
+getPendingJobPosts(): Observable<any> {
+  return this.http.get(`${this.API_URL}/adminjobposts/pending`);
+}
+reviewJobPost(id: number, data: any): Observable<any> {
+  return this.http.put(`${this.API_URL}/adminjobposts/${id}/review`, data);
+}
+
+ // Settings
+  getSettings(): Observable<any> {
+    return this.http.get(`${this.API_URL}/adminsettings`);
   }
 
-  getUsers(role?: string, page: number = 1): Observable<any> {
-    let params = new HttpParams().set('page', page);
-    if (role) params = params.set('role', role);
-    return this.http.get(`${this.API_URL}/admin/users`, { params });
-  }
-
-  toggleUser(id: string): Observable<any> {
-    return this.http.put(`${this.API_URL}/admin/users/${id}/toggle`, {});
-  }
-
-  getPendingPayments(): Observable<any> {
-    return this.http.get(`${this.API_URL}/payment/pending`);
-  }
-
-  confirmPayment(id: number): Observable<any> {
-    return this.http.put(`${this.API_URL}/payment/${id}/confirm`, {});
-  }
-
-  rejectPayment(id: number, reason?: string): Observable<any> {
-    return this.http.put(`${this.API_URL}/payment/${id}/reject`, { reason });
+  updateSettings(settings: any[]): Observable<any> {
+    return this.http.put(`${this.API_URL}/adminsettings`, settings);
   }
 }

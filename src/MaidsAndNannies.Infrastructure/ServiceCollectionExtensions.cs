@@ -1,4 +1,6 @@
+using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Infrastructure.Persistence;
+using MaidsAndNannies.Infrastructure.Services;
 using MaidsAndNannies.Infrastructure.Storage;
 using MaidsAndNannies.Application.Contracts;
 using Microsoft.AspNetCore.Identity;
@@ -16,6 +18,8 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+        services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
+
         services.AddIdentityCore<ApplicationUser>(options =>
         {
             options.User.RequireUniqueEmail = true;
@@ -26,6 +30,7 @@ public static class ServiceCollectionExtensions
         .AddEntityFrameworkStores<ApplicationDbContext>();
 
         services.AddScoped<IFileStorage, LocalPrivateFileStorage>();
+        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
         return services;
     }

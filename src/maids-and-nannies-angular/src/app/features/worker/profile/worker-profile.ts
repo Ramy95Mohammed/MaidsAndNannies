@@ -28,6 +28,8 @@ import { WorkerSpecializationSpec } from '@/core/interfaces/worker-specializatio
 import { GlobalizationSpecsService } from '@/core/services/globalization-specs.service';
 import { WorkerProfile } from '@/core/interfaces/worker-profile';
 import { WorkerService } from '@/core/services/worker-service';
+import { CurrencyService } from '@/core/services/currency.service';
+import { LanguageService } from '@/core/services/language.service';
 
 // -- Domain enums (mirrors backend MaidsPlatform.API.Domain.Enums) --------
 enum Specialization {
@@ -122,6 +124,12 @@ const CURRENCY_KEYS = [
                             <label class="font-bold">{{ 'WORKER_PROFILE.WHATSAPP_NUMBER' | translate }}</label>
                             <input pInputText formControlName="whatsAppNumber" class="w-full" [placeholder]="'WORKER_PROFILE.WHATSAPP_PLACEHOLDER' | translate" />
                         </div>
+
+                        <div class="flex flex-col gap-2">
+                            <label class="font-bold">{{ 'WORKER.BIRTHDATE' | translate }}</label>
+                            <p-datepicker formControlName="birthDate" dateFormat="dd/mm/yy" inputStyleClass="w-full" [showIcon]="true" class="w-full"></p-datepicker>
+                        </div>
+                        
                     </div>
 
                     <div class="flex flex-col gap-2">
@@ -130,7 +138,7 @@ const CURRENCY_KEYS = [
                             formControlName="nationalityId"
                             [options]="countriesOptions()"
                             [filter]="true"
-                            [filterFields]="['nationality', 'native']"
+                            [filterFields]="['nationality_ar', 'nationality_en']"
                             optionValue="id"
                             optionLabel="nationality"
                             [placeholder]="'WORKER.NATIONALITY' | translate"
@@ -139,15 +147,13 @@ const CURRENCY_KEYS = [
                             <ng-template #selectedItem let-selectedOption>
                                 @if (selectedOption) {
                                     <div class="flex items-center gap-3">
-                                        <div>{{ selectedOption.nationality }}</div>
-                                        <div class="text-color-secondary">{{ selectedOption.native }}</div>
+                                        <div>{{ isAr ? selectedOption.nationality_ar:selectedOption.nationality_en }}</div>
                                     </div>
                                 }
                             </ng-template>
                             <ng-template let-country #item>
                                 <div class="flex items-center gap-3">
-                                    <div>{{ country.nationality }}</div>
-                                    <div class="text-color-secondary">{{ country.native }}</div>
+                                    <div>{{ isAr ? country.nationality_ar:country.nationality_en }}</div>
                                 </div>
                             </ng-template>
                             <ng-template #dropdownicon>
@@ -188,7 +194,7 @@ const CURRENCY_KEYS = [
                             formControlName="countryId"
                             [options]="countriesOptions()"
                              [filter]="true"
-                            [filterFields]="['nationality', 'native']"
+                            [filterFields]="['name_ar', 'name_en']"
                             optionValue="id"
                             optionLabel="name"
                             (onChange)="onCountryChange($event.value)"
@@ -197,15 +203,13 @@ const CURRENCY_KEYS = [
                         > <ng-template #selectedItem let-selectedOption>
                                 @if (selectedOption) {
                                     <div class="flex items-center gap-3">
-                                        <div>{{ selectedOption.nationality }}</div>
-                                        <div class="text-color-secondary">{{ selectedOption.native }}</div>
+                                        <div>{{ isAr ? selectedOption.name_ar:selectedOption.name_en }}</div>
                                     </div>
                                 }
                             </ng-template>
                             <ng-template let-country #item>
                                 <div class="flex items-center gap-3">
-                                    <div>{{ country.nationality }}</div>
-                                    <div class="text-color-secondary">{{ country.native }}</div>
+                                   <div>{{ isAr ? country.name_ar:country.name_en }}</div>
                                 </div>
                             </ng-template>
                             <ng-template #dropdownicon>
@@ -220,12 +224,29 @@ const CURRENCY_KEYS = [
                             formControlName="stateId"
                             [options]="statesOptions()"
                             [filter]="true"
+                             [filterFields]="['name_ar' , 'name_en']"
                             optionValue="id"
                             optionLabel="name"
                             (onChange)="onStateChange($event.value)"
                             [placeholder]="'WORKER_PROFILE.STATE_PLACEHOLDER' | translate"
                             class="w-full"
-                        ></p-select>
+                        >
+                        <ng-template #selectedItem let-selectedOption>
+                                @if (selectedOption) {
+                                    <div class="flex items-center gap-3">
+                                        <div>{{ isAr ? selectedOption.name_ar:selectedOption.name_en }}</div>
+                                    </div>
+                                }
+                            </ng-template>
+                            <ng-template let-satate #item>
+                                <div class="flex items-center gap-3">
+                                   <div>{{ isAr ? satate.name_ar:satate.name_en }}</div>
+                                </div>
+                            </ng-template>
+                            <ng-template #dropdownicon>
+                                <i class="pi pi-flag"></i>
+                            </ng-template>
+                        </p-select>
                     </div>
 
                     <div class="flex flex-col gap-2">
@@ -234,12 +255,30 @@ const CURRENCY_KEYS = [
                             formControlName="cityId"
                             [options]="citiesOptions()"
                             [filter]="true"
-                            optionValue="id"
-                            optionLabel="name"
+                            [filterFields]="['name_ar' , 'name_en']"
+                            optionValue="id"                            
                             [disabled]="!form.value.stateId"
                             [placeholder]="'WORKER_PROFILE.CITY_PLACEHOLDER' | translate"
                             class="w-full"
-                        ></p-select>
+                        >
+                        <ng-template #selectedItem let-selectedOption>
+                                @if (selectedOption) {
+                                    <div class="flex items-center gap-3">
+                                          <div>{{ selectedOption.name_ar  }}</div>
+                                   <div>{{ selectedOption.name_en }}</div>                                        
+                                    </div>
+                                }
+                            </ng-template>
+                            <ng-template let-city #item>
+                                <div class="flex items-center gap-3">
+                                   <div>{{ city.name_ar  }}</div>
+                                   <div>{{ city.name_en }}</div>
+                                </div>
+                            </ng-template>
+                            <ng-template #dropdownicon>
+                                <i class="pi pi-flag"></i>
+                            </ng-template>
+                        </p-select>
                     </div>
 
                     <div class="flex flex-col gap-2">
@@ -301,8 +340,13 @@ const CURRENCY_KEYS = [
                     </div>
 
                     <div class="flex flex-col gap-2">
+                        <label class="font-bold">{{ 'WORKER.DAILY_RATE' | translate }}</label>
+                        <p-inputnumber formControlName="dailyRate" mode="decimal" [minFractionDigits]="0" [min]="0" class="w-full"></p-inputnumber>
+                    </div>
+
+                    <div class="flex flex-col gap-2">
                         <label class="font-bold">{{ 'WORKER.CURRENCY' | translate }}</label>
-                        <p-select formControlName="currency" [options]="currencyOptions()" optionLabel="label" optionValue="value" class="w-full"></p-select>
+                        <p-select formControlName="currencyId" [options]="currencyOptions()" optionLabel="label" optionValue="value" class="w-full"></p-select>
                     </div>
 
                     <h3>{{ 'WORKER_PROFILE.ACCOUNT_STATUS' | translate }}</h3>
@@ -405,6 +449,8 @@ export class WorkerProfileComponent implements OnInit {
     private messageService = inject(MessageService);
     private translate = inject(TranslateService);
     private router = inject(Router);
+    private currencyService = inject(CurrencyService);
+     langService = inject(LanguageService);
 
     readonly documentType = DocumentType;
 
@@ -415,6 +461,8 @@ export class WorkerProfileComponent implements OnInit {
     countriesOptions = signal<any[]>([]);
     statesOptions = signal<any[]>([]);
     citiesOptions = signal<any[]>([]);
+
+    isAr:boolean = true;
 
     // Bumped whenever the active language changes, so the computed()s below
     // (which read translate.instant()) re-run and pick up the new strings.
@@ -430,13 +478,7 @@ export class WorkerProfileComponent implements OnInit {
         }));
     });
 
-    currencyOptions = computed(() => {
-        this.currentLang();
-        return CURRENCY_KEYS.map(o => ({
-            value: o.value,
-            label: this.translate.instant(`WORKER_PROFILE.${o.key}`)
-        }));
-    });
+       currencyOptions = signal<{ value: number; label: string }[]>([]);
 
     userFullName = computed(() => this.authService.currentUser()?.fullName ?? '');    
     userEmail = computed(() => this.authService.currentUser()?.email ?? '');
@@ -475,9 +517,10 @@ export class WorkerProfileComponent implements OnInit {
     form: FormGroup = this.fb.group({
         nationalityId: [null, Validators.required],
         nationalIdNumber: ['', Validators.required],
-        whatsAppNumber: [null],
+        whatsAppNumber: ['' ,  Validators.required],
         passportNumber: [null],
         passportExpiryDate: [null],
+        birthDate: [null, Validators.required],
         passportCountry: [null],
         email:[{value:null , disabled:true}],
         countryId: [null],
@@ -493,8 +536,9 @@ export class WorkerProfileComponent implements OnInit {
         isAvailable: [true],
 
         hourlyRate: [null],
+        dailyRate: [null],
         monthlyRate: [null],
-        currency: [0],
+        currencyId: [0],
 
         specializations: this.fb.array([])
     });
@@ -510,8 +554,10 @@ export class WorkerProfileComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.isAr = this.langService.getCurrentLanguage() === 'ar';
         this.loadCountries();
         this.loadProfile();
+        this.loadCurrencies();
     }
 
     loadCountries() {
@@ -587,6 +633,10 @@ export class WorkerProfileComponent implements OnInit {
         this.form.patchValue({
             nationalityId: data.nationalityId,
             nationalIdNumber: data.nationalIdNumber,
+            birthDate:
+                data.birthDate && new Date(data.birthDate).getFullYear() !== 1
+                    ? new Date(data.birthDate)
+                    : null,
             whatsAppNumber: data.whatsAppNumber,
             passportNumber: data.passportNumber,
             passportExpiryDate: data.passportExpiryDate ? new Date(data.passportExpiryDate) : null,
@@ -605,8 +655,9 @@ export class WorkerProfileComponent implements OnInit {
             isAvailable: data.isAvailable,
 
             hourlyRate: data.hourlyRate,
+            dailyRate: data.dailyRate,
             monthlyRate: data.monthlyRate,
-            currency: data.currency
+            currencyId: data.currencyId
         });
 
         this.specializationsArray.clear();
@@ -668,6 +719,7 @@ export class WorkerProfileComponent implements OnInit {
             whatsAppNumber: value.whatsAppNumber,
             passportNumber: value.passportNumber,
             passportExpiryDate: this.toDateOnlyString(value.passportExpiryDate),
+            birthDate: this.toDateOnlyString(value.birthDate),
             passportCountry: value.passportCountry,
            
             countryId: value.countryId,
@@ -683,8 +735,9 @@ export class WorkerProfileComponent implements OnInit {
             isAvailable: value.isAvailable,
 
             hourlyRate: value.hourlyRate,
+            dailyRate:  value.dailyRate,
             monthlyRate: value.monthlyRate,
-            currency: value.currency,
+            currencyId: value.currencyId,
 
             workerSpecializationSpecs: value.specializations
                 .filter((s: any) => s.specialization !== null && s.specialization !== undefined)
@@ -725,6 +778,18 @@ export class WorkerProfileComponent implements OnInit {
                     summary: this.translate.instant('COMMON.ERROR'),
                     detail: this.translate.instant('WORKER_PROFILE.TOAST_SAVE_ERROR')
                 });
+            }
+        });
+    }
+
+        loadCurrencies() {
+        this.currencyService.getCurrencies().subscribe({
+            next: (data) => {
+                const isAr = this.langService.getCurrentLanguage() === 'ar';
+                this.currencyOptions.set(data.map(c => ({
+                    value: c.id,
+                    label: isAr ? `${c.nameAr} (${c.code})` : `${c.nameEn} (${c.code})`
+                })));
             }
         });
     }

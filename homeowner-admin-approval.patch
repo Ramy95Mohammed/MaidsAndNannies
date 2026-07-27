@@ -1,0 +1,884 @@
+diff --git a/src/MaidsAndNannies.Application/Common/Helpers/AbsoluteUrlHelper.cs b/src/MaidsAndNannies.Application/Common/Helpers/AbsoluteUrlHelper.cs
+new file mode 100644
+index 0000000..bf92ce0
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Common/Helpers/AbsoluteUrlHelper.cs
+@@ -0,0 +1,22 @@
++using Microsoft.AspNetCore.Http;
++
++namespace MaidsAndNannies.Application.Common.Helpers;
++
++/// <summary>
++/// Shared by any handler that needs to turn a stored relative file URL
++/// ("/uploads/...") into an absolute one for the SPA. Kept in one place so it
++/// isn't copy-pasted into every handler that returns document/photo URLs.
++/// </summary>
++public static class AbsoluteUrlHelper
++{
++    public static string? ToAbsoluteUrl(string? relativeUrl, IHttpContextAccessor httpContextAccessor)
++    {
++        if (string.IsNullOrEmpty(relativeUrl)) return relativeUrl;
++        if (relativeUrl.StartsWith("http://") || relativeUrl.StartsWith("https://")) return relativeUrl;
++
++        var request = httpContextAccessor.HttpContext?.Request;
++        if (request is null) return relativeUrl;
++
++        return $"{request.Scheme}://{request.Host}{relativeUrl}";
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Commands/ApproveHomeowner/ApproveHomeownerCommand.cs b/src/MaidsAndNannies.Application/Features/Admin/Commands/ApproveHomeowner/ApproveHomeownerCommand.cs
+new file mode 100644
+index 0000000..cd94109
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Commands/ApproveHomeowner/ApproveHomeownerCommand.cs
+@@ -0,0 +1,5 @@
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Admin.Commands.ApproveHomeowner;
++
++public sealed record ApproveHomeownerCommand(int HomeownerProfileId, string AdminUserId) : IRequest<Unit>;
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Commands/ApproveHomeowner/ApproveHomeownerCommandHandler.cs b/src/MaidsAndNannies.Application/Features/Admin/Commands/ApproveHomeowner/ApproveHomeownerCommandHandler.cs
+new file mode 100644
+index 0000000..3b36d16
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Commands/ApproveHomeowner/ApproveHomeownerCommandHandler.cs
+@@ -0,0 +1,29 @@
++using MaidsAndNannies.Application.Common.Exceptions;
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++using Microsoft.EntityFrameworkCore;
++
++namespace MaidsAndNannies.Application.Features.Admin.Commands.ApproveHomeowner;
++
++public sealed class ApproveHomeownerCommandHandler(IApplicationDbContext dbContext)
++    : IRequestHandler<ApproveHomeownerCommand, Unit>
++{
++    public async Task<Unit> Handle(ApproveHomeownerCommand request, CancellationToken cancellationToken)
++    {
++        var homeowner = await dbContext.HomeownerProfiles
++            .FirstOrDefaultAsync(h => h.Id == request.HomeownerProfileId, cancellationToken);
++
++        if (homeowner is null)
++            throw new NotFoundException("HomeownerProfile", request.HomeownerProfileId);
++
++        homeowner.VerificationStatus = VerificationStatus.Approved;
++        homeowner.VerificationNotes = null;
++        homeowner.VerifiedAt = DateTime.UtcNow;
++        homeowner.VerifiedBy = request.AdminUserId;
++        homeowner.UpdatedAt = DateTime.UtcNow;
++
++        await dbContext.SaveChangesAsync(cancellationToken);
++        return Unit.Value;
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Commands/ApproveWorker/ApproveWorkerCommand.cs b/src/MaidsAndNannies.Application/Features/Admin/Commands/ApproveWorker/ApproveWorkerCommand.cs
+new file mode 100644
+index 0000000..cac3cf8
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Commands/ApproveWorker/ApproveWorkerCommand.cs
+@@ -0,0 +1,5 @@
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Admin.Commands.ApproveWorker;
++
++public sealed record ApproveWorkerCommand(int WorkerProfileId, string AdminUserId) : IRequest<Unit>;
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Commands/ApproveWorker/ApproveWorkerCommandHandler.cs b/src/MaidsAndNannies.Application/Features/Admin/Commands/ApproveWorker/ApproveWorkerCommandHandler.cs
+new file mode 100644
+index 0000000..171e9f0
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Commands/ApproveWorker/ApproveWorkerCommandHandler.cs
+@@ -0,0 +1,29 @@
++using MaidsAndNannies.Application.Common.Exceptions;
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++using Microsoft.EntityFrameworkCore;
++
++namespace MaidsAndNannies.Application.Features.Admin.Commands.ApproveWorker;
++
++public sealed class ApproveWorkerCommandHandler(IApplicationDbContext dbContext)
++    : IRequestHandler<ApproveWorkerCommand, Unit>
++{
++    public async Task<Unit> Handle(ApproveWorkerCommand request, CancellationToken cancellationToken)
++    {
++        var worker = await dbContext.WorkerProfiles
++            .FirstOrDefaultAsync(w => w.Id == request.WorkerProfileId, cancellationToken);
++
++        if (worker is null)
++            throw new NotFoundException("WorkerProfile", request.WorkerProfileId);
++
++        worker.VerificationStatus = VerificationStatus.Approved;
++        worker.VerificationNotes = null;
++        worker.VerifiedAt = DateTime.UtcNow;
++        worker.VerifiedBy = request.AdminUserId;
++        worker.UpdatedAt = DateTime.UtcNow;
++
++        await dbContext.SaveChangesAsync(cancellationToken);
++        return Unit.Value;
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectHomeowner/RejectHomeownerCommand.cs b/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectHomeowner/RejectHomeownerCommand.cs
+new file mode 100644
+index 0000000..ba2b7d9
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectHomeowner/RejectHomeownerCommand.cs
+@@ -0,0 +1,5 @@
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Admin.Commands.RejectHomeowner;
++
++public sealed record RejectHomeownerCommand(int HomeownerProfileId, string AdminUserId, string Reason) : IRequest<Unit>;
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectHomeowner/RejectHomeownerCommandHandler.cs b/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectHomeowner/RejectHomeownerCommandHandler.cs
+new file mode 100644
+index 0000000..8534898
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectHomeowner/RejectHomeownerCommandHandler.cs
+@@ -0,0 +1,29 @@
++using MaidsAndNannies.Application.Common.Exceptions;
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++using Microsoft.EntityFrameworkCore;
++
++namespace MaidsAndNannies.Application.Features.Admin.Commands.RejectHomeowner;
++
++public sealed class RejectHomeownerCommandHandler(IApplicationDbContext dbContext)
++    : IRequestHandler<RejectHomeownerCommand, Unit>
++{
++    public async Task<Unit> Handle(RejectHomeownerCommand request, CancellationToken cancellationToken)
++    {
++        var homeowner = await dbContext.HomeownerProfiles
++            .FirstOrDefaultAsync(h => h.Id == request.HomeownerProfileId, cancellationToken);
++
++        if (homeowner is null)
++            throw new NotFoundException("HomeownerProfile", request.HomeownerProfileId);
++
++        homeowner.VerificationStatus = VerificationStatus.Rejected;
++        homeowner.VerificationNotes = request.Reason;
++        homeowner.VerifiedAt = DateTime.UtcNow;
++        homeowner.VerifiedBy = request.AdminUserId;
++        homeowner.UpdatedAt = DateTime.UtcNow;
++
++        await dbContext.SaveChangesAsync(cancellationToken);
++        return Unit.Value;
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectHomeowner/RejectHomeownerCommandValidator.cs b/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectHomeowner/RejectHomeownerCommandValidator.cs
+new file mode 100644
+index 0000000..8e39579
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectHomeowner/RejectHomeownerCommandValidator.cs
+@@ -0,0 +1,11 @@
++using FluentValidation;
++
++namespace MaidsAndNannies.Application.Features.Admin.Commands.RejectHomeowner;
++
++public sealed class RejectHomeownerCommandValidator : AbstractValidator<RejectHomeownerCommand>
++{
++    public RejectHomeownerCommandValidator()
++    {
++        RuleFor(x => x.Reason).NotEmpty().WithMessage("سبب الرفض مطلوب");
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectWorker/RejectWorkerCommand.cs b/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectWorker/RejectWorkerCommand.cs
+new file mode 100644
+index 0000000..e0cd77b
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectWorker/RejectWorkerCommand.cs
+@@ -0,0 +1,5 @@
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Admin.Commands.RejectWorker;
++
++public sealed record RejectWorkerCommand(int WorkerProfileId, string AdminUserId, string Reason) : IRequest<Unit>;
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectWorker/RejectWorkerCommandHandler.cs b/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectWorker/RejectWorkerCommandHandler.cs
+new file mode 100644
+index 0000000..394210f
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectWorker/RejectWorkerCommandHandler.cs
+@@ -0,0 +1,29 @@
++using MaidsAndNannies.Application.Common.Exceptions;
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++using Microsoft.EntityFrameworkCore;
++
++namespace MaidsAndNannies.Application.Features.Admin.Commands.RejectWorker;
++
++public sealed class RejectWorkerCommandHandler(IApplicationDbContext dbContext)
++    : IRequestHandler<RejectWorkerCommand, Unit>
++{
++    public async Task<Unit> Handle(RejectWorkerCommand request, CancellationToken cancellationToken)
++    {
++        var worker = await dbContext.WorkerProfiles
++            .FirstOrDefaultAsync(w => w.Id == request.WorkerProfileId, cancellationToken);
++
++        if (worker is null)
++            throw new NotFoundException("WorkerProfile", request.WorkerProfileId);
++
++        worker.VerificationStatus = VerificationStatus.Rejected;
++        worker.VerificationNotes = request.Reason;
++        worker.VerifiedAt = DateTime.UtcNow;
++        worker.VerifiedBy = request.AdminUserId;
++        worker.UpdatedAt = DateTime.UtcNow;
++
++        await dbContext.SaveChangesAsync(cancellationToken);
++        return Unit.Value;
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectWorker/RejectWorkerCommandValidator.cs b/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectWorker/RejectWorkerCommandValidator.cs
+new file mode 100644
+index 0000000..46e3029
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Commands/RejectWorker/RejectWorkerCommandValidator.cs
+@@ -0,0 +1,11 @@
++using FluentValidation;
++
++namespace MaidsAndNannies.Application.Features.Admin.Commands.RejectWorker;
++
++public sealed class RejectWorkerCommandValidator : AbstractValidator<RejectWorkerCommand>
++{
++    public RejectWorkerCommandValidator()
++    {
++        RuleFor(x => x.Reason).NotEmpty().WithMessage("سبب الرفض مطلوب");
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Common/AdminDtos.cs b/src/MaidsAndNannies.Application/Features/Admin/Common/AdminDtos.cs
+new file mode 100644
+index 0000000..a8cf819
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Common/AdminDtos.cs
+@@ -0,0 +1,30 @@
++using MaidsPlatform.API.Domain.Enums;
++
++namespace MaidsAndNannies.Application.Features.Admin.Common;
++
++public sealed record PendingWorkerDto(
++    int Id,
++    string UserId,
++    string FullName,
++    string? Email,
++    string? PhoneNumber,
++    int NationalityId,
++    string NationalIdNumber,
++    string? PassportNumber,
++    int ExperienceYears,
++    VerificationStatus VerificationStatus,
++    DateTime CreatedAt,
++    IReadOnlyList<PendingDocumentDto> Documents);
++
++public sealed record PendingDocumentDto(string Type, string? DocumentImageUrl);
++
++public sealed record PendingHomeownerDto(
++    int Id,
++    string UserId,
++    string FullName,
++    string? Email,
++    string? PhoneNumber,
++    string City,
++    string Address,
++    VerificationStatus VerificationStatus,
++    DateTime CreatedAt);
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Queries/GetPendingHomeowners/GetPendingHomeownersQuery.cs b/src/MaidsAndNannies.Application/Features/Admin/Queries/GetPendingHomeowners/GetPendingHomeownersQuery.cs
+new file mode 100644
+index 0000000..3de271c
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Queries/GetPendingHomeowners/GetPendingHomeownersQuery.cs
+@@ -0,0 +1,6 @@
++using MaidsAndNannies.Application.Features.Admin.Common;
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Admin.Queries.GetPendingHomeowners;
++
++public sealed record GetPendingHomeownersQuery : IRequest<IReadOnlyList<PendingHomeownerDto>>;
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Queries/GetPendingHomeowners/GetPendingHomeownersQueryHandler.cs b/src/MaidsAndNannies.Application/Features/Admin/Queries/GetPendingHomeowners/GetPendingHomeownersQueryHandler.cs
+new file mode 100644
+index 0000000..ad5124f
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Queries/GetPendingHomeowners/GetPendingHomeownersQueryHandler.cs
+@@ -0,0 +1,30 @@
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Features.Admin.Common;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++using Microsoft.EntityFrameworkCore;
++
++namespace MaidsAndNannies.Application.Features.Admin.Queries.GetPendingHomeowners;
++
++public sealed class GetPendingHomeownersQueryHandler(IApplicationDbContext dbContext)
++    : IRequestHandler<GetPendingHomeownersQuery, IReadOnlyList<PendingHomeownerDto>>
++{
++    public async Task<IReadOnlyList<PendingHomeownerDto>> Handle(GetPendingHomeownersQuery request, CancellationToken cancellationToken)
++    {
++        return await dbContext.HomeownerProfiles
++            .Include(h => h.User)
++            .Where(h => h.VerificationStatus == VerificationStatus.Pending)
++            .OrderBy(h => h.CreatedAt)
++            .Select(h => new PendingHomeownerDto(
++                h.Id,
++                h.UserId,
++                h.User.FullName,
++                h.User.Email,
++                h.User.PhoneNumber,
++                h.City,
++                h.Address,
++                h.VerificationStatus,
++                h.CreatedAt))
++            .ToListAsync(cancellationToken);
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Queries/GetPendingWorkers/GetPendingWorkersQuery.cs b/src/MaidsAndNannies.Application/Features/Admin/Queries/GetPendingWorkers/GetPendingWorkersQuery.cs
+new file mode 100644
+index 0000000..a60a1a5
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Queries/GetPendingWorkers/GetPendingWorkersQuery.cs
+@@ -0,0 +1,6 @@
++using MaidsAndNannies.Application.Features.Admin.Common;
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Admin.Queries.GetPendingWorkers;
++
++public sealed record GetPendingWorkersQuery : IRequest<IReadOnlyList<PendingWorkerDto>>;
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Queries/GetPendingWorkers/GetPendingWorkersQueryHandler.cs b/src/MaidsAndNannies.Application/Features/Admin/Queries/GetPendingWorkers/GetPendingWorkersQueryHandler.cs
+new file mode 100644
+index 0000000..cef55e4
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Admin/Queries/GetPendingWorkers/GetPendingWorkersQueryHandler.cs
+@@ -0,0 +1,42 @@
++using MaidsAndNannies.Application.Common.Helpers;
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Features.Admin.Common;
++using MaidsPlatform.API.Domain.Enums;
++using MediatR;
++using Microsoft.AspNetCore.Http;
++using Microsoft.EntityFrameworkCore;
++
++namespace MaidsAndNannies.Application.Features.Admin.Queries.GetPendingWorkers;
++
++public sealed class GetPendingWorkersQueryHandler(
++    IApplicationDbContext dbContext,
++    IHttpContextAccessor httpContextAccessor)
++    : IRequestHandler<GetPendingWorkersQuery, IReadOnlyList<PendingWorkerDto>>
++{
++    public async Task<IReadOnlyList<PendingWorkerDto>> Handle(GetPendingWorkersQuery request, CancellationToken cancellationToken)
++    {
++        var workers = await dbContext.WorkerProfiles
++            .Include(w => w.User)
++            .Include(w => w.Documents)
++            .Where(w => w.VerificationStatus == VerificationStatus.Pending)
++            .OrderBy(w => w.CreatedAt)
++            .ToListAsync(cancellationToken);
++
++        return workers.Select(w => new PendingWorkerDto(
++            w.Id,
++            w.UserId,
++            w.User.FullName,
++            w.User.Email,
++            w.User.PhoneNumber,
++            w.NationalityId,
++            w.NationalIdNumber,
++            w.PassportNumber,
++            w.ExperienceYears,
++            w.VerificationStatus,
++            w.CreatedAt,
++            w.Documents.Select(d => new PendingDocumentDto(
++                d.Type.ToString(),
++                AbsoluteUrlHelper.ToAbsoluteUrl(d.DocumentImageUrl, httpContextAccessor))).ToList()
++        )).ToList();
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommandHandler.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommandHandler.cs
+index 4499112..e29d044 100644
+--- a/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommandHandler.cs
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/Login/LoginCommandHandler.cs
+@@ -1,14 +1,17 @@
+ using MaidsAndNannies.Application.Common.Interfaces;
+ using MaidsAndNannies.Application.Features.Auth.Common;
+ using MaidsAndNannies.Domain.Entities.Identity;
++using MaidsAndNannies.Domain.Enums;
+ using MaidsPlatform.API.Domain.Enums;
+ using MediatR;
+ using Microsoft.AspNetCore.Identity;
++using Microsoft.EntityFrameworkCore;
+ 
+ namespace MaidsAndNannies.Application.Features.Auth.Commands.Login;
+ 
+ public sealed class LoginCommandHandler(
+     UserManager<ApplicationUser> userManager,
++    IApplicationDbContext dbContext,
+     IJwtTokenGenerator jwtTokenGenerator) : IRequestHandler<LoginCommand, AuthResponseDto>
+ {
+     public async Task<AuthResponseDto> Handle(LoginCommand request, CancellationToken cancellationToken)
+@@ -20,8 +23,46 @@ public sealed class LoginCommandHandler(
+         var roles = await userManager.GetRolesAsync(user);
+         var role = roles.Single();
+ 
++        var (verificationStatus, verificationNotes) = await GetVerificationAsync(user.Id, role, cancellationToken);
++
+         var (accessToken, expiresAtUtc) = jwtTokenGenerator.GenerateToken(user, role);
+         return new AuthResponseDto(accessToken, expiresAtUtc, user.FullName, role,
+-            user.PreferredLanguage, VerificationStatus.Pending);
++            user.PreferredLanguage, verificationStatus, verificationNotes);
++    }
++
++    /// <summary>
++    /// Admins/Verifiers have no profile row and are always "approved". Workers
++    /// and Homeowners are only usable once an Admin approves their profile, so
++    /// login always succeeds but the frontend uses this to gate the app (show a
++    /// "your account is under review" screen for Pending/Rejected).
++    /// </summary>
++    private async Task<(VerificationStatus Status, string? Notes)> GetVerificationAsync(
++        string userId, string role, CancellationToken cancellationToken)
++    {
++        if (role == UserRole.Worker.ToString())
++        {
++            var worker = await dbContext.WorkerProfiles
++                .Where(w => w.UserId == userId)
++                .Select(w => new { w.VerificationStatus, w.VerificationNotes })
++                .FirstOrDefaultAsync(cancellationToken);
++
++            return worker is null
++                ? (VerificationStatus.Pending, null)
++                : (worker.VerificationStatus, worker.VerificationNotes);
++        }
++
++        if (role == UserRole.Homeowner.ToString())
++        {
++            var homeowner = await dbContext.HomeownerProfiles
++                .Where(h => h.UserId == userId)
++                .Select(h => new { h.VerificationStatus, h.VerificationNotes })
++                .FirstOrDefaultAsync(cancellationToken);
++
++            return homeowner is null
++                ? (VerificationStatus.Pending, null)
++                : (homeowner.VerificationStatus, homeowner.VerificationNotes);
++        }
++
++        return (VerificationStatus.Approved, null);
+     }
+ }
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommandHandler.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommandHandler.cs
+index 4bb1991..315fcc6 100644
+--- a/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommandHandler.cs
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/Register/RegisterCommandHandler.cs
+@@ -51,6 +51,6 @@ public sealed class RegisterCommandHandler(
+ 
+         var (accessToken, expiresAtUtc) = jwtTokenGenerator.GenerateToken(user, role.ToString());
+         return new AuthResponseDto(accessToken, expiresAtUtc, user.FullName, role.ToString(),
+-            user.PreferredLanguage, VerificationStatus.Pending);
++            user.PreferredLanguage, VerificationStatus.Pending, null);
+     }
+ }
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterHomeowner/RegisterHomeownerCommand.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterHomeowner/RegisterHomeownerCommand.cs
+new file mode 100644
+index 0000000..1f467c5
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterHomeowner/RegisterHomeownerCommand.cs
+@@ -0,0 +1,17 @@
++using MediatR;
++
++namespace MaidsAndNannies.Application.Features.Auth.Commands.RegisterHomeowner;
++
++/// <summary>
++/// No document images for now - homeowners are being onboarded manually through
++/// a trusted WhatsApp/Facebook network, so identity verification happens
++/// out-of-band before an Admin approves the account. City/Address are optional
++/// so we can still match bookings once they're filled in from the profile page.
++/// </summary>
++public sealed record RegisterHomeownerCommand(
++    string FullName,
++    string Email,
++    string PhoneNumber,
++    string Password,
++    string? City,
++    string? Address) : IRequest<Unit>;
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterHomeowner/RegisterHomeownerCommandHandler.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterHomeowner/RegisterHomeownerCommandHandler.cs
+new file mode 100644
+index 0000000..bb4a821
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterHomeowner/RegisterHomeownerCommandHandler.cs
+@@ -0,0 +1,46 @@
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Domain.Entities;
++using MaidsAndNannies.Domain.Entities.Identity;
++using MaidsAndNannies.Domain.Enums;
++using MediatR;
++using Microsoft.AspNetCore.Identity;
++using ValidationException = MaidsAndNannies.Application.Common.Exceptions.ValidationException;
++
++namespace MaidsAndNannies.Application.Features.Auth.Commands.RegisterHomeowner;
++
++public sealed class RegisterHomeownerCommandHandler(
++    UserManager<ApplicationUser> userManager,
++    IApplicationDbContext dbContext) : IRequestHandler<RegisterHomeownerCommand, Unit>
++{
++    public async Task<Unit> Handle(RegisterHomeownerCommand request, CancellationToken cancellationToken)
++    {
++        var user = new ApplicationUser
++        {
++            UserName = request.Email,
++            Email = request.Email,
++            FullName = request.FullName,
++            PhoneNumber = request.PhoneNumber,
++            PreferredLanguage = "ar",
++            Role = UserRole.Homeowner
++        };
++
++        var result = await userManager.CreateAsync(user, request.Password);
++        if (!result.Succeeded)
++        {
++            throw new ValidationException(result.Errors
++                .Select(e => new FluentValidation.Results.ValidationFailure("Identity", e.Description)));
++        }
++
++        await userManager.AddToRoleAsync(user, UserRole.Homeowner.ToString());
++
++        dbContext.HomeownerProfiles.Add(new HomeownerProfile
++        {
++            UserId = user.Id,
++            City = request.City ?? string.Empty,
++            Address = request.Address ?? string.Empty
++        });
++
++        await dbContext.SaveChangesAsync(cancellationToken);
++        return Unit.Value;
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterHomeowner/RegisterHomeownerCommandValidator.cs b/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterHomeowner/RegisterHomeownerCommandValidator.cs
+new file mode 100644
+index 0000000..5528526
+--- /dev/null
++++ b/src/MaidsAndNannies.Application/Features/Auth/Commands/RegisterHomeowner/RegisterHomeownerCommandValidator.cs
+@@ -0,0 +1,14 @@
++using FluentValidation;
++
++namespace MaidsAndNannies.Application.Features.Auth.Commands.RegisterHomeowner;
++
++public sealed class RegisterHomeownerCommandValidator : AbstractValidator<RegisterHomeownerCommand>
++{
++    public RegisterHomeownerCommandValidator()
++    {
++        RuleFor(x => x.FullName).NotEmpty().MaximumLength(120);
++        RuleFor(x => x.Email).NotEmpty().EmailAddress();
++        RuleFor(x => x.PhoneNumber).NotEmpty();
++        RuleFor(x => x.Password).NotEmpty().MinimumLength(8);
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Auth/Common/AuthDtos.cs b/src/MaidsAndNannies.Application/Features/Auth/Common/AuthDtos.cs
+index c577e21..e428091 100644
+--- a/src/MaidsAndNannies.Application/Features/Auth/Common/AuthDtos.cs
++++ b/src/MaidsAndNannies.Application/Features/Auth/Common/AuthDtos.cs
+@@ -10,4 +10,5 @@ public sealed record AuthResponseDto(
+     string FullName,
+     string Role,
+     string PreferredLanguage,
+-    VerificationStatus VerificationStatus);
++    VerificationStatus VerificationStatus,
++    string? VerificationNotes);
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Common/WorkerDtos.cs b/src/MaidsAndNannies.Application/Features/Worker/Common/WorkerDtos.cs
+index 061fadc..c91fd4d 100644
+--- a/src/MaidsAndNannies.Application/Features/Worker/Common/WorkerDtos.cs
++++ b/src/MaidsAndNannies.Application/Features/Worker/Common/WorkerDtos.cs
+@@ -82,6 +82,7 @@ public sealed record WorkerProfileDto(
+     int TotalReviews,
+     string? Languages,
+     VerificationStatus VerificationStatus,
++    string? VerificationNotes,
+     DateTime? VerifiedAt,
+     string? VerifiedBy,
+     IReadOnlyList<WorkerDocumentDto> Documents);
+diff --git a/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyProfile/GetMyWorkerProfileQueryHandler.cs b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyProfile/GetMyWorkerProfileQueryHandler.cs
+index 645e506..f20b9c4 100644
+--- a/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyProfile/GetMyWorkerProfileQueryHandler.cs
++++ b/src/MaidsAndNannies.Application/Features/Worker/Queries/GetMyProfile/GetMyWorkerProfileQueryHandler.cs
+@@ -1,4 +1,5 @@
+ using MaidsAndNannies.Application.Common.Exceptions;
++using MaidsAndNannies.Application.Common.Helpers;
+ using MaidsAndNannies.Application.Common.Interfaces;
+ using MaidsAndNannies.Application.Features.Worker.Common;
+ using MediatR;
+@@ -12,68 +13,55 @@ public sealed class GetMyWorkerProfileQueryHandler(
+     IHttpContextAccessor httpContextAccessor)
+     : IRequestHandler<GetMyWorkerProfileQuery, WorkerProfileDto>
+ {
+-  
+     public async Task<WorkerProfileDto> Handle(GetMyWorkerProfileQuery request, CancellationToken cancellationToken)
+     {
+-        try
+-        {                        
+-            var profile = await dbContext.WorkerProfiles
+-                       .Include(p => p.User)
+-                       .Include(p => p.Documents)
+-                       .Include(p => p.WorkerSpecializationSpecs)
+-                       .FirstOrDefaultAsync(p => p.UserId == request.UserId, cancellationToken);
++        var profile = await dbContext.WorkerProfiles
++            .Include(p => p.User)
++            .Include(p => p.Documents)
++            .Include(p => p.WorkerSpecializationSpecs)
++            .FirstOrDefaultAsync(p => p.UserId == request.UserId, cancellationToken);
+ 
+-            if (profile is null)
+-                throw new NotFoundException("WorkerProfile", request.UserId);
++        if (profile is null)
++            throw new NotFoundException("WorkerProfile", request.UserId);
+ 
+-            return new WorkerProfileDto(
+-                profile.Id,
+-                profile.UserId,
+-                profile.User.FullName,
+-                profile.User.Email,
+-                profile.User.PhoneNumber,
+-                profile.WhatsAppNumber,
+-                profile.NationalityId,
+-                profile.NationalIdNumber,
+-                profile.PassportNumber,
+-                profile.PassportExpiryDate,
+-                profile.PassportCountry,
+-                profile.CountryId,
+-                profile.StateId,
+-                profile.CityId,
+-                profile.Address,
+-                profile.Bio,
+-                profile.ExperienceYears,
+-                profile.PreviousEmployer,
+-                (profile.WorkerSpecializationSpecs ?? [])
+-                    .Select(s => new WorkerSpecializationDto(s.Id, s.WorkerSpecialization)).ToList(),
+-                profile.IsLiveIn,
+-                profile.IsAvailable,
+-                profile.MonthlyRate,
+-                profile.HourlyRate,
+-                profile.Currency,
+-                profile.AverageRating,
+-                profile.TotalReviews,
+-                profile.Languages,
+-                profile.VerificationStatus,
+-                profile.VerifiedAt,
+-                profile.VerifiedBy,
+-                profile.Documents
+-                    .Select(d => new WorkerDocumentDto(d.Type, ToAbsoluteUrl( d.DocumentImageUrl , httpContextAccessor), d.VerificationStatus)).ToList());
+-        }
+-        catch (Exception ex)
+-        {
+-            throw;
+-        }       
++        return new WorkerProfileDto(
++            profile.Id,
++            profile.UserId,
++            profile.User.FullName,
++            profile.User.Email,
++            profile.User.PhoneNumber,
++            profile.WhatsAppNumber,
++            profile.NationalityId,
++            profile.NationalIdNumber,
++            profile.PassportNumber,
++            profile.PassportExpiryDate,
++            profile.PassportCountry,
++            profile.CountryId,
++            profile.StateId,
++            profile.CityId,
++            profile.Address,
++            profile.Bio,
++            profile.ExperienceYears,
++            profile.PreviousEmployer,
++            (profile.WorkerSpecializationSpecs ?? [])
++                .Select(s => new WorkerSpecializationDto(s.Id, s.WorkerSpecialization)).ToList(),
++            profile.IsLiveIn,
++            profile.IsAvailable,
++            profile.MonthlyRate,
++            profile.HourlyRate,
++            profile.Currency,
++            profile.AverageRating,
++            profile.TotalReviews,
++            profile.Languages,
++            profile.VerificationStatus,
++            profile.VerificationNotes,
++            profile.VerifiedAt,
++            profile.VerifiedBy,
++            profile.Documents
++                .Select(d => new WorkerDocumentDto(
++                    d.Type,
++                    AbsoluteUrlHelper.ToAbsoluteUrl(d.DocumentImageUrl, httpContextAccessor),
++                    d.VerificationStatus))
++                .ToList());
+     }
+-
+-    private string? ToAbsoluteUrl(string? relativeUrl , IHttpContextAccessor httpContextAccessor)
+-    {
+-        if (string.IsNullOrEmpty(relativeUrl)) return relativeUrl;
+-        if (relativeUrl.StartsWith("http://") || relativeUrl.StartsWith("https://")) return relativeUrl;
+-
+-        var request = httpContextAccessor.HttpContext!.Request;
+-        return $"{request.Scheme}://{request.Host}{relativeUrl}";
+-    }
+-
+ }
+diff --git a/src/MaidsAndNannies.Domain/Entities/WorkerProfile.cs b/src/MaidsAndNannies.Domain/Entities/WorkerProfile.cs
+index c37a4ec..99538fb 100644
+--- a/src/MaidsAndNannies.Domain/Entities/WorkerProfile.cs
++++ b/src/MaidsAndNannies.Domain/Entities/WorkerProfile.cs
+@@ -47,6 +47,7 @@ public class WorkerProfile : Entity
+     // Status
+     public bool IsAvailable { get; set; } = true;
+     public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.Pending;
++    public string? VerificationNotes { get; set; }
+     public DateTime? VerifiedAt { get; set; }
+     public string? VerifiedBy { get; set; }
+ 
+diff --git a/src/MaidsAndNannies.WebApi/Controllers/AdminController.cs b/src/MaidsAndNannies.WebApi/Controllers/AdminController.cs
+new file mode 100644
+index 0000000..2d1affd
+--- /dev/null
++++ b/src/MaidsAndNannies.WebApi/Controllers/AdminController.cs
+@@ -0,0 +1,58 @@
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Features.Admin.Commands.ApproveHomeowner;
++using MaidsAndNannies.Application.Features.Admin.Commands.ApproveWorker;
++using MaidsAndNannies.Application.Features.Admin.Commands.RejectHomeowner;
++using MaidsAndNannies.Application.Features.Admin.Commands.RejectWorker;
++using MaidsAndNannies.Application.Features.Admin.Queries.GetPendingHomeowners;
++using MaidsAndNannies.Application.Features.Admin.Queries.GetPendingWorkers;
++using MediatR;
++using Microsoft.AspNetCore.Authorization;
++using Microsoft.AspNetCore.Mvc;
++using System.ComponentModel.DataAnnotations;
++
++namespace MaidsAndNannies.WebApi.Controllers;
++
++[Authorize(Roles = "Admin")]
++public sealed class AdminController(ISender sender, ICurrentUserService currentUser) : BaseApiController
++{
++    [HttpGet("workers/pending")]
++    public async Task<IActionResult> GetPendingWorkers()
++        => Ok(await sender.Send(new GetPendingWorkersQuery()));
++
++    [HttpGet("homeowners/pending")]
++    public async Task<IActionResult> GetPendingHomeowners()
++        => Ok(await sender.Send(new GetPendingHomeownersQuery()));
++
++    [HttpPost("workers/{id}/approve")]
++    public async Task<IActionResult> ApproveWorker(int id)
++    {
++        await sender.Send(new ApproveWorkerCommand(id, currentUser.UserId!));
++        return Ok(new { Message = "تم اعتماد العاملة بنجاح" });
++    }
++
++    [HttpPost("workers/{id}/reject")]
++    public async Task<IActionResult> RejectWorker(int id, RejectRequest request)
++    {
++        await sender.Send(new RejectWorkerCommand(id, currentUser.UserId!, request.Reason));
++        return Ok(new { Message = "تم رفض العاملة" });
++    }
++
++    [HttpPost("homeowners/{id}/approve")]
++    public async Task<IActionResult> ApproveHomeowner(int id)
++    {
++        await sender.Send(new ApproveHomeownerCommand(id, currentUser.UserId!));
++        return Ok(new { Message = "تم اعتماد صاحبة المنزل بنجاح" });
++    }
++
++    [HttpPost("homeowners/{id}/reject")]
++    public async Task<IActionResult> RejectHomeowner(int id, RejectRequest request)
++    {
++        await sender.Send(new RejectHomeownerCommand(id, currentUser.UserId!, request.Reason));
++        return Ok(new { Message = "تم رفض صاحبة المنزل" });
++    }
++}
++
++public sealed class RejectRequest
++{
++    [Required] public required string Reason { get; init; }
++}
+diff --git a/src/MaidsAndNannies.WebApi/Controllers/AuthController.cs b/src/MaidsAndNannies.WebApi/Controllers/AuthController.cs
+index ac7bf92..80e1d74 100644
+--- a/src/MaidsAndNannies.WebApi/Controllers/AuthController.cs
++++ b/src/MaidsAndNannies.WebApi/Controllers/AuthController.cs
+@@ -1,5 +1,6 @@
+ using MaidsAndNannies.Application.Features.Auth.Commands.Login;
+ using MaidsAndNannies.Application.Features.Auth.Commands.Register;
++using MaidsAndNannies.Application.Features.Auth.Commands.RegisterHomeowner;
+ using MaidsAndNannies.Application.Features.Auth.Commands.RegisterWorker;
+ using MaidsAndNannies.Application.Features.Auth.Common;
+ using MediatR;
+@@ -26,6 +27,17 @@ public sealed class AuthController(ISender sender) : BaseApiController
+         return Ok(await sender.Send(command));
+     }
+ 
++    [HttpPost("register/homeowner")]
++    public async Task<ActionResult> RegisterHomeowner(RegisterHomeownerRequest request)
++    {
++        var command = new RegisterHomeownerCommand(
++            request.FullName, request.Email, request.PhoneNumber, request.Password,
++            request.City, request.Address);
++
++        await sender.Send(command);
++        return Ok(new { message = "تم التسجيل بنجاح، سيتم مراجعة حسابك." });
++    }
++
+     [HttpPost("register/worker")]
+     [Consumes("multipart/form-data")]
+     public async Task<ActionResult> RegisterWorker([FromForm] RegisterWorkerRequest request)
+@@ -62,6 +74,16 @@ public sealed class RegisterRequest
+     public int CurrentCityId { get; init; }
+ }
+ 
++public sealed class RegisterHomeownerRequest
++{
++    [Required, StringLength(120)] public required string FullName { get; init; }
++    [Required, EmailAddress] public required string Email { get; init; }
++    [Required, Phone] public required string PhoneNumber { get; init; }
++    [Required, MinLength(8)] public required string Password { get; init; }
++    public string? City { get; init; }
++    public string? Address { get; init; }
++}
++
+ public sealed class RegisterWorkerRequest
+ {
+     [Required, StringLength(120)] public required string FullName { get; init; }
+diff --git a/src/MaidsAndNannies.WebApi/Program.cs b/src/MaidsAndNannies.WebApi/Program.cs
+index e0a46e1..dfcc548 100644
+--- a/src/MaidsAndNannies.WebApi/Program.cs
++++ b/src/MaidsAndNannies.WebApi/Program.cs
+@@ -49,6 +49,27 @@ using (var scope = app.Services.CreateScope())
+     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+     foreach (var role in Enum.GetNames<UserRole>())
+         if (!await roleManager.RoleExistsAsync(role)) await roleManager.CreateAsync(new IdentityRole(role));
++
++    var adminEmail = builder.Configuration["AdminSeed:Email"] ?? "admin@maidsandnannies.local";
++    var adminPassword = builder.Configuration["AdminSeed:Password"] ?? "Admin@12345";
++    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<MaidsAndNannies.Domain.Entities.Identity.ApplicationUser>>();
++
++    if (await userManager.FindByEmailAsync(adminEmail) is null)
++    {
++        var adminUser = new MaidsAndNannies.Domain.Entities.Identity.ApplicationUser
++        {
++            UserName = adminEmail,
++            Email = adminEmail,
++            FullName = "Platform Admin",
++            PreferredLanguage = "ar",
++            Role = UserRole.Admin,
++            EmailConfirmed = true
++        };
++
++        var createResult = await userManager.CreateAsync(adminUser, adminPassword);
++        if (createResult.Succeeded)
++            await userManager.AddToRoleAsync(adminUser, UserRole.Admin.ToString());
++    }
+ }
+ 
+ if (app.Environment.IsDevelopment())
+diff --git a/src/MaidsAndNannies.WebApi/appsettings.json b/src/MaidsAndNannies.WebApi/appsettings.json
+index 1212421..5c588ed 100644
+--- a/src/MaidsAndNannies.WebApi/appsettings.json
++++ b/src/MaidsAndNannies.WebApi/appsettings.json
+@@ -7,6 +7,10 @@
+     "Audience": "MaidsAndNannies.Web",
+     "Key": "DEVELOPMENT-ONLY-CHANGE-THIS-TO-A-LONG-RANDOM-SECRET-KEY-2026"
+   },
++  "AdminSeed": {
++    "Email": "admin@maidsandnannies.local",
++    "Password": "Admin@12345"
++  },
+   "AllowedOrigins": ["http://localhost:4200"],
+   "Logging": {
+     "LogLevel": {

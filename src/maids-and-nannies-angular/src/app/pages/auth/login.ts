@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -8,7 +8,7 @@ import {InputTextModule} from 'primeng/inputtext';
 import {PasswordModule} from 'primeng/password';
 import {RippleModule} from 'primeng/ripple';
 import {MessageModule} from 'primeng/message';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {AppFloatingConfigurator} from '../../layout/component/app.floatingconfigurator';
 import {AuthService} from '../../core/services/auth.service';
 import {LanguageService} from '../../core/services/language.service';
@@ -64,7 +64,7 @@ import {LanguageService} from '../../core/services/language.service';
         </div>
     `
 })
-export class Login {
+export class Login{
     email: string = '';
     password: string = '';
     checked: boolean = false;
@@ -74,10 +74,11 @@ export class Login {
     private authService = inject(AuthService);
     langService = inject(LanguageService);
     private router = inject(Router);
+    private translate = inject(TranslateService);     
 
     login() {
         if (!this.email || !this.password) {
-            this.errorMessage = 'Please fill in all fields';
+            this.errorMessage = this.translate.instant('AUTH.FILL_ALL_FIELDS');  
             return;
         }
 
@@ -101,7 +102,7 @@ export class Login {
             },
             error: (error) => {
                 this.isLoading = false;
-                this.errorMessage = error.error?.message || 'Login failed';
+                this.errorMessage = error.error?.message || this.translate.instant('AUTH.LOGIN_FAILED');
             }
         });
     }
