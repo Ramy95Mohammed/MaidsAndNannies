@@ -101,17 +101,28 @@ public sealed class RequestReplacementCommandHandler(
         {
             if (newCommissionInEgp > oldCommissionInEgp)
             {
+                // أكبر — نحتاج دفع الفرق
                 booking.OutstandingAmount = newCommissionInEgp - oldCommissionInEgp;
+                booking.CommissionAmount = newCommissionInEgp;
+                booking.Status = BookingStatus.ReplacementRequested;
+            }
+            else if (newCommissionInEgp < oldCommissionInEgp)
+            {
+                // أقل — نخفض العمولة
+                booking.CommissionAmount = newCommissionInEgp;
+                booking.OutstandingAmount = 0;
                 booking.Status = BookingStatus.ReplacementRequested;
             }
             else
             {
+                // نفس المبلغ
                 booking.OutstandingAmount = 0;
                 booking.Status = BookingStatus.ReplacementRequested;
             }
         }
         else
         {
+            // غير مدفوع — نحدث العمولة فقط
             booking.CommissionAmount = newCommissionInEgp;
             booking.Status = BookingStatus.Pending;
         }

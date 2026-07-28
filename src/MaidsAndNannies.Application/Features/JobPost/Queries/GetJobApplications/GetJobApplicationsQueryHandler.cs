@@ -18,10 +18,11 @@ public sealed class GetJobApplicationsQueryHandler(IApplicationDbContext dbConte
             .OrderByDescending(a => a.CreatedAt)
             .Select(a => new ApplicationDto(
                 a.Id, a.WorkerId, a.Worker.FullName,
-                a.Worker.WorkerProfile!.Nationality != null
+                a.Worker.WorkerProfile != null && a.Worker.WorkerProfile.Nationality != null
                     ? a.Worker.WorkerProfile.Nationality.Name_ar
                     : "",
-                a.Worker.WorkerProfile.AverageRating, a.Worker.WorkerProfile.TotalReviews,
+                a.Worker.WorkerProfile != null ? a.Worker.WorkerProfile.AverageRating : 0,
+                a.Worker.WorkerProfile != null ? a.Worker.WorkerProfile.TotalReviews : 0,
                 a.Message, a.Status, a.CreatedAt))
             .ToListAsync(ct);
     }

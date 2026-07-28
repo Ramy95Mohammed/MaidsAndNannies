@@ -19,17 +19,15 @@ public sealed class ConfirmWorkerCommandHandler(
 
         if (booking.Status == BookingStatus.ReplacementRequested)
         {
-            // الحجز كان مدفوعاً مسبقاً
             if (booking.OutstandingAmount > 0)
             {
-                // يجب دفع الفرق أولاً
-                booking.CommissionAmount += booking.OutstandingAmount;
+                // أكبر — يحتاج دفع الفرق (CommissionAmount محدث مسبقاً)
                 booking.Status = BookingStatus.WaitingPayment;
                 booking.OutstandingAmount = 0;
             }
             else
             {
-                // لا يوجد فرق — نرجع الحالة إلى مدفوع مباشرة
+                // أقل أو نفس المبلغ — مدفوع مسبقاً
                 booking.Status = BookingStatus.Paid;
             }
         }

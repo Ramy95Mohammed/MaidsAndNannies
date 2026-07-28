@@ -45,7 +45,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasKey("Key");
 
-                    b.ToTable("AppSettings");
+                    b.ToTable("AppSettings", (string)null);
 
                     b.HasData(
                         new
@@ -204,7 +204,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("Bookings");
+                    b.ToTable("Bookings", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.City", b =>
@@ -245,7 +245,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("State_id");
 
-                    b.ToTable("Cities");
+                    b.ToTable("Cities", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Country", b =>
@@ -312,7 +312,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[Iso2] IS NOT NULL");
 
-                    b.ToTable("Countries");
+                    b.ToTable("Countries", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Currency", b =>
@@ -357,7 +357,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Currencies");
+                    b.ToTable("Currencies", (string)null);
 
                     b.HasData(
                         new
@@ -479,7 +479,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("HomeownerProfiles");
+                    b.ToTable("HomeownerProfiles", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Identity.ApplicationUser", b =>
@@ -609,7 +609,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[Status] <> 2");
 
-                    b.ToTable("JobApplications");
+                    b.ToTable("JobApplications", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.JobPost", b =>
@@ -682,7 +682,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("HomeownerId");
 
-                    b.ToTable("JobPosts");
+                    b.ToTable("JobPosts", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Message", b =>
@@ -726,7 +726,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Notification", b =>
@@ -768,7 +768,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.PaymentProof", b =>
@@ -830,7 +830,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("HomeownerId");
 
-                    b.ToTable("PaymentProofs");
+                    b.ToTable("PaymentProofs", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Review", b =>
@@ -876,7 +876,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("ReviewerId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.State", b =>
@@ -908,7 +908,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("Country_id");
 
-                    b.ToTable("States");
+                    b.ToTable("States", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Subscription", b =>
@@ -965,7 +965,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("HomeownerId");
 
-                    b.ToTable("Subscriptions");
+                    b.ToTable("Subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.WorkerDocument", b =>
@@ -1007,7 +1007,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("WorkerDocuments");
+                    b.ToTable("WorkerDocuments", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.WorkerProfile", b =>
@@ -1131,7 +1131,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("WorkerProfiles");
+                    b.ToTable("WorkerProfiles", (string)null);
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.WorkerSpecializationSpec", b =>
@@ -1155,7 +1155,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerSpecializationSpecs");
+                    b.ToTable("WorkerSpecializationSpecs", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

@@ -1,0 +1,12 @@
+{
+    "commissionType":  0,
+    "description":  "مطلوب عاملة منزلية للتنظيف والطبخ",
+    "monthlySalary":  3000,
+    "specialization":  1,
+    "currencyId":  1,
+    "bookingType":  1,
+    "hourlySalary":  0,
+    "quantity":  1,
+    "dailySalary":  0,
+    "startDate":  "2026-08-15T00:00:00"
+}
