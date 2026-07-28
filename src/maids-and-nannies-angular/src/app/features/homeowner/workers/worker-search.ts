@@ -178,6 +178,7 @@ export class WorkerSearch implements OnInit {
     citiesOptions = signal<any[]>([]); 
     isReplacementMode = signal(false);
     replacementBookingId = signal<number | null>(null);
+    replacementReason = signal<0 | 1>(1);
     currenciesMap = signal<{ [id: number]: string }>({});
 
     //paginator
@@ -229,6 +230,7 @@ private getSpecializations() {
         if (params['mode'] === 'replacement' && params['bookingId']) {
             this.isReplacementMode.set(true);
             this.replacementBookingId.set(Number(params['bookingId']));
+            this.replacementReason.set(params['reason'] === '0' ? 0 : 1);
         }
 
         this.getSpecializations();
@@ -287,7 +289,7 @@ private getSpecializations() {
     viewWorker(id: number) {
     if (this.isReplacementMode()) {
         // وضع استبدال: يطلب التأكيد ثم يستبدل
-        this.bookingService.requestReplacement(this.replacementBookingId()!, id).subscribe({
+        this.bookingService.requestReplacement(this.replacementBookingId()!, this.replacementReason(), id).subscribe({
             next: () => {
                 this.messageService.add({ severity: 'success', detail: 'تم طلب الاستبدال بنجاح' });
                 this.router.navigate(['/homeowner/bookings', this.replacementBookingId()!]);

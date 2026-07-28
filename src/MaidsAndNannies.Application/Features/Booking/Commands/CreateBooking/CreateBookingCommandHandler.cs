@@ -94,8 +94,8 @@ public sealed class CreateBookingCommandHandler(
                 HomeownerId = request.HomeownerId,
                 PlanType = CommissionType.Subscription,
                 Amount = commissionAmount,
-                StartDate = request.StartDate,
-                EndDate = request.StartDate.AddDays(30),
+                StartDate = request.StartDate.Date.ToUniversalTime(),
+                EndDate = request.StartDate.Date.ToUniversalTime().AddDays(30),
                 IsActive = true
             });
         }

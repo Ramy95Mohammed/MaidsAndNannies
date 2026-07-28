@@ -18,6 +18,7 @@ public sealed class ConfirmPaymentCommandHandler(
             throw new InvalidOperationException("الحجز ليس بانتظار الدفع");
 
         booking.Status = BookingStatus.Paid;
+        booking.OutstandingAmount = 0;
         booking.IsPaid = true;
         booking.PaidAt = DateTime.UtcNow;
         booking.PaymentConfirmedBy = request.AdminId;

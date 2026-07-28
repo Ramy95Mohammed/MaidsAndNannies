@@ -58,7 +58,8 @@ export class AdminSettings implements OnInit {
         {
             title: 'الحدود',
             settings: [
-                { key: 'MaxReplacementCount', label: 'الحد الأقصى للاستبدال', value: 2, description: 'عدد مرات الاستبدال المسموح بها لكل حجز' },
+                { key: 'MaxFaultReplacementCount', label: 'الحد الأقصى للاستبدال (تقصير العاملة)', value: 3, description: 'عدد مرات الاستبدال المجاني المسموح بها بسبب تقصير العاملة' },
+                { key: 'MaxPreferenceReplacementCount', label: 'الحد الأقصى للاستبدال (رغبة شخصية)', value: 1, description: 'عدد مرات الاستبدال المسموح بها برغبة شخصية من صاحبة المنزل' },
                 { key: 'MaxActiveBookingsPerHomeowner', label: 'أقصى حجوزات نشطة', value: 5, description: 'الحد الأقصى للحجوزات النشطة لكل صاحبة منزل' },
                 { key: 'AutoCancelPendingBookingHours', label: 'إلغاء الحجز المعلق بعد (ساعة)', value: 48, description: 'إلغاء الحجوزات المعلقة تلقائياً بعد هذه المدة' },
             ]

@@ -326,7 +326,15 @@
     "STATUS_LABEL_CANCELLED": "Cancelled",
     "STATUS_LABEL_REPLACEMENT": "Replacement",
     "STATUS_LABEL_REVIEW": "Under Review",
-    "SET_AS_REPLACEMENT": "Assign as an alternative"
+    "SET_AS_REPLACEMENT": "Assign as an alternative",
+    "REPLACEMENT_REASON_TITLE": "Why are you requesting a replacement?",
+    "REPLACEMENT_REASON_FAULT": "There's an issue with the worker",
+    "REPLACEMENT_REASON_FAULT_DESC": "e.g. withdrawal, poor performance, or not matching requirements — no extra commission",
+    "REPLACEMENT_REASON_PREFERENCE": "Personal preference",
+    "REPLACEMENT_REASON_PREFERENCE_DESC": "No fault with the worker, you'd just prefer a change — may involve a commission difference",
+    "CONFIRM": "Confirm",
+    "OUTSTANDING_AMOUNT_TITLE": "Outstanding Amount",
+    "OUTSTANDING_AMOUNT_DESC": "After the replacement, you have an outstanding amount to pay."
   },
   "ADMIN": {
     "TITLE": "Admin Panel",

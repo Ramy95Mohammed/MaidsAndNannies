@@ -33,15 +33,19 @@ public sealed class GetBookingByIdQueryHandler(
 
         var workerSelfieDocument = worker?.Documents.FirstOrDefault(d => d.Type == Domain.Enums.DocumentType.Selfie);
 
-        var maxReplacementStr = await dbContext.AppSettings
-            .Where(s => s.Key == "MaxReplacementCount")
-            .Select(s => s.Value)
-            .FirstOrDefaultAsync(ct);
+        // ملاحظة: الحد الأقصى بقى منفصل حسب سبب الاستبدال (تقصير/رغبة شخصية).
+        // القيمة هنا هي الأعلى بينهما للعرض فقط في الواجهة الحالية — يفضّل لاحقاً تعديل
+        // BookingDetailDto ليعرض القيمتين منفصلتين (maxFaultReplacement / maxPreferenceReplacement).
+        var replacementSettings = await dbContext.AppSettings
+            .Where(s => s.Key == "MaxFaultReplacementCount" || s.Key == "MaxPreferenceReplacementCount")
+            .ToListAsync(ct);
 
-        var maxReplacement = int.TryParse(maxReplacementStr, out var max) ? max : 2;
+        var maxFault = int.TryParse(replacementSettings.FirstOrDefault(s => s.Key == "MaxFaultReplacementCount")?.Value, out var mf) ? mf : 3;
+        var maxPreference = int.TryParse(replacementSettings.FirstOrDefault(s => s.Key == "MaxPreferenceReplacementCount")?.Value, out var mp) ? mp : 1;
+        var maxReplacement = Math.Max(maxFault, maxPreference);
 
         var rateToEgp = booking.Currency?.RateToEgp ?? worker?.Currency?.RateToEgp ?? 1m;
-        var currencyCode = booking.Currency?.Code ?? worker?.Currency?.Code ?? "EGP";
+        var currencyCode = booking.Currency?.Code ?? worker?.Currency?.Code ?? "EGP";     
 
         return new BookingDetailDto(
             booking.Id,
@@ -73,6 +77,9 @@ public sealed class GetBookingByIdQueryHandler(
             maxReplacement,
             booking.AdminNotes,
             booking.CreatedAt,
-            booking.JobPostId);
+            booking.JobPostId,
+             booking.OutstandingAmount,
+    maxFault,
+    maxPreference);
     }
 }

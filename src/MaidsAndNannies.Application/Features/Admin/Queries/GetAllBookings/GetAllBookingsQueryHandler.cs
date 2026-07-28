@@ -11,11 +11,13 @@ public sealed class GetAllBookingsQueryHandler(
 {
     public async Task<IReadOnlyList<AdminBookingListDto>> Handle(GetAllBookingsQuery request, CancellationToken ct)
     {
-        var maxReplacementStr = await dbContext.AppSettings
-            .Where(s => s.Key == "MaxReplacementCount")
-            .Select(s => s.Value)
-            .FirstOrDefaultAsync(ct);
-        var maxReplacement = int.TryParse(maxReplacementStr, out var max) ? max : 2;
+        // نفس ملاحظة GetBookingByIdQueryHandler: الحد بقى منفصل حسب سبب الاستبدال
+        var replacementSettings = await dbContext.AppSettings
+            .Where(s => s.Key == "MaxFaultReplacementCount" || s.Key == "MaxPreferenceReplacementCount")
+            .ToListAsync(ct);
+        var maxFault = int.TryParse(replacementSettings.FirstOrDefault(s => s.Key == "MaxFaultReplacementCount")?.Value, out var mf) ? mf : 3;
+        var maxPreference = int.TryParse(replacementSettings.FirstOrDefault(s => s.Key == "MaxPreferenceReplacementCount")?.Value, out var mp) ? mp : 1;
+        var maxReplacement = Math.Max(maxFault, maxPreference);
 
         return await dbContext.Bookings
             .Include(b => b.Homeowner)

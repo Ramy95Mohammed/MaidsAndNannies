@@ -6,6 +6,7 @@ using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Application.Contracts;
 using MaidsAndNannies.Application.Features.Homeowner.Commands.UpdateProfile;
 using MaidsAndNannies.Domain.Entities;
+using MaidsAndNannies.Domain.Entities.Identity;
 using MaidsAndNannies.Domain.Enums;
 using MaidsAndNannies.Infrastructure;
 using MaidsAndNannies.Infrastructure.Persistence;
@@ -92,88 +93,102 @@ using (var scope = app.Services.CreateScope())
 
     if (app.Environment.IsDevelopment())
     {
-        var homeownerEmail = "homeowner@maidsandnannies.local";
-        if (await userManager.FindByEmailAsync(homeownerEmail) is null)
-        {
-
-            var homeownerUser = new MaidsAndNannies.Domain.Entities.Identity.ApplicationUser
-            {
-                UserName = homeownerEmail,
-                Email = homeownerEmail,
-                FullName = "Platform Homeowner",
-                PreferredLanguage = "ar",
-                Role = UserRole.Homeowner,
-                EmailConfirmed = true,
-                PhoneNumber = "11245454878787"
-            };
-
-            var homeownerCreateResult = await userManager.CreateAsync(homeownerUser, "Homeowner@12345");
-            if (homeownerCreateResult.Succeeded)
-                await userManager.AddToRoleAsync(homeownerUser, UserRole.Homeowner.ToString());
-
-
-            var homeownerProfile = new HomeownerProfile
-            {
-                UserId = homeownerUser.Id,
-                Address = "my address",
-                City = "my city",
-                State = "my state",
-                WhatsAppNumber = "454564578745455",
-                VerificationStatus = VerificationStatus.Pending,
-                NationalIdNumber = "id number"
-            };
-
-            dbContext.HomeownerProfiles.Add(homeownerProfile);
-            await dbContext.SaveChangesAsync();
-
-        }
-
-        if(!await dbContext.Currencies.AnyAsync())
+        if (!await dbContext.Currencies.AnyAsync())
         {
             await dbContext.Currencies.AddRangeAsync(new List<Currency>
             {
-                 new Currency { Id = 1, Code = "EGP", Symbol = "E£", NameAr = "جنيه مصري", NameEn = "Egyptian Pound", RateToEgp = 1m, IsActive = true },
-            new Currency { Id = 2, Code = "USD", Symbol = "$", NameAr = "دولار أمريكي", NameEn = "US Dollar", RateToEgp = 48.5m, IsActive = true },
-            new Currency { Id = 3, Code = "SAR", Symbol = "﷼", NameAr = "ريال سعودي", NameEn = "Saudi Riyal", RateToEgp = 12.9m, IsActive = true }
+                new Currency { Id = 1, Code = "EGP", Symbol = "E£", NameAr = "جنيه مصري", NameEn = "Egyptian Pound", RateToEgp = 1m, IsActive = true },
+                new Currency { Id = 2, Code = "USD", Symbol = "$", NameAr = "دولار أمريكي", NameEn = "US Dollar", RateToEgp = 48.5m, IsActive = true },
+                new Currency { Id = 3, Code = "SAR", Symbol = "﷼", NameAr = "ريال سعودي", NameEn = "Saudi Riyal", RateToEgp = 12.9m, IsActive = true }
             });
             await dbContext.SaveChangesAsync();
         }
 
-
-        var workerEmail = "worker@maidsandnannies.local";
-        if (await userManager.FindByEmailAsync(workerEmail) is null)
+        // ── Seed 3 Homeowners ──
+        var homeowners = new[]
         {
+            new { Email = "homeowner1@maidsandnannies.local", Name = "سارة أحمد", Phone = "01110000001" },
+            new { Email = "homeowner2@maidsandnannies.local", Name = "نورة خالد", Phone = "01110000002" },
+            new { Email = "homeowner3@maidsandnannies.local", Name = "مريم عمر", Phone = "01110000003" },
+        };
 
-            var workerUser = new MaidsAndNannies.Domain.Entities.Identity.ApplicationUser
+        foreach (var h in homeowners)
+        {
+            if (await userManager.FindByEmailAsync(h.Email) is not null) continue;
+
+            var user = new ApplicationUser
             {
-                UserName = workerEmail,
-                Email = workerEmail,
-                FullName = "Platform Worker",
+                UserName = h.Email,
+                Email = h.Email,
+                FullName = h.Name,
+                PreferredLanguage = "ar",
+                Role = UserRole.Homeowner,
+                EmailConfirmed = true,
+                PhoneNumber = h.Phone
+            };
+
+            var result = await userManager.CreateAsync(user, "Homeowner@12345");
+            if (!result.Succeeded) continue;
+
+            await userManager.AddToRoleAsync(user, UserRole.Homeowner.ToString());
+
+            dbContext.HomeownerProfiles.Add(new HomeownerProfile
+            {
+                UserId = user.Id,
+                Address = $"عنوان {h.Name}",
+                City = "القاهرة",
+                State = "مصر",
+                WhatsAppNumber = h.Phone,
+                VerificationStatus = VerificationStatus.Pending,
+                NationalIdNumber = $"NID-{h.Email.GetHashCode()}"
+            });
+        }
+        await dbContext.SaveChangesAsync();
+
+        // ── Seed 3 Workers ──
+        var workers = new[]
+        {
+            new { Email = "worker1@maidsandnannies.local", Name = "فاطمة حسن", Phone = "01220000001", NationalityId = 65, MonthlyRate = 5000m, DailyRate = 200m, HourlyRate = 30m, CurrencyId = 1 },
+            new { Email = "worker2@maidsandnannies.local", Name = "عائشة محمود", Phone = "01220000002", NationalityId = 65, MonthlyRate = 200m, DailyRate = 0m,    HourlyRate = 0m,  CurrencyId = 2 },
+            new { Email = "worker3@maidsandnannies.local", Name = "خديجة علي",   Phone = "01220000003", NationalityId = 65, MonthlyRate = 800m, DailyRate = 0m,    HourlyRate = 0m,  CurrencyId = 3 },
+        };
+
+        foreach (var w in workers)
+        {
+            if (await userManager.FindByEmailAsync(w.Email) is not null) continue;
+
+            var user = new ApplicationUser
+            {
+                UserName = w.Email,
+                Email = w.Email,
+                FullName = w.Name,
                 PreferredLanguage = "ar",
                 Role = UserRole.Worker,
                 EmailConfirmed = true,
-                PhoneNumber = "01254545454454"
+                PhoneNumber = w.Phone
             };
 
-            var workerCreateResult = await userManager.CreateAsync(workerUser, "Worker@12345");
-            if (workerCreateResult.Succeeded)
-                await userManager.AddToRoleAsync(workerUser, UserRole.Worker.ToString());
+            var result = await userManager.CreateAsync(user, "Worker@12345");
+            if (!result.Succeeded) continue;
 
-            var workerProfile = new WorkerProfile
+            await userManager.AddToRoleAsync(user, UserRole.Worker.ToString());
+
+            dbContext.WorkerProfiles.Add(new WorkerProfile
             {
-                UserId = workerUser.Id,
-                NationalityId = 65,
+                UserId = user.Id,
+                NationalityId = w.NationalityId,
                 CountryId = null,
                 StateId = null,
-                Bio =  string.Empty,
+                Bio = string.Empty,
                 ExperienceYears = 5,
-                MonthlyRate = 5000,
+                MonthlyRate = w.MonthlyRate,
+                DailyRate = w.DailyRate,
+                HourlyRate = w.HourlyRate,
                 VerificationStatus = VerificationStatus.Pending,
-                CurrencyId = await dbContext.Currencies.Select(c => c.Id).FirstOrDefaultAsync()
-            };            
-            dbContext.WorkerProfiles.Add(workerProfile);
-            await dbContext.SaveChangesAsync();
+                CurrencyId = w.CurrencyId
+            });
         }
+        await dbContext.SaveChangesAsync();
     }
 }
 

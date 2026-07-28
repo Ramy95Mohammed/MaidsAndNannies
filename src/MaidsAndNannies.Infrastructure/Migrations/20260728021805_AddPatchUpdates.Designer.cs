@@ -4,6 +4,7 @@ using MaidsAndNannies.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MaidsAndNannies.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260728021805_AddPatchUpdates")]
+    partial class AddPatchUpdates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -376,7 +379,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 1,
                             Code = "EGP",
-                            CreatedAtUtc = new DateTime(2026, 7, 28, 2, 33, 47, 556, DateTimeKind.Utc).AddTicks(4349),
+                            CreatedAtUtc = new DateTime(2026, 7, 28, 2, 18, 3, 903, DateTimeKind.Utc).AddTicks(3225),
                             IsActive = true,
                             NameAr = "جنيه مصري",
                             NameEn = "Egyptian Pound",
@@ -387,7 +390,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 2,
                             Code = "USD",
-                            CreatedAtUtc = new DateTime(2026, 7, 28, 2, 33, 47, 556, DateTimeKind.Utc).AddTicks(4360),
+                            CreatedAtUtc = new DateTime(2026, 7, 28, 2, 18, 3, 903, DateTimeKind.Utc).AddTicks(3230),
                             IsActive = true,
                             NameAr = "دولار أمريكي",
                             NameEn = "US Dollar",
@@ -398,7 +401,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 3,
                             Code = "SAR",
-                            CreatedAtUtc = new DateTime(2026, 7, 28, 2, 33, 47, 556, DateTimeKind.Utc).AddTicks(4364),
+                            CreatedAtUtc = new DateTime(2026, 7, 28, 2, 18, 3, 903, DateTimeKind.Utc).AddTicks(3234),
                             IsActive = true,
                             NameAr = "ريال سعودي",
                             NameEn = "Saudi Riyal",

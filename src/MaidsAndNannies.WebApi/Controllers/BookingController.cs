@@ -77,7 +77,8 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
     {
         if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
 
-        await sender.Send(new RequestReplacementCommand(id, currentUser.UserId, request.NewWorkerId, request.ApplicationId));
+        await sender.Send(new RequestReplacementCommand(
+            id, currentUser.UserId, request.NewWorkerId, request.ApplicationId, request.Reason));
         return Ok(new { Message = "تم طلب الاستبدال" });
     }
 
@@ -139,4 +140,7 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
     }
 }
 
-public sealed record ReplaceBookingRequest(int NewWorkerId, int? ApplicationId);
+public sealed record ReplaceBookingRequest(
+    int NewWorkerId,
+    int? ApplicationId,
+    MaidsAndNannies.Domain.Enums.ReplacementReason Reason);

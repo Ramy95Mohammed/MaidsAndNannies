@@ -219,7 +219,7 @@ export class WorkerDetail implements OnInit {
             serviceType: this.bookingType,
             bookingType: this.bookingType,
             quantity: this.quantity,
-            startDate: this.startDate.toISOString().split('T')[0],
+            startDate: this.toDateOnlyString(this.startDate),
             monthlySalary: this.worker().monthlyRate,
             dailySalary: this.worker().dailyRate,
             hourlySalary: this.worker().hourlyRate,
@@ -231,6 +231,14 @@ export class WorkerDetail implements OnInit {
             },
             error: () => this.messageService.add({ severity: 'error', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_CREATE_ERROR') })
         });
+    }
+
+      private toDateOnlyString(date: Date | null): string | null {
+        if (!date) return null;
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
     disableOrEnableComissionTypeAndQuantity(bookingType:number | null){

@@ -1,0 +1,802 @@
+diff --git a/src/MaidsAndNannies.Application/Features/Admin/Queries/GetAllBookings/GetAllBookingsQueryHandler.cs b/src/MaidsAndNannies.Application/Features/Admin/Queries/GetAllBookings/GetAllBookingsQueryHandler.cs
+index 2204b49..d9512f8 100644
+--- a/src/MaidsAndNannies.Application/Features/Admin/Queries/GetAllBookings/GetAllBookingsQueryHandler.cs
++++ b/src/MaidsAndNannies.Application/Features/Admin/Queries/GetAllBookings/GetAllBookingsQueryHandler.cs
+@@ -11,11 +11,13 @@ public sealed class GetAllBookingsQueryHandler(
+ {
+     public async Task<IReadOnlyList<AdminBookingListDto>> Handle(GetAllBookingsQuery request, CancellationToken ct)
+     {
+-        var maxReplacementStr = await dbContext.AppSettings
+-            .Where(s => s.Key == "MaxReplacementCount")
+-            .Select(s => s.Value)
+-            .FirstOrDefaultAsync(ct);
+-        var maxReplacement = int.TryParse(maxReplacementStr, out var max) ? max : 2;
++        // نفس ملاحظة GetBookingByIdQueryHandler: الحد بقى منفصل حسب سبب الاستبدال
++        var replacementSettings = await dbContext.AppSettings
++            .Where(s => s.Key == "MaxFaultReplacementCount" || s.Key == "MaxPreferenceReplacementCount")
++            .ToListAsync(ct);
++        var maxFault = int.TryParse(replacementSettings.FirstOrDefault(s => s.Key == "MaxFaultReplacementCount")?.Value, out var mf) ? mf : 3;
++        var maxPreference = int.TryParse(replacementSettings.FirstOrDefault(s => s.Key == "MaxPreferenceReplacementCount")?.Value, out var mp) ? mp : 1;
++        var maxReplacement = Math.Max(maxFault, maxPreference);
+ 
+         return await dbContext.Bookings
+             .Include(b => b.Homeowner)
+diff --git a/src/MaidsAndNannies.Application/Features/Booking/Commands/RequestReplacement/RequestReplacementCommand.cs b/src/MaidsAndNannies.Application/Features/Booking/Commands/RequestReplacement/RequestReplacementCommand.cs
+index a8b0008..20bf8c8 100644
+--- a/src/MaidsAndNannies.Application/Features/Booking/Commands/RequestReplacement/RequestReplacementCommand.cs
++++ b/src/MaidsAndNannies.Application/Features/Booking/Commands/RequestReplacement/RequestReplacementCommand.cs
+@@ -1,8 +1,11 @@
+-﻿using MediatR;
++using MaidsAndNannies.Domain.Enums;
++using MediatR;
+ 
+ namespace MaidsAndNannies.Application.Features.Bookings.Commands.RequestReplacement;
+ 
+ public sealed record RequestReplacementCommand(
+     int BookingId,
+     string HomeownerId,
+-    int NewWorkerId , int? ApplicationId) : IRequest<Unit>;
+\ No newline at end of file
++    int NewWorkerId,
++    int? ApplicationId,
++    ReplacementReason Reason) : IRequest<Unit>;
+diff --git a/src/MaidsAndNannies.Application/Features/Booking/Commands/RequestReplacement/RequestReplacementCommandHandler.cs b/src/MaidsAndNannies.Application/Features/Booking/Commands/RequestReplacement/RequestReplacementCommandHandler.cs
+index 20db88f..23cbf60 100644
+--- a/src/MaidsAndNannies.Application/Features/Booking/Commands/RequestReplacement/RequestReplacementCommandHandler.cs
++++ b/src/MaidsAndNannies.Application/Features/Booking/Commands/RequestReplacement/RequestReplacementCommandHandler.cs
+@@ -1,4 +1,5 @@
+-﻿using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Application.Common.Interfaces;
++using MaidsAndNannies.Domain.Entities;
+ using MaidsAndNannies.Domain.Enums;
+ using MaidsPlatform.API.Domain.Enums;
+ using MediatR;
+@@ -10,6 +11,9 @@ public sealed class RequestReplacementCommandHandler(
+     IApplicationDbContext dbContext)
+     : IRequestHandler<RequestReplacementCommand, Unit>
+ {
++    // دورة الفوترة المستخدمة في تناسب العمولة الشهرية (يطابق مدة الاشتراك 30 يوم في CreateBookingCommandHandler)
++    private const int BillingPeriodDays = 30;
++
+     public async Task<Unit> Handle(RequestReplacementCommand r, CancellationToken ct)
+     {
+         var booking = await dbContext.Bookings
+@@ -17,16 +21,22 @@ public sealed class RequestReplacementCommandHandler(
+             .FirstOrDefaultAsync(b => b.Id == r.BookingId && b.HomeownerId == r.HomeownerId, ct)
+             ?? throw new KeyNotFoundException("الحجز غير موجود");
+ 
+-        var maxSetting = await dbContext.AppSettings
+-            .FirstOrDefaultAsync(s => s.Key == "MaxReplacementCount", ct);
+-        var max = int.TryParse(maxSetting?.Value, out var m) ? m : 2;
++        // ── حد أقصى منفصل حسب سبب الاستبدال ──
++        // تقصير العاملة عادة أكثر تسامحاً (حد أعلى) من رغبة شخصية بلا سبب واضح
++        var maxKey = r.Reason == ReplacementReason.WorkerFault
++            ? "MaxFaultReplacementCount"
++            : "MaxPreferenceReplacementCount";
++        var maxDefault = r.Reason == ReplacementReason.WorkerFault ? 3 : 1;
++
++        var maxSetting = await dbContext.AppSettings.FirstOrDefaultAsync(s => s.Key == maxKey, ct);
++        var max = int.TryParse(maxSetting?.Value, out var m) ? m : maxDefault;
+ 
+         var rows = await dbContext.Bookings
+             .Where(b => b.Id == r.BookingId && b.ReplacementCount < max)
+             .ExecuteUpdateAsync(setters => setters
+                 .SetProperty(b => b.ReplacementCount, b => b.ReplacementCount + 1), ct);
+         if (rows == 0)
+-            throw new InvalidOperationException($"تم تجاوز الحد الأقصى للاستبدال ({max} مرات)");
++            throw new InvalidOperationException($"تم تجاوز الحد الأقصى للاستبدال بهذا السبب ({max} مرات)");
+ 
+         booking = await dbContext.Bookings
+             .Include(b => b.Currency)
+@@ -38,97 +48,175 @@ public sealed class RequestReplacementCommandHandler(
+         if (oldWorker is not null)
+             oldWorker.IsAvailable = true;
+ 
+-        string newWorkerId;
+-        int newWorkerProfileId;
+-        decimal newDailyRate, newHourlyRate, newMonthlyRate;
+-        int newCurrencyId;
+-        decimal newRateToEgp;
++        var newWorker = await ResolveNewWorkerAsync(r, booking, ct);
+ 
+-        if (r.ApplicationId.HasValue)
++        booking.LastReplacementReason = r.Reason;
++        booking.UpdatedAt = DateTime.UtcNow;
++
++        // ══════════════════════════════════════════════════════════════════
++        // الحالة 1: حجوزات يومية/ساعية — وحدات ذرية مستقلة.
++        // نقفل الحجز القديم ونفتح حجز جديد بعمولته المستقلة، بدل تعديل نفس السجل.
++        // ══════════════════════════════════════════════════════════════════
++        if (booking.BookingType is BookingType.Daily or BookingType.Hourly)
+         {
+-            var app = await dbContext.JobApplications
+-                .Include(a => a.JobPost).ThenInclude(j => j.Currency)
+-                .FirstOrDefaultAsync(a => a.Id == r.ApplicationId && a.JobPostId == booking.JobPostId, ct)
+-                ?? throw new KeyNotFoundException("الطلب غير موجود");
+-            newWorkerId = app.WorkerId;
+-            newWorkerProfileId = 0;
+-            newDailyRate = app.JobPost.DailySalary;
+-            newHourlyRate = app.JobPost.HourlySalary;
+-            newMonthlyRate = app.JobPost.MonthlySalary;
+-            newCurrencyId = app.JobPost.CurrencyId;
+-            newRateToEgp = app.JobPost.Currency.RateToEgp;
++            booking.Status = BookingStatus.Replaced;
++
++            var settings = await dbContext.AppSettings.ToListAsync(ct);
++            var getPercent = (string key, int fallback) =>
++            {
++                var val = settings.FirstOrDefault(s => s.Key == key)?.Value;
++                return int.TryParse(val, out var p) ? p : fallback;
++            };
++
++            var commissionPercent = booking.BookingType == BookingType.Daily
++                ? getPercent("CommissionDailyPercent", 10)
++                : getPercent("CommissionHourlyPercent", 10);
++
++            var newTotal = booking.BookingType == BookingType.Daily
++                ? newWorker.DailyRate * booking.Quantity
++                : newWorker.HourlyRate * booking.Quantity;
++            var newTotalInEgp = newTotal * newWorker.RateToEgp;
++            var newCommissionInEgp = newTotalInEgp * commissionPercent / 100m;
++
++            var replacementBooking = new Booking
++            {
++                HomeownerId = booking.HomeownerId,
++                WorkerId = newWorker.WorkerId,
++                OriginalWorkerId = newWorker.WorkerProfileId,
++                ServiceType = booking.ServiceType,
++                BookingType = booking.BookingType,
++                Quantity = booking.Quantity,
++                StartDate = DateTime.UtcNow,
++                DailySalary = booking.BookingType == BookingType.Daily ? newWorker.DailyRate : 0,
++                HourlySalary = booking.BookingType == BookingType.Hourly ? newWorker.HourlyRate : 0,
++                TotalAmount = newTotal,
++                CommissionAmount = newCommissionInEgp,
++                CommissionType = CommissionType.OneTime,
++                Status = BookingStatus.Pending,
++                ReplacementCount = 0,
++                CurrencyId = newWorker.CurrencyId,
++                ReplacedFromBookingId = booking.Id,
++                JobPostId = booking.JobPostId
++            };
++
++            dbContext.Bookings.Add(replacementBooking);
++            await dbContext.SaveChangesAsync(ct);
++            return Unit.Value;
+         }
+-        else
++
++        // ══════════════════════════════════════════════════════════════════
++        // الحالة 2: اشتراك شهري ثابت — العمولة مستقلة عن سعر العاملة نفسها،
++        // وضمان الاستبدال مغطى بالفعل ضمن الاشتراك. لا فرق يُحصّل على صاحبة المنزل.
++        // ══════════════════════════════════════════════════════════════════
++        if (booking.CommissionType == CommissionType.Subscription)
+         {
+-            var newWorker = await dbContext.WorkerProfiles
+-                .Include(w => w.Currency)
+-                .FirstOrDefaultAsync(w => w.Id == r.NewWorkerId, ct)
+-                ?? throw new KeyNotFoundException("العاملة غير موجودة");
+-            newWorkerId = newWorker.UserId;
+-            newWorkerProfileId = newWorker.Id;
+-            newDailyRate = newWorker.DailyRate ?? 0;
+-            newHourlyRate = newWorker.HourlyRate ?? 0;
+-            newMonthlyRate = newWorker.MonthlyRate ?? 0;
+-            newCurrencyId = newWorker.CurrencyId;
+-            newRateToEgp = newWorker.Currency.RateToEgp;
++            booking.WorkerId = newWorker.WorkerId;
++            booking.OriginalWorkerId = newWorker.WorkerProfileId;
++            booking.MonthlySalary = newWorker.MonthlyRate;
++            booking.CurrencyId = newWorker.CurrencyId;
++            booking.TotalAmount = newWorker.MonthlyRate;
++            booking.OutstandingAmount = 0; // لا تغيير على العمولة — الاشتراك يغطي الاستبدال
++            booking.Status = BookingStatus.Active;
++
++            // استثناء: لو العاملة الجديدة في فئة سعرية أعلى وضوح، نعلّم الحجز لمراجعة إدارية
++            // بدل ما نحصّل فرق تلقائي (فرق الفئة قرار عمل، مش حساب آلي)
++            if (newWorker.MonthlyRate > booking.MonthlySalary)
++            {
++                booking.AdminNotes = AppendNote(booking.AdminNotes,
++                    $"العاملة الجديدة بسعر أعلى ({newWorker.MonthlyRate} مقابل {booking.MonthlySalary}) — يحتاج مراجعة فرق الفئة يدوياً");
++            }
++
++            await dbContext.SaveChangesAsync(ct);
++            return Unit.Value;
+         }
+ 
++        // ══════════════════════════════════════════════════════════════════
++        // الحالة 3: حجز شهري بعمولة نسبية (OneTime) — تناسب زمني حقيقي:
++        // الفترة اللي اتصرفت (elapsed) تحتفظ بعمولتها القديمة كما هي.
++        // الفترة الباقية (remaining) هي وحدها اللي بتتأثر بسبب الاستبدال.
++        // ══════════════════════════════════════════════════════════════════
++        var daysElapsed = Math.Clamp((int)(DateTime.UtcNow - booking.StartDate).TotalDays, 0, BillingPeriodDays);
++        var daysRemaining = BillingPeriodDays - daysElapsed;
++        var remainingRatio = daysRemaining / (decimal)BillingPeriodDays;
++
+         var oldRateToEgp = booking.Currency?.RateToEgp ?? 1m;
++        var oldTotalInEgp = booking.TotalAmount * oldRateToEgp;
++        var newTotalInEgp = newWorker.MonthlyRate * newWorker.RateToEgp;
+ 
+-        var newTotal = booking.BookingType switch
+-        {
+-            BookingType.Daily => newDailyRate * booking.Quantity,
+-            BookingType.Hourly => newHourlyRate * booking.Quantity,
+-            BookingType.Monthly => newMonthlyRate,
+-            _ => newMonthlyRate
+-        };
++        // النسبة المئوية الفعلية المتفق عليها وقت إنشاء هذا الحجز (مشتقة من العمولة/الإجمالي الأصليين)
++        var commissionRatio = oldTotalInEgp > 0 ? booking.CommissionAmount / oldTotalInEgp : 0;
+ 
+-        var oldTotalInEgp = booking.TotalAmount * oldRateToEgp;
+-        var newTotalInEgp = newTotal * newRateToEgp;
+-        var newCommissionInEgp = newTotalInEgp * (booking.CommissionAmount / (oldTotalInEgp > 0 ? oldTotalInEgp : 1));
+-        var oldCommissionInEgp = booking.CommissionAmount;
+-
+-        // تحديث بيانات الحجز
+-        booking.WorkerId = newWorkerId;
+-        booking.OriginalWorkerId = newWorkerProfileId;
+-        booking.MonthlySalary = newMonthlyRate;
+-        booking.DailySalary = newDailyRate;
+-        booking.HourlySalary = newHourlyRate;
+-        booking.TotalAmount = newTotal;
+-        booking.CurrencyId = newCurrencyId;
+-
+-        if (booking.IsPaid)
++        var alreadyEarnedCommission = booking.CommissionAmount * (1 - remainingRatio); // ثابتة، لا تتأثر بالاستبدال
++        var oldRemainingCommission = booking.CommissionAmount * remainingRatio;         // لو استمرت العاملة القديمة
++        var newRemainingCommission = newTotalInEgp * commissionRatio * remainingRatio;  // بسعر العاملة الجديدة
++
++        booking.WorkerId = newWorker.WorkerId;
++        booking.OriginalWorkerId = newWorker.WorkerProfileId;
++        booking.MonthlySalary = newWorker.MonthlyRate;
++        booking.CurrencyId = newWorker.CurrencyId;
++        booking.TotalAmount = newWorker.MonthlyRate;
++
++        if (r.Reason == ReplacementReason.WorkerFault)
+         {
+-            if (newCommissionInEgp > oldCommissionInEgp)
+-            {
+-                // أكبر — نحتاج دفع الفرق
+-                booking.OutstandingAmount = newCommissionInEgp - oldCommissionInEgp;
+-                booking.CommissionAmount = newCommissionInEgp;
+-                booking.Status = BookingStatus.ReplacementRequested;
+-            }
+-            else if (newCommissionInEgp < oldCommissionInEgp)
++            // العمولة عن الفترة المتبقية تكمل بنفس السعر القديم — بدون أي فرق يُحصّل من صاحبة المنزل
++            booking.CommissionAmount = alreadyEarnedCommission + oldRemainingCommission;
++            booking.OutstandingAmount = 0;
++            booking.Status = booking.IsPaid ? BookingStatus.Active : BookingStatus.Pending;
++        }
++        else
++        {
++            // رغبة شخصية: عمولة جديدة عن الفترة المتبقية فقط بسعر العاملة الجديدة
++            var newTotalCommission = alreadyEarnedCommission + newRemainingCommission;
++            var diff = newTotalCommission - booking.CommissionAmount;
++
++            booking.CommissionAmount = newTotalCommission;
++
++            if (booking.IsPaid && diff > 0)
+             {
+-                // أقل — نخفض العمولة
+-                booking.CommissionAmount = newCommissionInEgp;
+-                booking.OutstandingAmount = 0;
+-                booking.Status = BookingStatus.ReplacementRequested;
++                booking.OutstandingAmount = diff;
++                booking.Status = BookingStatus.ReplacementRequested; // ينتظر تأكيد دفع الفرق من صاحبة المنزل
+             }
+             else
+             {
+-                // نفس المبلغ
++                // الفرق صفر أو بالسالب — لا مبلغ إضافي مطلوب (يمكن اعتباره رصيد دائن لاحقاً لو رغبتم)
+                 booking.OutstandingAmount = 0;
+-                booking.Status = BookingStatus.ReplacementRequested;
++                booking.Status = booking.IsPaid ? BookingStatus.Active : BookingStatus.Pending;
+             }
+         }
+-        else
+-        {
+-            // غير مدفوع — نحدث العمولة فقط
+-            booking.CommissionAmount = newCommissionInEgp;
+-            booking.Status = BookingStatus.Pending;
+-        }
+ 
+-        booking.UpdatedAt = DateTime.UtcNow;
+         await dbContext.SaveChangesAsync(ct);
+         return Unit.Value;
+     }
+-}
+\ No newline at end of file
++
++    private static string AppendNote(string? existing, string note) =>
++        string.IsNullOrWhiteSpace(existing) ? note : $"{existing} | {note}";
++
++    private sealed record NewWorkerInfo(
++        string WorkerId, int WorkerProfileId, decimal DailyRate, decimal HourlyRate,
++        decimal MonthlyRate, int CurrencyId, decimal RateToEgp);
++
++    private async Task<NewWorkerInfo> ResolveNewWorkerAsync(
++        RequestReplacementCommand r, Booking booking, CancellationToken ct)
++    {
++        if (r.ApplicationId.HasValue)
++        {
++            var app = await dbContext.JobApplications
++                .Include(a => a.JobPost).ThenInclude(j => j.Currency)
++                .FirstOrDefaultAsync(a => a.Id == r.ApplicationId && a.JobPostId == booking.JobPostId, ct)
++                ?? throw new KeyNotFoundException("الطلب غير موجود");
++
++            return new NewWorkerInfo(
++                app.WorkerId, 0, app.JobPost.DailySalary, app.JobPost.HourlySalary,
++                app.JobPost.MonthlySalary, app.JobPost.CurrencyId, app.JobPost.Currency.RateToEgp);
++        }
++
++        var newWorker = await dbContext.WorkerProfiles
++            .Include(w => w.Currency)
++            .FirstOrDefaultAsync(w => w.Id == r.NewWorkerId, ct)
++            ?? throw new KeyNotFoundException("العاملة غير موجودة");
++
++        return new NewWorkerInfo(
++            newWorker.UserId, newWorker.Id, newWorker.DailyRate ?? 0, newWorker.HourlyRate ?? 0,
++            newWorker.MonthlyRate ?? 0, newWorker.CurrencyId, newWorker.Currency.RateToEgp);
++    }
++}
+diff --git a/src/MaidsAndNannies.Application/Features/Booking/Common/BookingDtos.cs b/src/MaidsAndNannies.Application/Features/Booking/Common/BookingDtos.cs
+index b5c305f..02b0666 100644
+--- a/src/MaidsAndNannies.Application/Features/Booking/Common/BookingDtos.cs
++++ b/src/MaidsAndNannies.Application/Features/Booking/Common/BookingDtos.cs
+@@ -73,6 +73,9 @@ public sealed record BookingDetailDto(
+     bool IsPaid,
+     int ReplacementCount,
+     int MaxReplacement,
++    int MaxFaultReplacement,
++    int MaxPreferenceReplacement,
++    decimal OutstandingAmount,
+     string? AdminNotes,    
+     DateTime CreatedAt,
+     int? JobPostId);
+diff --git a/src/MaidsAndNannies.Application/Features/Booking/Queries/GetBookingByIdQueryHandler.cs b/src/MaidsAndNannies.Application/Features/Booking/Queries/GetBookingByIdQueryHandler.cs
+index 739c960..7dcc1d7 100644
+--- a/src/MaidsAndNannies.Application/Features/Booking/Queries/GetBookingByIdQueryHandler.cs
++++ b/src/MaidsAndNannies.Application/Features/Booking/Queries/GetBookingByIdQueryHandler.cs
+@@ -33,12 +33,16 @@ public sealed class GetBookingByIdQueryHandler(
+ 
+         var workerSelfieDocument = worker?.Documents.FirstOrDefault(d => d.Type == Domain.Enums.DocumentType.Selfie);
+ 
+-        var maxReplacementStr = await dbContext.AppSettings
+-            .Where(s => s.Key == "MaxReplacementCount")
+-            .Select(s => s.Value)
+-            .FirstOrDefaultAsync(ct);
++        // ملاحظة: الحد الأقصى بقى منفصل حسب سبب الاستبدال (تقصير/رغبة شخصية).
++        // القيمة هنا هي الأعلى بينهما للعرض فقط في الواجهة الحالية — يفضّل لاحقاً تعديل
++        // BookingDetailDto ليعرض القيمتين منفصلتين (maxFaultReplacement / maxPreferenceReplacement).
++        var replacementSettings = await dbContext.AppSettings
++            .Where(s => s.Key == "MaxFaultReplacementCount" || s.Key == "MaxPreferenceReplacementCount")
++            .ToListAsync(ct);
+ 
+-        var maxReplacement = int.TryParse(maxReplacementStr, out var max) ? max : 2;
++        var maxFault = int.TryParse(replacementSettings.FirstOrDefault(s => s.Key == "MaxFaultReplacementCount")?.Value, out var mf) ? mf : 3;
++        var maxPreference = int.TryParse(replacementSettings.FirstOrDefault(s => s.Key == "MaxPreferenceReplacementCount")?.Value, out var mp) ? mp : 1;
++        var maxReplacement = Math.Max(maxFault, maxPreference);
+ 
+         var rateToEgp = booking.Currency?.RateToEgp ?? worker?.Currency?.RateToEgp ?? 1m;
+         var currencyCode = booking.Currency?.Code ?? worker?.Currency?.Code ?? "EGP";
+@@ -71,6 +75,9 @@ public sealed class GetBookingByIdQueryHandler(
+             booking.IsPaid,
+             booking.ReplacementCount,
+             maxReplacement,
++            maxFault,
++            maxPreference,
++            booking.OutstandingAmount,
+             booking.AdminNotes,
+             booking.CreatedAt,
+             booking.JobPostId);
+diff --git a/src/MaidsAndNannies.Domain/Entities/Booking.cs b/src/MaidsAndNannies.Domain/Entities/Booking.cs
+index 44a2913..5105612 100644
+--- a/src/MaidsAndNannies.Domain/Entities/Booking.cs
++++ b/src/MaidsAndNannies.Domain/Entities/Booking.cs
+@@ -38,6 +38,15 @@ public class Booking : Entity
+     public int? OriginalWorkerId { get; set; }
+     public string? AdminNotes { get; set; }
+ 
++    /// <summary>سبب آخر عملية استبدال تمت على هذا الحجز (للتتبع/العرض لصاحبة المنزل).</summary>
++    public ReplacementReason? LastReplacementReason { get; set; }
++
++    /// <summary>
++    /// للحجوزات اليومية/الساعية فقط: يشير إلى الحجز الأصلي الذي نتج عنه هذا الحجز
++    /// عند إنشاء حجز جديد مستقل بدل تعديل الحجز القديم.
++    /// </summary>
++    public int? ReplacedFromBookingId { get; set; }
++
+     public int? JobPostId { get; set; }
+     public int? CurrencyId { get; set; }
+     public virtual Currency? Currency { get; set; }
+diff --git a/src/MaidsAndNannies.Domain/Enums/BookingStatus.cs b/src/MaidsAndNannies.Domain/Enums/BookingStatus.cs
+index e0c695f..b6b5743 100644
+--- a/src/MaidsAndNannies.Domain/Enums/BookingStatus.cs
++++ b/src/MaidsAndNannies.Domain/Enums/BookingStatus.cs
+@@ -10,5 +10,10 @@ public enum BookingStatus
+     Completed = 5,
+     Cancelled = 6,
+     ReplacementRequested = 7,
+-    PaymentSubmitted = 8
++    PaymentSubmitted = 8,
++
++    /// <summary>
++    /// الحجز اليومي/الساعي القديم اتقفل بسبب استبدال، وتم فتح حجز جديد مستقل مكانه.
++    /// </summary>
++    Replaced = 9
+ }
+diff --git a/src/MaidsAndNannies.Domain/Enums/ReplacementReason.cs b/src/MaidsAndNannies.Domain/Enums/ReplacementReason.cs
+new file mode 100644
+index 0000000..c343c3c
+--- /dev/null
++++ b/src/MaidsAndNannies.Domain/Enums/ReplacementReason.cs
+@@ -0,0 +1,19 @@
++namespace MaidsAndNannies.Domain.Enums;
++
++/// <summary>
++/// سبب طلب الاستبدال — يحدد كيفية التعامل مع فرق العمولة.
++/// </summary>
++public enum ReplacementReason
++{
++    /// <summary>
++    /// تقصير أو مشكلة من العاملة (انسحاب، سوء أداء، عدم مطابقة للمواصفات).
++    /// لا تُحتسب عمولة إضافية عن الفترة المتبقية.
++    /// </summary>
++    WorkerFault = 0,
++
++    /// <summary>
++    /// رغبة شخصية من صاحبة المنزل من غير عيب في العاملة.
++    /// تُحتسب عمولة جديدة عن الفترة المتبقية فقط.
++    /// </summary>
++    HomeownerPreference = 1
++}
+diff --git a/src/MaidsAndNannies.Infrastructure/Persistence/ApplicationDbContext.cs b/src/MaidsAndNannies.Infrastructure/Persistence/ApplicationDbContext.cs
+index 2090744..fe16402 100644
+--- a/src/MaidsAndNannies.Infrastructure/Persistence/ApplicationDbContext.cs
++++ b/src/MaidsAndNannies.Infrastructure/Persistence/ApplicationDbContext.cs
+@@ -239,7 +239,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext>
+ 
+         // Seed settings
+         builder.Entity<AppSetting>().HasData(
+-            new AppSetting { Key = "MaxReplacementCount", Value = "2", Description = "الحد الأقصى لعدد مرات الاستبدال لكل حجز" },
++            new AppSetting { Key = "MaxFaultReplacementCount", Value = "3", Description = "الحد الأقصى لعدد مرات الاستبدال بسبب تقصير العاملة" },
++            new AppSetting { Key = "MaxPreferenceReplacementCount", Value = "1", Description = "الحد الأقصى لعدد مرات الاستبدال برغبة شخصية من صاحبة المنزل" },
+             new AppSetting { Key = "CommissionDailyPercent", Value = "10", Description = "نسبة العمولة للحجوزات اليومية (%)" },
+             new AppSetting { Key = "CommissionHourlyPercent", Value = "10", Description = "نسبة العمولة للحجوزات بالساعة (%)" },
+             new AppSetting { Key = "CommissionMonthlyOneTimePercent", Value = "10", Description = "نسبة العمولة للحجوزات الشهرية (مرة واحدة)" },
+diff --git a/src/MaidsAndNannies.WebApi/Controllers/BookingController.cs b/src/MaidsAndNannies.WebApi/Controllers/BookingController.cs
+index ee0b62c..243bdf1 100644
+--- a/src/MaidsAndNannies.WebApi/Controllers/BookingController.cs
++++ b/src/MaidsAndNannies.WebApi/Controllers/BookingController.cs
+@@ -77,7 +77,8 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
+     {
+         if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
+ 
+-        await sender.Send(new RequestReplacementCommand(id, currentUser.UserId, request.NewWorkerId, request.ApplicationId));
++        await sender.Send(new RequestReplacementCommand(
++            id, currentUser.UserId, request.NewWorkerId, request.ApplicationId, request.Reason));
+         return Ok(new { Message = "تم طلب الاستبدال" });
+     }
+ 
+@@ -139,4 +140,7 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
+     }
+ }
+ 
+-public sealed record ReplaceBookingRequest(int NewWorkerId, int? ApplicationId);
+\ No newline at end of file
++public sealed record ReplaceBookingRequest(
++    int NewWorkerId,
++    int? ApplicationId,
++    MaidsAndNannies.Domain.Enums.ReplacementReason Reason);
+\ No newline at end of file
+diff --git a/src/maids-and-nannies-angular/public/i18n/ar.json b/src/maids-and-nannies-angular/public/i18n/ar.json
+index f022d72..261b7a9 100644
+--- a/src/maids-and-nannies-angular/public/i18n/ar.json
++++ b/src/maids-and-nannies-angular/public/i18n/ar.json
+@@ -310,7 +310,16 @@
+   "BOOKING_DETAIL": {
+     "WORKER_PHONE_WILL_APPEAR": "سيظهر رقم العاملة بعد تأكيد الدفع",
+     "REPLACEMENT_USED": "تم استخدام {{count}} من {{max}} استبدال",
++    "REPLACEMENT_USED_DETAILED": "متبقي {{fault}} استبدال بسبب مشكلة في العاملة، و{{preference}} استبدال برغبة شخصية",
+     "REQUEST_REPLACEMENT": "طلب استبدال",
++    "REPLACEMENT_REASON_TITLE": "ما سبب طلب الاستبدال؟",
++    "REPLACEMENT_REASON_FAULT": "في مشكلة مع العاملة",
++    "REPLACEMENT_REASON_FAULT_DESC": "مثل: انسحاب، سوء أداء، أو عدم مطابقة للمواصفات — بدون أي عمولة إضافية عليكِ",
++    "REPLACEMENT_REASON_PREFERENCE": "رغبة شخصية",
++    "REPLACEMENT_REASON_PREFERENCE_DESC": "لا يوجد عيب في العاملة، لكن تفضلين تغييرها — قد يترتب عليه فرق في العمولة",
++    "CONFIRM": "تأكيد",
++    "OUTSTANDING_AMOUNT_TITLE": "مبلغ إضافي مطلوب بعد الاستبدال",
++    "OUTSTANDING_AMOUNT_DESC": "بسبب التغيير لعاملة بسعر مختلف، يوجد فرق في العمولة عن الفترة المتبقية",
+     "PROOF_RECEIVED": "تم استلام إثبات الدفع",
+     "PENDING_REVIEW": "بانتظار مراجعة الإدارة وتأكيد الدفع",
+     "CHOOSE_RECEIPT": "اختر صورة الإيصال",
+diff --git a/src/maids-and-nannies-angular/public/i18n/en.json b/src/maids-and-nannies-angular/public/i18n/en.json
+index 677fbc7..1c625b9 100644
+--- a/src/maids-and-nannies-angular/public/i18n/en.json
++++ b/src/maids-and-nannies-angular/public/i18n/en.json
+@@ -306,7 +306,16 @@
+   "BOOKING_DETAIL": {
+     "WORKER_PHONE_WILL_APPEAR": "Worker phone number will appear after payment confirmation",
+     "REPLACEMENT_USED": "Used {{count}} of {{max}} replacements",
++    "REPLACEMENT_USED_DETAILED": "{{fault}} fault-based and {{preference}} preference-based replacements remaining",
+     "REQUEST_REPLACEMENT": "Request Replacement",
++    "REPLACEMENT_REASON_TITLE": "Why are you requesting a replacement?",
++    "REPLACEMENT_REASON_FAULT": "There's an issue with the worker",
++    "REPLACEMENT_REASON_FAULT_DESC": "e.g. withdrawal, poor performance, or not matching requirements — no extra commission",
++    "REPLACEMENT_REASON_PREFERENCE": "Personal preference",
++    "REPLACEMENT_REASON_PREFERENCE_DESC": "No fault with the worker, you'd just prefer a change — may involve a commission difference",
++    "CONFIRM": "Confirm",
++    "OUTSTANDING_AMOUNT_TITLE": "Additional amount due after replacement",
++    "OUTSTANDING_AMOUNT_DESC": "Because of switching to a worker at a different rate, there's a commission difference for the remaining period",
+     "PROOF_RECEIVED": "Payment proof received",
+     "PENDING_REVIEW": "Awaiting admin review and payment confirmation",
+     "PAYMENT_METHOD": "Payment Method",
+diff --git a/src/maids-and-nannies-angular/src/app/core/services/booking.service.ts b/src/maids-and-nannies-angular/src/app/core/services/booking.service.ts
+index 728fac1..f497c35 100644
+--- a/src/maids-and-nannies-angular/src/app/core/services/booking.service.ts
++++ b/src/maids-and-nannies-angular/src/app/core/services/booking.service.ts
+@@ -50,6 +50,9 @@ export interface BookingDetailDto {
+   isPaid: boolean;
+   replacementCount: number;
+   maxReplacement:number;
++  maxFaultReplacement: number;
++  maxPreferenceReplacement: number;
++  outstandingAmount: number;
+   adminNotes: string | null;
+   createdAt: string;
+   jobPostId:number;
+@@ -82,8 +85,15 @@ export class BookingService {
+     return this.http.post(`${this.API_URL}/booking/${id}/upload-proof`, formData);
+   }
+ 
+-requestReplacement(id: number, newWorkerId?: number | null, applicationId?: number | null): Observable<any> {
+-  return this.http.post(`${this.API_URL}/booking/${id}/replace`, { newWorkerId, applicationId });
++// reason: 0 = تقصير من العاملة (WorkerFault) — بدون عمولة إضافية
++//         1 = رغبة شخصية من صاحبة المنزل (HomeownerPreference) — عمولة جديدة عن الفترة المتبقية
++requestReplacement(
++  id: number,
++  reason: 0 | 1,
++  newWorkerId?: number | null,
++  applicationId?: number | null
++): Observable<any> {
++  return this.http.post(`${this.API_URL}/booking/${id}/replace`, { newWorkerId, applicationId, reason });
+ }
+ 
+   // Worker
+diff --git a/src/maids-and-nannies-angular/src/app/features/admin/settings/admin-settings.ts b/src/maids-and-nannies-angular/src/app/features/admin/settings/admin-settings.ts
+index 99297fe..39eadc7 100644
+--- a/src/maids-and-nannies-angular/src/app/features/admin/settings/admin-settings.ts
++++ b/src/maids-and-nannies-angular/src/app/features/admin/settings/admin-settings.ts
+@@ -58,7 +58,8 @@ export class AdminSettings implements OnInit {
+         {
+             title: 'الحدود',
+             settings: [
+-                { key: 'MaxReplacementCount', label: 'الحد الأقصى للاستبدال', value: 2, description: 'عدد مرات الاستبدال المسموح بها لكل حجز' },
++                { key: 'MaxFaultReplacementCount', label: 'الحد الأقصى للاستبدال (تقصير العاملة)', value: 3, description: 'عدد مرات الاستبدال المجاني المسموح بها بسبب تقصير العاملة' },
++                { key: 'MaxPreferenceReplacementCount', label: 'الحد الأقصى للاستبدال (رغبة شخصية)', value: 1, description: 'عدد مرات الاستبدال المسموح بها برغبة شخصية من صاحبة المنزل' },
+                 { key: 'MaxActiveBookingsPerHomeowner', label: 'أقصى حجوزات نشطة', value: 5, description: 'الحد الأقصى للحجوزات النشطة لكل صاحبة منزل' },
+                 { key: 'AutoCancelPendingBookingHours', label: 'إلغاء الحجز المعلق بعد (ساعة)', value: 48, description: 'إلغاء الحجوزات المعلقة تلقائياً بعد هذه المدة' },
+             ]
+diff --git a/src/maids-and-nannies-angular/src/app/features/homeowner/bookings/booking-detail.ts b/src/maids-and-nannies-angular/src/app/features/homeowner/bookings/booking-detail.ts
+index 780fc5b..ee2d42e 100644
+--- a/src/maids-and-nannies-angular/src/app/features/homeowner/bookings/booking-detail.ts
++++ b/src/maids-and-nannies-angular/src/app/features/homeowner/bookings/booking-detail.ts
+@@ -9,6 +9,9 @@ import { SelectModule } from 'primeng/select';
+ import { InputTextModule } from 'primeng/inputtext';
+ import { FileUpload } from 'primeng/fileupload';
+ import { ToastModule } from 'primeng/toast';
++import { DialogModule } from 'primeng/dialog';
++import { RadioButtonModule } from 'primeng/radiobutton';
++import { MessageModule } from 'primeng/message';
+ import { MessageService } from 'primeng/api';
+ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+ import { BookingService, BookingDetailDto } from '../../../core/services/booking.service';
+@@ -23,7 +26,7 @@ import { Rating } from "primeng/rating";
+     CommonModule, ReactiveFormsModule, CardModule, TagModule,
+     ButtonModule, SelectModule, InputTextModule, FileUpload,
+     ToastModule, RouterModule, TranslatePipe,
+-    TableModule,
++    TableModule, DialogModule, RadioButtonModule, MessageModule,
+     Rating , FormsModule
+ ],
+     providers: [MessageService],
+@@ -60,6 +63,16 @@ import { Rating } from "primeng/rating";
+                        @if(booking.bookingType == 1){ <p>{{ 'BOOKING.COMMISSION_TYPE' | translate }}: {{ booking.commissionType === 0 ? ('BOOKING.ONETIME' | translate) : ('BOOKING.SUBSCRIPTION' | translate) }}</p>}
+                     </p-card>
+                 </div>
++
++                <!-- Outstanding amount after replacement -->
++                <div class="col-span-12" *ngIf="booking.outstandingAmount > 0">
++                    <p-message severity="warn" [text]="'BOOKING_DETAIL.OUTSTANDING_AMOUNT_TITLE' | translate">
++                    </p-message>
++                    <p class="text-sm text-muted-color mt-2">
++                        {{ 'BOOKING_DETAIL.OUTSTANDING_AMOUNT_DESC' | translate }}:
++                        <strong>{{ booking.outstandingAmount | currency:'EGP':'code':'1.0-0' }}</strong>
++                    </p>
++                </div>
+                 
+ 
+                      <!-- Replacement -->
+@@ -68,13 +81,37 @@ import { Rating } from "primeng/rating";
+                             <div class="flex align-items-center justify-content-between">
+                                 <div>
+                                     <strong>{{ 'BOOKING.REPLACEMENT' | translate }}</strong>
+-                                    <p class="text-sm text-muted-color">{{ 'BOOKING_DETAIL.REPLACEMENT_USED' | translate:{count: booking.replacementCount, max: booking.maxReplacement} }}</p>
++                                    <p class="text-sm text-muted-color">{{ 'BOOKING_DETAIL.REPLACEMENT_USED_DETAILED' | translate:{fault: remainingFaultReplacements(), preference: remainingPreferenceReplacements()} }}</p>
+                                 </div>
+-                                <p-button [label]="'BOOKING_DETAIL.REQUEST_REPLACEMENT' | translate" icon="pi pi-refresh" severity="warn" (onClick)="requestReplacement()"></p-button>
++                                <p-button [label]="'BOOKING_DETAIL.REQUEST_REPLACEMENT' | translate" icon="pi pi-refresh" severity="warn" (onClick)="openReasonDialog('navigate')"></p-button>
+                             </div>
+                         </p-card>
+                     </div>
+ 
++                    <!-- Replacement reason dialog -->
++                    <p-dialog [header]="'BOOKING_DETAIL.REPLACEMENT_REASON_TITLE' | translate"
++                              [(visible)]="showReasonDialog" [modal]="true" [style]="{width: '28rem'}">
++                        <div class="flex flex-column gap-3">
++                            <div class="flex align-items-start gap-2">
++                                <p-radioButton name="reason" [value]="0" [(ngModel)]="selectedReason" inputId="reasonFault"></p-radioButton>
++                                <label for="reasonFault" class="cursor-pointer">
++                                    <div class="font-bold">{{ 'BOOKING_DETAIL.REPLACEMENT_REASON_FAULT' | translate }}</div>
++                                    <div class="text-sm text-muted-color">{{ 'BOOKING_DETAIL.REPLACEMENT_REASON_FAULT_DESC' | translate }}</div>
++                                </label>
++                            </div>
++                            <div class="flex align-items-start gap-2">
++                                <p-radioButton name="reason" [value]="1" [(ngModel)]="selectedReason" inputId="reasonPreference"></p-radioButton>
++                                <label for="reasonPreference" class="cursor-pointer">
++                                    <div class="font-bold">{{ 'BOOKING_DETAIL.REPLACEMENT_REASON_PREFERENCE' | translate }}</div>
++                                    <div class="text-sm text-muted-color">{{ 'BOOKING_DETAIL.REPLACEMENT_REASON_PREFERENCE_DESC' | translate }}</div>
++                                </label>
++                            </div>
++                        </div>
++                        <ng-template #footer>
++                            <p-button [label]="'BOOKING_DETAIL.CONFIRM' | translate" icon="pi pi-check" (onClick)="confirmReason()"></p-button>
++                        </ng-template>
++                    </p-dialog>
++
+                     <!-- Job Applicants for Replacement -->
+                     <div class="col-span-12" *ngIf="booking.jobPostId && canRequestReplacement()">
+                     <p-card header="{{ 'JOB_POST.APPLICATIONS' | translate }}">
+@@ -92,7 +129,7 @@ import { Rating } from "primeng/rating";
+                             <td><p-rating [(ngModel)]="a.workerRating" [readonly]="true"></p-rating></td>
+                             <td>
+                                 <p-button label="{{ 'BOOKING_DETAIL.SET_AS_REPLACEMENT' | translate }}"
+-                                size="small" severity="warn" (onClick)="replaceWithApplicant(a.id)"></p-button>
++                                size="small" severity="warn" (onClick)="openReasonDialog('applicant', a.id)"></p-button>
+                             </td>
+                             </tr>
+                         </ng-template>
+@@ -103,8 +140,8 @@ import { Rating } from "primeng/rating";
+                     </p-card>
+                     </div>
+ 
+-                <!-- Payment Proof Upload (only when WaitingPayment) -->
+-                <div class="col-span-12" *ngIf="booking.status === 2">
++                <!-- Payment Proof Upload (WaitingPayment, or ReplacementRequested with a pending difference) -->
++                <div class="col-span-12" *ngIf="booking.status === 2 || (booking.status === 7 && booking.outstandingAmount > 0)">
+                     <p-card header="{{ 'PAYMENT.UPLOAD_PROOF' | translate }}">
+                         <form [formGroup]="paymentForm" class="grid grid-cols-12 gap-4">
+                             <div class="col-span-12 md:col-span-4">
+@@ -179,6 +216,11 @@ export class BookingDetail implements OnInit {
+     proofFile: File | null = null;
+     proofFileName = '';
+ 
++    showReasonDialog = false;
++    selectedReason: 0 | 1 = 1;
++    private pendingAction: 'navigate' | 'applicant' | null = null;
++    private pendingApplicationId: number | null = null;
++
+     private api = inject(ApiService);
+         applicants = signal<any[]>([]);
+         showApplicants = signal(false);
+@@ -212,8 +254,11 @@ export class BookingDetail implements OnInit {
+         this.bookingService.getBookingById(id).subscribe({
+             next: (data:BookingDetailDto) => {
+                 this.booking = data;
+-                
+-                this.paymentForm.patchValue({ amount: data.monthlySalary , commissionAmount:data.commissionAmount });
++
++                const prefillAmount = (data.status === 7 && data.outstandingAmount > 0)
++                    ? data.outstandingAmount
++                    : data.commissionAmount;
++                this.paymentForm.patchValue({ amount: data.monthlySalary, commissionAmount: prefillAmount });
+                 if (data.jobPostId) {
+                 this.loadApplicants(data.jobPostId);
+                 }
+@@ -228,9 +273,34 @@ loadApplicants(postId: number) {
+   });
+ }
+ 
+-replaceWithApplicant(applicationId: number) {
++/** تفتح Dialog اختيار سبب الاستبدال وتحفظ الإجراء المطلوب تنفيذه بعد التأكيد */
++openReasonDialog(action: 'navigate' | 'applicant', applicationId?: number) {
++    this.pendingAction = action;
++    this.pendingApplicationId = applicationId ?? null;
++    this.selectedReason = 1; // الافتراضي: رغبة شخصية
++    this.showReasonDialog = true;
++}
++
++/** بعد ما صاحبة المنزل تختار السبب وتأكد، ننفذ الإجراء المحفوظ */
++confirmReason() {
++    this.showReasonDialog = false;
++    if (!this.booking) return;
++
++    if (this.pendingAction === 'navigate') {
++        this.router.navigate(['/homeowner/workers'], {
++            queryParams: { mode: 'replacement', bookingId: this.booking.id, reason: this.selectedReason }
++        });
++    } else if (this.pendingAction === 'applicant' && this.pendingApplicationId != null) {
++        this.replaceWithApplicant(this.pendingApplicationId, this.selectedReason);
++    }
++
++    this.pendingAction = null;
++    this.pendingApplicationId = null;
++}
++
++replaceWithApplicant(applicationId: number, reason: 0 | 1 = 1) {
+     if(this.booking != null)
+-  this.bookingService.requestReplacement(this.booking.id, null, applicationId).subscribe({
++  this.bookingService.requestReplacement(this.booking.id, reason, null, applicationId).subscribe({
+     next: () => {
+       this.messageService.add({ severity: 'success', detail: 'تم طلب الاستبدال بنجاح' });      
+       if(this.booking != null)
+@@ -239,6 +309,18 @@ replaceWithApplicant(applicationId: number) {
+   });
+ }
+ 
++/** عدد الاستبدالات المتبقية بسبب مشكلة في العاملة */
++remainingFaultReplacements(): number {
++    if (!this.booking) return 0;
++    return Math.max(0, this.booking.maxFaultReplacement - this.booking.replacementCount);
++}
++
++/** عدد الاستبدالات المتبقية برغبة شخصية */
++remainingPreferenceReplacements(): number {
++    if (!this.booking) return 0;
++    return Math.max(0, this.booking.maxPreferenceReplacement - this.booking.replacementCount);
++}
++
+     onProofSelected(event: any) {
+         const file = event.currentFiles?.[0];
+         if (file) {
+@@ -278,12 +360,6 @@ replaceWithApplicant(applicationId: number) {
+                 && this.booking.replacementCount < this.booking.maxReplacement;
+         }
+ 
+-        requestReplacement() {
+-            this.router.navigate(['/homeowner/workers'], {
+-                queryParams: { mode: 'replacement', bookingId: this.booking!.id }
+-            });
+-        }
+-
+      getBookingTypeLabel(type: number): string {
+     return [this.translate.instant('WORKER_DETAIL.DAILY'),
+             this.translate.instant('WORKER_DETAIL.MONTHLY'),
+diff --git a/src/maids-and-nannies-angular/src/app/features/homeowner/workers/worker-search.ts b/src/maids-and-nannies-angular/src/app/features/homeowner/workers/worker-search.ts
+index 078f1a2..5eca410 100644
+--- a/src/maids-and-nannies-angular/src/app/features/homeowner/workers/worker-search.ts
++++ b/src/maids-and-nannies-angular/src/app/features/homeowner/workers/worker-search.ts
+@@ -178,6 +178,7 @@ export class WorkerSearch implements OnInit {
+     citiesOptions = signal<any[]>([]); 
+     isReplacementMode = signal(false);
+     replacementBookingId = signal<number | null>(null);
++    replacementReason = signal<0 | 1>(1);
+     currenciesMap = signal<{ [id: number]: string }>({});
+ 
+     //paginator
+@@ -229,6 +230,7 @@ private getSpecializations() {
+         if (params['mode'] === 'replacement' && params['bookingId']) {
+             this.isReplacementMode.set(true);
+             this.replacementBookingId.set(Number(params['bookingId']));
++            this.replacementReason.set(params['reason'] === '0' ? 0 : 1);
+         }
+ 
+         this.getSpecializations();
+@@ -287,7 +289,7 @@ private getSpecializations() {
+     viewWorker(id: number) {
+     if (this.isReplacementMode()) {
+         // وضع استبدال: يطلب التأكيد ثم يستبدل
+-        this.bookingService.requestReplacement(this.replacementBookingId()!, id).subscribe({
++        this.bookingService.requestReplacement(this.replacementBookingId()!, this.replacementReason(), id).subscribe({
+             next: () => {
+                 this.messageService.add({ severity: 'success', detail: 'تم طلب الاستبدال بنجاح' });
+                 this.router.navigate(['/homeowner/bookings', this.replacementBookingId()!]);

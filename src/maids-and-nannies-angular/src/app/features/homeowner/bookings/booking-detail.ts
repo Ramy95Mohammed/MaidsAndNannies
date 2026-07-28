@@ -9,6 +9,9 @@ import { SelectModule } from 'primeng/select';
 import { InputTextModule } from 'primeng/inputtext';
 import { FileUpload } from 'primeng/fileupload';
 import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { MessageModule } from 'primeng/message';
 import { MessageService } from 'primeng/api';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { BookingService, BookingDetailDto } from '../../../core/services/booking.service';
@@ -23,7 +26,7 @@ import { Rating } from "primeng/rating";
     CommonModule, ReactiveFormsModule, CardModule, TagModule,
     ButtonModule, SelectModule, InputTextModule, FileUpload,
     ToastModule, RouterModule, TranslatePipe,
-    TableModule,
+    TableModule, DialogModule, RadioButtonModule, MessageModule,
     Rating , FormsModule
 ],
     providers: [MessageService],
@@ -60,6 +63,16 @@ import { Rating } from "primeng/rating";
                        @if(booking.bookingType == 1){ <p>{{ 'BOOKING.COMMISSION_TYPE' | translate }}: {{ booking.commissionType === 0 ? ('BOOKING.ONETIME' | translate) : ('BOOKING.SUBSCRIPTION' | translate) }}</p>}
                     </p-card>
                 </div>
+
+                <!-- Outstanding amount after replacement -->
+                <div class="col-span-12" *ngIf="booking.outstandingAmount > 0 ">
+                    <p-message severity="warn" [text]="'BOOKING_DETAIL.OUTSTANDING_AMOUNT_TITLE' | translate">
+                    </p-message>
+                    <p class="text-sm text-muted-color mt-2">
+                        {{ 'BOOKING_DETAIL.OUTSTANDING_AMOUNT_DESC' | translate }}:
+                        <strong>{{ booking.outstandingAmount | currency:'EGP':'code':'1.0-0' }}</strong>
+                    </p>
+                </div>
                 
 
                      <!-- Replacement -->
@@ -68,12 +81,36 @@ import { Rating } from "primeng/rating";
                             <div class="flex align-items-center justify-content-between">
                                 <div>
                                     <strong>{{ 'BOOKING.REPLACEMENT' | translate }}</strong>
-                                    <p class="text-sm text-muted-color">{{ 'BOOKING_DETAIL.REPLACEMENT_USED' | translate:{count: booking.replacementCount, max: booking.maxReplacement} }}</p>
+                                    <p class="text-sm text-muted-color">{{ 'BOOKING_DETAIL.REPLACEMENT_USED_DETAILED' | translate:{fault: remainingFaultReplacements(), preference: remainingPreferenceReplacements()} }}</p>
                                 </div>
-                                <p-button [label]="'BOOKING_DETAIL.REQUEST_REPLACEMENT' | translate" icon="pi pi-refresh" severity="warn" (onClick)="requestReplacement()"></p-button>
+                                <p-button [label]="'BOOKING_DETAIL.REQUEST_REPLACEMENT' | translate" icon="pi pi-refresh" severity="warn" (onClick)="openReasonDialog('navigate')"></p-button>
                             </div>
                         </p-card>
                     </div>
+
+                    <!-- Replacement reason dialog -->
+                    <p-dialog [header]="'BOOKING_DETAIL.REPLACEMENT_REASON_TITLE' | translate"
+                              [(visible)]="showReasonDialog" [modal]="true" [style]="{width: '28rem'}">
+                        <div class="flex flex-column gap-3">
+                            <div class="flex align-items-start gap-2">
+                                <p-radioButton name="reason" [value]="0" [(ngModel)]="selectedReason" inputId="reasonFault"></p-radioButton>
+                                <label for="reasonFault" class="cursor-pointer">
+                                    <div class="font-bold">{{ 'BOOKING_DETAIL.REPLACEMENT_REASON_FAULT' | translate }}</div>
+                                    <div class="text-sm text-muted-color">{{ 'BOOKING_DETAIL.REPLACEMENT_REASON_FAULT_DESC' | translate }}</div>
+                                </label>
+                            </div>
+                            <div class="flex align-items-start gap-2">
+                                <p-radioButton name="reason" [value]="1" [(ngModel)]="selectedReason" inputId="reasonPreference"></p-radioButton>
+                                <label for="reasonPreference" class="cursor-pointer">
+                                    <div class="font-bold">{{ 'BOOKING_DETAIL.REPLACEMENT_REASON_PREFERENCE' | translate }}</div>
+                                    <div class="text-sm text-muted-color">{{ 'BOOKING_DETAIL.REPLACEMENT_REASON_PREFERENCE_DESC' | translate }}</div>
+                                </label>
+                            </div>
+                        </div>
+                        <ng-template #footer>
+                            <p-button [label]="'BOOKING_DETAIL.CONFIRM' | translate" icon="pi pi-check" (onClick)="confirmReason()"></p-button>
+                        </ng-template>
+                    </p-dialog>
 
                     <!-- Job Applicants for Replacement -->
                     <div class="col-span-12" *ngIf="booking.jobPostId && canRequestReplacement()">
@@ -92,7 +129,7 @@ import { Rating } from "primeng/rating";
                             <td><p-rating [(ngModel)]="a.workerRating" [readonly]="true"></p-rating></td>
                             <td>
                                 <p-button label="{{ 'BOOKING_DETAIL.SET_AS_REPLACEMENT' | translate }}"
-                                size="small" severity="warn" (onClick)="replaceWithApplicant(a.id)"></p-button>
+                                size="small" severity="warn" (onClick)="openReasonDialog('applicant', a.id)"></p-button>
                             </td>
                             </tr>
                         </ng-template>
@@ -103,8 +140,8 @@ import { Rating } from "primeng/rating";
                     </p-card>
                     </div>
 
-                <!-- Payment Proof Upload (only when WaitingPayment) -->
-                <div class="col-span-12" *ngIf="booking.status === 2">
+                <!-- Payment Proof Upload (WaitingPayment, or ReplacementRequested with a pending difference) -->
+                <div class="col-span-12" *ngIf="  booking.status === 2  ">
                     <p-card header="{{ 'PAYMENT.UPLOAD_PROOF' | translate }}">
                         <form [formGroup]="paymentForm" class="grid grid-cols-12 gap-4">
                             <div class="col-span-12 md:col-span-4">
@@ -179,6 +216,11 @@ export class BookingDetail implements OnInit {
     proofFile: File | null = null;
     proofFileName = '';
 
+    showReasonDialog = false;
+    selectedReason: 0 | 1 = 1;
+    private pendingAction: 'navigate' | 'applicant' | null = null;
+    private pendingApplicationId: number | null = null;
+
     private api = inject(ApiService);
         applicants = signal<any[]>([]);
         showApplicants = signal(false);
@@ -212,8 +254,12 @@ export class BookingDetail implements OnInit {
         this.bookingService.getBookingById(id).subscribe({
             next: (data:BookingDetailDto) => {
                 this.booking = data;
-                
-                this.paymentForm.patchValue({ amount: data.monthlySalary , commissionAmount:data.commissionAmount });
+
+                const prefillAmount = (data.outstandingAmount > 0)
+                            ? data.outstandingAmount
+                            : data.commissionAmount;
+
+                this.paymentForm.patchValue({ amount: data.monthlySalary, commissionAmount: prefillAmount });
                 if (data.jobPostId) {
                 this.loadApplicants(data.jobPostId);
                 }
@@ -228,15 +274,52 @@ loadApplicants(postId: number) {
   });
 }
 
-replaceWithApplicant(applicationId: number) {
+/** تفتح Dialog اختيار سبب الاستبدال وتحفظ الإجراء المطلوب تنفيذه بعد التأكيد */
+openReasonDialog(action: 'navigate' | 'applicant', applicationId?: number) {
+    this.pendingAction = action;
+    this.pendingApplicationId = applicationId ?? null;
+    this.selectedReason = 1; // الافتراضي: رغبة شخصية
+    this.showReasonDialog = true;
+}
+
+/** بعد ما صاحبة المنزل تختار السبب وتأكد، ننفذ الإجراء المحفوظ */
+confirmReason() {
+    this.showReasonDialog = false;
+    if (!this.booking) return;
+
+    if (this.pendingAction === 'navigate') {
+        this.router.navigate(['/homeowner/workers'], {
+            queryParams: { mode: 'replacement', bookingId: this.booking.id, reason: this.selectedReason }
+        });
+    } else if (this.pendingAction === 'applicant' && this.pendingApplicationId != null) {
+        this.replaceWithApplicant(this.pendingApplicationId, this.selectedReason);
+    }
+
+    this.pendingAction = null;
+    this.pendingApplicationId = null;
+}
+
+replaceWithApplicant(applicationId: number, reason: 0 | 1 = 1) {
     if(this.booking != null)
-  this.bookingService.requestReplacement(this.booking.id, null, applicationId).subscribe({
+  this.bookingService.requestReplacement(this.booking.id, reason, null, applicationId).subscribe({
     next: () => {
       this.messageService.add({ severity: 'success', detail: 'تم طلب الاستبدال بنجاح' });      
       if(this.booking != null)
       this.loadBooking(this.booking.id);
     }
   });
+}
+
+/** عدد الاستبدالات المتبقية بسبب مشكلة في العاملة */
+remainingFaultReplacements(): number {
+    if (!this.booking) return 0;
+    return Math.max(0, this.booking.maxFaultReplacement - this.booking.replacementCount);
+}
+
+/** عدد الاستبدالات المتبقية برغبة شخصية */
+remainingPreferenceReplacements(): number {
+    if (!this.booking) return 0;
+    return Math.max(0, this.booking.maxPreferenceReplacement - this.booking.replacementCount);
 }
 
     onProofSelected(event: any) {
@@ -276,12 +359,6 @@ replaceWithApplicant(applicationId: number) {
     return this.booking !== null
                 && (this.booking.status === 3 || this.booking.status === 4)
                 && this.booking.replacementCount < this.booking.maxReplacement;
-        }
-
-        requestReplacement() {
-            this.router.navigate(['/homeowner/workers'], {
-                queryParams: { mode: 'replacement', bookingId: this.booking!.id }
-            });
         }
 
      getBookingTypeLabel(type: number): string {

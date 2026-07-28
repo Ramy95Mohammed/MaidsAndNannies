@@ -23,7 +23,7 @@ public sealed class ConfirmWorkerCommandHandler(
             {
                 // أكبر — يحتاج دفع الفرق (CommissionAmount محدث مسبقاً)
                 booking.Status = BookingStatus.WaitingPayment;
-                booking.OutstandingAmount = 0;
+                //booking.OutstandingAmount = 0;
             }
             else
             {

@@ -38,6 +38,15 @@ public class Booking : Entity
     public int? OriginalWorkerId { get; set; }
     public string? AdminNotes { get; set; }
 
+    /// <summary>سبب آخر عملية استبدال تمت على هذا الحجز (للتتبع/العرض لصاحبة المنزل).</summary>
+    public ReplacementReason? LastReplacementReason { get; set; }
+
+    /// <summary>
+    /// للحجوزات اليومية/الساعية فقط: يشير إلى الحجز الأصلي الذي نتج عنه هذا الحجز
+    /// عند إنشاء حجز جديد مستقل بدل تعديل الحجز القديم.
+    /// </summary>
+    public int? ReplacedFromBookingId { get; set; }
+
     public int? JobPostId { get; set; }
     public int? CurrencyId { get; set; }
     public virtual Currency? Currency { get; set; }

@@ -50,9 +50,12 @@ export interface BookingDetailDto {
   isPaid: boolean;
   replacementCount: number;
   maxReplacement:number;
+  maxFaultReplacement: number;
+  maxPreferenceReplacement: number;
+  outstandingAmount: number;
   adminNotes: string | null;
   createdAt: string;
-  jobPostId:number;
+  jobPostId:number;  
 }
 
 @Injectable({ providedIn: 'root' })
@@ -82,8 +85,15 @@ export class BookingService {
     return this.http.post(`${this.API_URL}/booking/${id}/upload-proof`, formData);
   }
 
-requestReplacement(id: number, newWorkerId?: number | null, applicationId?: number | null): Observable<any> {
-  return this.http.post(`${this.API_URL}/booking/${id}/replace`, { newWorkerId, applicationId });
+// reason: 0 = تقصير من العاملة (WorkerFault) — بدون عمولة إضافية
+//         1 = رغبة شخصية من صاحبة المنزل (HomeownerPreference) — عمولة جديدة عن الفترة المتبقية
+requestReplacement(
+  id: number,
+  reason: 0 | 1,
+  newWorkerId?: number | null,
+  applicationId?: number | null
+): Observable<any> {
+  return this.http.post(`${this.API_URL}/booking/${id}/replace`, { newWorkerId, applicationId, reason });
 }
 
   // Worker

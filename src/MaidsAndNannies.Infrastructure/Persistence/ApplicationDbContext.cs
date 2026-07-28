@@ -239,7 +239,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
         // Seed settings
         builder.Entity<AppSetting>().HasData(
-            new AppSetting { Key = "MaxReplacementCount", Value = "2", Description = "الحد الأقصى لعدد مرات الاستبدال لكل حجز" },
+            new AppSetting { Key = "MaxFaultReplacementCount", Value = "3", Description = "الحد الأقصى لعدد مرات الاستبدال بسبب تقصير العاملة" },
+            new AppSetting { Key = "MaxPreferenceReplacementCount", Value = "1", Description = "الحد الأقصى لعدد مرات الاستبدال برغبة شخصية من صاحبة المنزل" },
             new AppSetting { Key = "CommissionDailyPercent", Value = "10", Description = "نسبة العمولة للحجوزات اليومية (%)" },
             new AppSetting { Key = "CommissionHourlyPercent", Value = "10", Description = "نسبة العمولة للحجوزات بالساعة (%)" },
             new AppSetting { Key = "CommissionMonthlyOneTimePercent", Value = "10", Description = "نسبة العمولة للحجوزات الشهرية (مرة واحدة)" },

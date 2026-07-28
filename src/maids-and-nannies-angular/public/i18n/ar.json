@@ -329,7 +329,15 @@
     "STATUS_LABEL_CANCELLED": "ملغي",
     "STATUS_LABEL_REPLACEMENT": "طلب استبدال",
     "STATUS_LABEL_REVIEW": "قيد المراجعة",
-    "SET_AS_REPLACEMENT": "تعيين كبديلة"
+    "SET_AS_REPLACEMENT": "تعيين كبديلة",
+    "REPLACEMENT_REASON_TITLE": "ما سبب طلب الاستبدال؟",
+    "REPLACEMENT_REASON_FAULT": "في مشكلة مع العاملة",
+    "REPLACEMENT_REASON_FAULT_DESC": "مثل: انسحاب، سوء أداء، أو عدم مطابقة للمواصفات — بدون أي عمولة إضافية عليكِ",
+    "REPLACEMENT_REASON_PREFERENCE": "رغبة شخصية",
+    "REPLACEMENT_REASON_PREFERENCE_DESC": "لا يوجد عيب في العاملة، لكن تفضلين تغييرها — قد يترتب عليه فرق في العمولة",
+    "CONFIRM": "تأكيد",
+     "OUTSTANDING_AMOUNT_TITLE": "مبلغ مستحق",
+    "OUTSTANDING_AMOUNT_DESC": "بعد الاستبدال، بقي مبلغ مستحق عليك"
   },
   "ADMIN": {
     "TITLE": "لوحة الإدارة",
