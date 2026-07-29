@@ -4,6 +4,7 @@ using MaidsAndNannies.Application.Features.Subscription.Commands.RenewSubscripti
 using MaidsAndNannies.Application.Features.Subscription.Common;
 using MaidsAndNannies.Application.Features.Subscription.Queries.GetAllSubscriptions;
 using MaidsAndNannies.Application.Features.Subscription.Queries.GetMySubscriptions;
+using MaidsAndNannies.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +28,7 @@ public sealed class SubscriptionController(ISender sender, ICurrentUserService c
         if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
 
         await sender.Send(new RenewSubscriptionCommand(
-            id, currentUser.UserId, request.PaymentMethod, request.Amount,
+            id,  currentUser.UserId, request.PaymentMethod, request.Amount,
             request.TransactionReference,
             proofImage?.OpenReadStream(), proofImage?.FileName));
 

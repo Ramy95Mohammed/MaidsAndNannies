@@ -137,6 +137,15 @@ export class JobCreate implements OnInit {
    
  }, 1000);
 }
+
+
+ private toDateOnlyString(date: Date | null): string | null {
+        if (!date) return null;
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
   submit() {
     if (!this.description || !this.startDate) {
       this.msg.add({ severity: 'warn', detail: 'يرجى ملء جميع الحقول' });
@@ -151,7 +160,7 @@ export class JobCreate implements OnInit {
       bookingType: this.bookingType,
       commissionType: this.commissionType,
       specialization: this.specialization,
-      startDate: this.startDate.toISOString().split('T')[0],
+      startDate: this.toDateOnlyString(this.startDate),
       quantity: this.quantity,
       currencyId: this.currencyId
     }).subscribe({

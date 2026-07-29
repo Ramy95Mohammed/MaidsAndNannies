@@ -24,6 +24,12 @@ public sealed class ConfirmPaymentCommandHandler(
         booking.PaymentConfirmedBy = request.AdminId;
         booking.PaymentConfirmedAt = DateTime.UtcNow;
         booking.UpdatedAt = DateTime.UtcNow;
+
+        var subscription = await dbContext.Subscriptions
+    .FirstOrDefaultAsync(s => s.BookingId == request.BookingId, ct);
+        if (subscription is not null)
+            subscription.IsActive = true;
+
         await dbContext.SaveChangesAsync(ct);
         return Unit.Value;
     }

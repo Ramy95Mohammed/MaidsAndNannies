@@ -7,6 +7,7 @@ namespace MaidsAndNannies.Domain.Entities;
 public class Subscription : Entity
 {    
     public string HomeownerId { get; set; } = string.Empty;
+    public int BookingId { get; set; }
 
     public CommissionType PlanType { get; set; }
     public decimal Amount { get; set; }
@@ -20,7 +21,9 @@ public class Subscription : Entity
     public DateTime? PaymentConfirmedAt { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
     public string? TransactionReference { get; set; }
 
     public virtual ApplicationUser Homeowner { get; set; } = null!;
+    public virtual Booking Booking { get; set; } = null!;
 }

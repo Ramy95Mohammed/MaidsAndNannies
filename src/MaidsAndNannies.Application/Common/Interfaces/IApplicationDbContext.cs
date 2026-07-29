@@ -1,6 +1,7 @@
 using MaidsAndNannies.Domain.Entities;
 using MaidsAndNannies.Domain.Entities.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace MaidsAndNannies.Application.Common.Interfaces;
 
@@ -13,6 +14,8 @@ namespace MaidsAndNannies.Application.Common.Interfaces;
 /// </summary>
 public interface IApplicationDbContext
 {
+
+    DatabaseFacade Database { get; }
     DbSet<ApplicationUser> Users { get; }
     DbSet<HomeownerProfile> HomeownerProfiles { get; }
     DbSet<WorkerProfile> WorkerProfiles { get; }

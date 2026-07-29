@@ -217,6 +217,10 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             b.Property(s => s.Amount).HasColumnType("decimal(18,2)").IsRequired();
             b.Property(s => s.PaymentProofImageUrl).HasMaxLength(500);
             b.Property(s => s.PaymentConfirmedBy).HasMaxLength(450);
+            b.HasOne(s => s.Booking)
+           .WithMany()
+           .HasForeignKey(s => s.BookingId)
+           .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Notification configuration

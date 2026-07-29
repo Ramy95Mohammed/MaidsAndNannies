@@ -28,7 +28,7 @@ public sealed class CompleteWorkCommandHandler(
 
         // إلغاء الاشتراك إذا كان موجود
         var subscription = await dbContext.Subscriptions
-            .FirstOrDefaultAsync(s => s.HomeownerId == booking.HomeownerId && s.IsActive, ct);
+            .FirstOrDefaultAsync(s => s.BookingId == booking.Id, ct);
         if (subscription is not null)
             subscription.IsActive = false;
 

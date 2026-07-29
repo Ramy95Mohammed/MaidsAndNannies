@@ -65,7 +65,7 @@ import { Rating } from "primeng/rating";
                 </div>
 
                 <!-- Outstanding amount after replacement -->
-                <div class="col-span-12" *ngIf="booking.outstandingAmount > 0 ">
+                <div class="col-span-12" *ngIf=" booking.status === 2 && booking.outstandingAmount > 0 ">
                     <p-message severity="warn" [text]="'BOOKING_DETAIL.OUTSTANDING_AMOUNT_TITLE' | translate">
                     </p-message>
                     <p class="text-sm text-muted-color mt-2">
@@ -233,7 +233,7 @@ export class BookingDetail implements OnInit {
 
     paymentForm: FormGroup = this.fb.group({
         paymentMethod: [null, Validators.required],
-        amount: [0, [Validators.required, Validators.min(1)]],
+        // amount: [0, [Validators.required, Validators.min(1)]],
         commissionAmount: [0, [Validators.required, Validators.min(1)]],
         transactionReference: ['']
     });
@@ -337,7 +337,7 @@ remainingPreferenceReplacements(): number {
         
         const fd = new FormData();
         fd.append('PaymentMethod', this.paymentForm.get('paymentMethod')?.value);
-        fd.append('Amount', this.paymentForm.get('amount')?.value);
+        // fd.append('Amount', this.paymentForm.get('amount')?.value);
         fd.append('CommissionAmount', this.paymentForm.get('commissionAmount')?.value);
         fd.append('TransactionReference', this.paymentForm.get('transactionReference')?.value || '');
         fd.append('proofImage', this.proofFile);

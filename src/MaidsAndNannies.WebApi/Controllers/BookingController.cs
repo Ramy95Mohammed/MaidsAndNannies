@@ -141,6 +141,6 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
 }
 
 public sealed record ReplaceBookingRequest(
-    int NewWorkerId,
+    int? NewWorkerId,
     int? ApplicationId,
     MaidsAndNannies.Domain.Enums.ReplacementReason Reason);

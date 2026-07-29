@@ -94,6 +94,7 @@ public sealed class AcceptApplicationCommandHandler(IApplicationDbContext dbCont
             dbContext.Subscriptions.Add(new Domain.Entities.Subscription
             {
                 HomeownerId = r.HomeownerId,
+                BookingId = booking.Id,
                 PlanType = CommissionType.Subscription,
                 Amount = commissionAmount,
                 StartDate = post.StartDate,

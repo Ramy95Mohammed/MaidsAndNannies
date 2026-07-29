@@ -24,6 +24,8 @@
   <ItemGroup>
     <Folder Include="wwwroot\uploads\homeowners\" />
     <Folder Include="wwwroot\uploads\payments\" />
+    <Folder Include="wwwroot\uploads\worker-documents\" />
+    <Folder Include="wwwroot\uploads\workers\" />
   </ItemGroup>
 
   <ItemGroup>
