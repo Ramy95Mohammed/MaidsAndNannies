@@ -6,11 +6,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MaidsAndNannies.Application.Features.Worker.Queries.GetWorkers;
 
-public sealed class GetWorkersQueryHandler(IApplicationDbContext dbContext)
+public sealed class GetWorkersQueryHandler(IApplicationDbContext dbContext,
+    ICurrentUserService currentUser)
     : IRequestHandler<GetWorkersQuery, PagedResult<WorkerSummaryDto>>
 {
     public async Task<PagedResult<WorkerSummaryDto>> Handle(GetWorkersQuery request, CancellationToken ct)
     {
+        var language = currentUser.CurrentLanguage;
+
         var query = dbContext.WorkerProfiles
             .Include(w => w.User)
             .Include(w => w.WorkerSpecializationSpecs)
@@ -41,19 +44,20 @@ public sealed class GetWorkersQueryHandler(IApplicationDbContext dbContext)
             .Select(w => new WorkerSummaryDto(
                 w.Id,
                 w.User.FullName,
-                w.NationalityId,
+              ((language == "ar")?  w.Nationality.Name_ar:w.Nationality.Name_en)??"",
                 w.WorkerSpecializationSpecs.Select(s => new WorkerSpecializationDto(s.Id, s.WorkerSpecialization)).ToList(),
                 w.IsLiveIn,
                 w.MonthlyRate,
                 w.HourlyRate,
                 w.DailyRate,
                 w.CurrencyId,
-                w.CityId,
+                  ((language == "ar") ? w.Country.Name_ar : w.Country.Name_en) ?? "",
                 w.ExperienceYears,
                 w.AverageRating,
                 w.TotalReviews,
                 null,
-                w.Languages))
+                w.Languages ,
+                w.WorkerSpecializationSpecs.Select(s=>(int)s.WorkerSpecialization).ToList()))
             .ToListAsync(ct);
 
         return new PagedResult<WorkerSummaryDto>(items, total, request.Page, request.PageSize);

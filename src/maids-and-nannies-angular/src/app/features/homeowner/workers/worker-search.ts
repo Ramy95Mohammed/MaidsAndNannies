@@ -117,7 +117,7 @@ import { LanguageService } from '@/core/services/language.service';
                     </div>
 
                     <div class="flex flex-wrap gap-2 mb-3">
-                        <p-chip [label]="getSpecLabel(worker.specialization)"></p-chip>
+                        <p-chip [label]="getSpecLabel(worker.specializations)"></p-chip>
                         <p-chip *ngIf="worker.isLiveIn" [label]="'COMMON.YES' | translate"></p-chip>
                         <p-chip *ngIf="!worker.isLiveIn" [label]="'WORKER_DETAIL.DAILY' | translate"></p-chip>
 
@@ -137,7 +137,7 @@ import { LanguageService } from '@/core/services/language.service';
                     </div>
 
                     <div class="text-sm text-muted-color mt-2">
-                        <i class="pi pi-map-marker mr-1"></i>{{ worker.city || ('COMMON.UNSPECIFIED' | translate) }}
+                        <i class="pi pi-map-marker mr-1"></i>{{ worker.country || ('COMMON.UNSPECIFIED' | translate) }} / 
                         <span class="ml-2">{{ 'COMMON.EXPERIENCE_YEARS' | translate:{years: worker.experienceYears} }}</span>
                     </div>
                 </div>
@@ -203,7 +203,8 @@ export class WorkerSearch implements OnInit {
         maxRate: null
     };
 
-   specializations = this.getSpecializations();
+   specializations:any = [];
+   liveInOptions:any = [];
 
 private getSpecializations() {
     const t = this.translate;
@@ -216,15 +217,24 @@ private getSpecializations() {
     ];
 }
 
-    liveInOptions = [
-        { label: 'الكل', value: null },
-        { label: 'مقيمة', value: true },
-        { label: 'يومية', value: false }
-    ];
-
+private getliveInOptions(){
+      const t = this.translate;
+      return[
+         { label: t.instant('WORKER_DETAIL.ALL'), value: null },
+        { label:t.instant('WORKER_DETAIL.LIVE_IN'), value: true },
+        { label: t.instant('WORKER_DETAIL.DAILY'), value: false }
+      ]
+}   
     ngOnInit() {
 
         this.isAr = this.langService.getCurrentLanguage() === 'ar';
+
+           setTimeout(() => {            
+          this.specializations =  this.getSpecializations();
+          this.liveInOptions = this.getliveInOptions();
+        }, 1000);
+
+
 
          this.route.queryParams.subscribe(params => {
         if (params['mode'] === 'replacement' && params['bookingId']) {
@@ -232,8 +242,7 @@ private getSpecializations() {
             this.replacementBookingId.set(Number(params['bookingId']));
             this.replacementReason.set(params['reason'] === '0' ? 0 : 1);
         }
-
-        this.getSpecializations();
+     
 
     });
     
@@ -272,18 +281,19 @@ private getSpecializations() {
         this.search();
     }
 
-    getSpecLabel(value: number): string {
-    // بدل hardcoded, إستخدم translate
-    const map: {[k: number]: string} = {
-        0: this.translate.instant('SPECIALIZATIONS.CLEANING'),
-        1: this.translate.instant('SPECIALIZATIONS.COOKING'),
-        2: this.translate.instant('SPECIALIZATIONS.CHILDCARE'),
-        3: this.translate.instant('SPECIALIZATIONS.ELDERLYCARE'),
-        4: this.translate.instant('SPECIALIZATIONS.GENERALHOUSEKEEPING')
-    };
-    return map[value] || this.translate.instant('COMMON.UNSPECIFIED');
-}
+   getSpecLabel(values: number[]): string {
+  const map: { [key: number]: string } = {
+    0: this.translate.instant('SPECIALIZATIONS.CLEANING'),
+    1: this.translate.instant('SPECIALIZATIONS.COOKING'),
+    2: this.translate.instant('SPECIALIZATIONS.CHILDCARE'),
+    3: this.translate.instant('SPECIALIZATIONS.ELDERLYCARE'),
+    4: this.translate.instant('SPECIALIZATIONS.GENERALHOUSEKEEPING')
+  };
 
+  return values
+    .map(v => map[v] ?? this.translate.instant('COMMON.UNSPECIFIED'))
+    .join(', ');
+}
    
 
     viewWorker(id: number) {

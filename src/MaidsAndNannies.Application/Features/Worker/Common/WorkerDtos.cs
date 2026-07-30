@@ -13,19 +13,20 @@ public sealed record WorkerSpecializationDto(int Id, Specialization WorkerSpecia
 public sealed record WorkerSummaryDto(
     int Id,
     string FullName,
-    int NationalityId,
+    string Nationality,
     IReadOnlyList<WorkerSpecializationDto> WorkerSpecializationSpecs,
     bool IsLiveIn,
     decimal? MonthlyRate,
     decimal? HourlyRate,
     decimal? DailyRate,
     int CurrencyId,
-    int? CityId,
+    string? Country,
     int ExperienceYears,
     decimal AverageRating,
     int TotalReviews,
     string? ProfileImageUrl,
-    string? Languages);
+    string? Languages,
+    List<int>? specializations);
 
 public sealed record ReviewSummaryDto(int Id, string ReviewerName, int Rating, string? Comment, DateTime CreatedAt);
 

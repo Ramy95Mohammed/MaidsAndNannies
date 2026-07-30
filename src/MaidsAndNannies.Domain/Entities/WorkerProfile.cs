@@ -61,6 +61,7 @@ public class WorkerProfile : Entity
     public virtual ICollection<WorkerDocument> Documents { get; set; } = new List<WorkerDocument>();
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     public virtual Country? Nationality { get; set; }
+    public virtual Country? Country { get; set; }
 }
 
 
