@@ -340,7 +340,10 @@
     "REPLACEMENT_REASON_PREFERENCE_DESC": "لا يوجد عيب في العاملة، لكن تفضلين تغييرها — قد يترتب عليه فرق في العمولة",
     "CONFIRM": "تأكيد",
      "OUTSTANDING_AMOUNT_TITLE": "مبلغ مستحق",
-    "OUTSTANDING_AMOUNT_DESC": "بعد الاستبدال، بقي مبلغ مستحق عليك"
+    "OUTSTANDING_AMOUNT_DESC": "بعد الاستبدال، بقي مبلغ مستحق عليك",
+    "PAYMENT_TOTAL": "المبلغ المطلوب دفعه",
+    "PAID_DIRECTLY": "تم استلام الدفع — يمكنكم التواصل مع العاملة مباشرة",
+    "SEND_PROOF_WHATSAPP": "أرسلي إثبات الدفع عبر الواتساب — سيؤكد الأدمن الدفع بعد الاستلام"
   },
   "ADMIN": {
     "TITLE": "لوحة الإدارة",
@@ -404,7 +407,9 @@
     "SPECIALIZATION_COOKING": "طبخ",
     "SPECIALIZATION_CHILDCARE": "رعاية أطفال",
     "SPECIALIZATION_ELDERLY_CARE": "رعاية مسنين",
-    "SPECIALIZATION_GENERAL": "عمل منزلي عام"
+    "SPECIALIZATION_GENERAL": "عمل منزلي عام",
+    "CONFIRM_PAYMENT":"تأكيد الدفع",
+    "TABLE_PAYMENT_AMOUNT": "المبلغ المستحق عند الدفع"
   },
   "JOB_POST": {
     "CREATE": "إنشاء إعلان وظيفة",
@@ -447,6 +452,6 @@
     "SEARCH_WORKERS": "البحث عن عاملة",
     "MY_BOOKINGS": "حجوزاتي",
     "MY_SUBSCRIPTIONS": "اشتراكاتي",
-    "WORKER": "العاملة"
+    "WORKER": "العاملة"    
   }
 }

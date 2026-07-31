@@ -23,6 +23,10 @@ public class HomeownerProfile : Entity
     public DateTime? VerifiedAt { get; set; }
     public string? VerifiedBy { get; set; }
 
+    // حدود استبدال مخصصة لصاحبة المنزل (null = الرجوع للإعدادات العامة)
+    public int? MaxFaultReplacementCount { get; set; }
+    public int? MaxPreferenceReplacementCount { get; set; }
+
     public CommissionType CommissionType { get; set; } = CommissionType.OneTime;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

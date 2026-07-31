@@ -22,6 +22,9 @@ public sealed class RenewSubscriptionCommandHandler(
                 request.ProofImageContent, request.ProofImageFileName,
                 $"subscriptions/{request.SubscriptionId}", ct);
 
+        var requireProof = (await dbContext.AppSettings
+            .FirstOrDefaultAsync(s => s.Key == "RequirePaymentProof", ct))?.Value ?? "true";
+
         var newSub = new Domain.Entities.Subscription
         {
             HomeownerId = request.HomeownerId,
@@ -34,7 +37,6 @@ public sealed class RenewSubscriptionCommandHandler(
             PaymentProofImageUrl = proofUrl,
             TransactionReference = request.TransactionReference
         };
-
         dbContext.Subscriptions.Add(newSub);
         await dbContext.SaveChangesAsync(ct);
         return Unit.Value;

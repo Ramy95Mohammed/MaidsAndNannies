@@ -1,6 +1,7 @@
 ﻿using MaidsAndNannies.Application.Common.Helpers;
 using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Application.Features.Bookings.Common;
+using MaidsAndNannies.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -33,19 +34,40 @@ public sealed class GetBookingByIdQueryHandler(
 
         var workerSelfieDocument = worker?.Documents.FirstOrDefault(d => d.Type == Domain.Enums.DocumentType.Selfie);
 
-        // ملاحظة: الحد الأقصى بقى منفصل حسب سبب الاستبدال (تقصير/رغبة شخصية).
-        // القيمة هنا هي الأعلى بينهما للعرض فقط في الواجهة الحالية — يفضّل لاحقاً تعديل
-        // BookingDetailDto ليعرض القيمتين منفصلتين (maxFaultReplacement / maxPreferenceReplacement).
-        var replacementSettings = await dbContext.AppSettings
-            .Where(s => s.Key == "MaxFaultReplacementCount" || s.Key == "MaxPreferenceReplacementCount")
-            .ToListAsync(ct);
+        var settings = await dbContext.AppSettings.ToListAsync(ct);
 
-        var maxFault = int.TryParse(replacementSettings.FirstOrDefault(s => s.Key == "MaxFaultReplacementCount")?.Value, out var mf) ? mf : 3;
-        var maxPreference = int.TryParse(replacementSettings.FirstOrDefault(s => s.Key == "MaxPreferenceReplacementCount")?.Value, out var mp) ? mp : 1;
+        // حدود الاستبدال: مخصصة لصاحبة المنزل إن وُجدت، وإلا من الإعدادات
+        var homeownerProfile = await dbContext.HomeownerProfiles
+            .FirstOrDefaultAsync(h => h.UserId == booking.HomeownerId, ct);
+
+        var maxFaultSetting = settings.FirstOrDefault(s => s.Key == "MaxFaultReplacementCount")?.Value;
+        var maxPreferenceSetting = settings.FirstOrDefault(s => s.Key == "MaxPreferenceReplacementCount")?.Value;
+
+        var maxFault = homeownerProfile?.MaxFaultReplacementCount
+            ?? (int.TryParse(maxFaultSetting, out var mf) ? mf : 3);
+        var maxPreference = homeownerProfile?.MaxPreferenceReplacementCount
+            ?? (int.TryParse(maxPreferenceSetting, out var mp) ? mp : 1);
         var maxReplacement = Math.Max(maxFault, maxPreference);
 
+        // وضع تحصيل المبلغ عند الدفع
+        var billingMode = settings.FirstOrDefault(s => s.Key == "CommissionBillingMode")?.Value ?? "CommissionOnly";
+        var requireProof = (settings.FirstOrDefault(s => s.Key == "RequirePaymentProof")?.Value ?? "true") == "true";
+
         var rateToEgp = booking.Currency?.RateToEgp ?? worker?.Currency?.RateToEgp ?? 1m;
-        var currencyCode = booking.Currency?.Code ?? worker?.Currency?.Code ?? "EGP";     
+        var currencyCode = booking.Currency?.Code ?? worker?.Currency?.Code ?? "EGP";
+
+        // مرتب العاملة الأول بالجنيه (الذي تتقاضاه في البداية)
+        var workerFirstSalaryInEgp = booking.BookingType switch
+        {
+            BookingType.Daily => booking.DailySalary * booking.Quantity * rateToEgp,
+            BookingType.Hourly => booking.HourlySalary * booking.Quantity * rateToEgp,
+            _ => booking.MonthlySalary * rateToEgp
+        };
+
+        // المبلغ الإجمالي المطلوب من صاحبة المنزل عند الدفع
+        var paymentAmount = billingMode == "CommissionPlusSalary"
+            ? booking.CommissionAmount + workerFirstSalaryInEgp
+            : booking.CommissionAmount;
 
         return new BookingDetailDto(
             booking.Id,
@@ -78,8 +100,10 @@ public sealed class GetBookingByIdQueryHandler(
             booking.AdminNotes,
             booking.CreatedAt,
             booking.JobPostId,
-             booking.OutstandingAmount,
-    maxFault,
-    maxPreference);
+            booking.OutstandingAmount,
+            maxFault,
+            maxPreference,
+            paymentAmount,
+            requireProof);
     }
 }

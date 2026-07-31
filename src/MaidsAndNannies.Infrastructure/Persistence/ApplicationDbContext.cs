@@ -250,7 +250,9 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             new AppSetting { Key = "CommissionMonthlyOneTimePercent", Value = "10", Description = "نسبة العمولة للحجوزات الشهرية (مرة واحدة)" },
             new AppSetting { Key = "CommissionMonthlySubscriptionPercent", Value = "10", Description = "نسبة العمولة للحجوزات الشهرية (اشتراك شهري)" },
             new AppSetting { Key = "AutoCancelPendingBookingHours", Value = "48", Description = "إلغاء الحجوزات المعلقة تلقائياً بعد (ساعة)" },
-            new AppSetting { Key = "MaxActiveBookingsPerHomeowner", Value = "5", Description = "الحد الأقصى للحجوزات النشطة لكل صاحبة منزل" }
+            new AppSetting { Key = "MaxActiveBookingsPerHomeowner", Value = "5", Description = "الحد الأقصى للحجوزات النشطة لكل صاحبة منزل" },
+             new AppSetting { Key = "CommissionBillingMode", Value = "CommissionOnly", Description = "المبلغ المطلوب من صاحبة المنزل عند الدفع: CommissionOnly = العمولة فقط، CommissionPlusSalary = العمولة + مرتب العاملة" },
+            new AppSetting { Key = "RequirePaymentProof", Value = "true", Description = "إظهار قسم رفع إثبات الدفع: true = ترفع صاحبة المنزل إثبات الدفع، false = يُعتبر الحجز مدفوعاً فور طلب الدفع (التواصل عبر واتساب)" }
         );
 
 

@@ -49,3 +49,14 @@ public sealed record PendingPaymentDto(
     string? ProofImageUrl,
     bool IsConfirmed,
     DateTime CreatedAt);
+
+public sealed record AdminHomeownerDto(
+    int Id,
+    string UserId,
+    string FullName,
+    string? Email,
+    string? PhoneNumber,
+    VerificationStatus VerificationStatus,
+    int? MaxFaultReplacementCount,
+    int? MaxPreferenceReplacementCount,
+    DateTime CreatedAt);

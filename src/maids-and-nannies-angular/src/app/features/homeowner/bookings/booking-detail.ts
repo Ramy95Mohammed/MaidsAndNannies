@@ -141,7 +141,80 @@ import { Rating } from "primeng/rating";
                     </div>
 
                 <!-- Payment Proof Upload (WaitingPayment, or ReplacementRequested with a pending difference) -->
-                <div class="col-span-12" *ngIf="  booking.status === 2  ">
+                <!-- <div class="col-span-12" *ngIf="booking.status === 2 && booking.requirePaymentProof">
+                    <p-card header="{{ 'PAYMENT.UPLOAD_PROOF' | translate }}">
+                        <form [formGroup]="paymentForm" class="grid grid-cols-12 gap-4">
+                            <div class="col-span-12 md:col-span-4">
+                                <label class="block font-bold mb-1">{{ 'PAYMENT.METHOD' | translate }}</label>
+                                <p-select
+                                    formControlName="paymentMethod"
+                                    [options]="paymentMethods"
+                                    optionValue="value"
+                                    optionLabel="label"
+                                    [placeholder]="'PAYMENT.METHOD' | translate"
+                                    class="w-full">
+                                </p-select>
+                            </div>                             
+                            <div class="col-span-12 md:col-span-4">
+
+                                <label class="block font-bold mb-1">{{ 'PAYMENT.AMOUNT' | translate }}</label>
+                                <input pInputText formControlName="commissionAmount" type="number" class="w-full" />
+                            </div>
+                              <div class="col-span-12 text-sm text-muted-color">
+                                {{ 'BOOKING_DETAIL.PAYMENT_TOTAL' | translate }}: <strong>{{ booking.paymentAmount | currency:'EGP':'code':'1.0-0' }}</strong>
+                            </div>
+                            <div class="col-span-12 md:col-span-4">
+
+                                <label class="block font-bold mb-1">{{ 'PAYMENT.TRANSACTION_REF' | translate }}</label>
+                                <input pInputText formControlName="transactionReference" class="w-full" />
+                            </div>
+                            <div class="col-span-12">
+                                <label class="block font-bold mb-1">{{ 'PAYMENT.UPLOAD_PROOF' | translate }}</label>
+                                <p-fileupload
+                                    name="proofImage"
+                                    mode="basic"
+                                    accept="image/*"
+                                    maxFileSize="5000000"
+                                    [auto]="false"
+                                    [chooseLabel]="'BOOKING_DETAIL.CHOOSE_RECEIPT' | translate"
+                                    (onSelect)="onProofSelected($event)">
+                                </p-fileupload>
+                                <span *ngIf="proofFileName" class="text-sm text-muted-color">{{ proofFileName }}</span>
+                            </div>
+
+
+                            <div class="col-span-12 text-center">
+                                <p-button
+                                    [label]="'PAYMENT.UPLOAD_PROOF' | translate"
+                                    icon="pi pi-upload"
+                                    (onClick)="submitPaymentProof()"
+                                    [loading]="isSubmitting"
+                                    [disabled]="paymentForm.invalid || !proofFile">
+                                </p-button>
+                            </div>
+
+                                            
+                                    <div class="col-span-12" *ngIf="booking.status === 3 && !booking.requirePaymentProof && booking.isPaid">
+                                        <p-message severity="success" [text]="'BOOKING_DETAIL.PAID_DIRECTLY' | translate"></p-message>
+                                    </div>
+                        </form>
+                    </p-card>
+                </div> -->
+
+                                <!-- المبلغ الإجمالي المطلوب عند الدفع -->
+                               <!-- المبلغ الإجمالي المطلوب عند الدفع -->
+                <div class="col-span-12" *ngIf="booking.status === 2">
+                    <p-card header="{{ 'PAYMENT.AMOUNT' | translate }}">
+                        <div class="flex flex-column gap-2">
+                            <p>{{ 'BOOKING.COMMISSION' | translate }}: {{ booking.commissionAmount | currency:'EGP':'code':'1.0-0' }}</p>
+                            <p>{{ 'BOOKING_DETAIL.PAYMENT_TOTAL' | translate }}: <strong>{{ booking.paymentAmount | currency:'EGP':'code':'1.0-0' }}</strong></p>
+                            <p-message *ngIf="!booking.requirePaymentProof" severity="warn" [text]="'BOOKING_DETAIL.SEND_PROOF_WHATSAPP' | translate"></p-message>
+                        </div>
+                    </p-card>
+                </div>
+
+                <!-- Payment Proof Upload -->
+                <div class="col-span-12" *ngIf="booking.status === 2 && booking.requirePaymentProof">
                     <p-card header="{{ 'PAYMENT.UPLOAD_PROOF' | translate }}">
                         <form [formGroup]="paymentForm" class="grid grid-cols-12 gap-4">
                             <div class="col-span-12 md:col-span-4">
@@ -255,9 +328,9 @@ export class BookingDetail implements OnInit {
             next: (data:BookingDetailDto) => {
                 this.booking = data;
 
-                const prefillAmount = (data.outstandingAmount > 0)
+                  const prefillAmount = (data.outstandingAmount > 0)
                             ? data.outstandingAmount
-                            : data.commissionAmount;
+                            : (data.paymentAmount ?? data.commissionAmount);
 
                 this.paymentForm.patchValue({ amount: data.monthlySalary, commissionAmount: prefillAmount });
                 if (data.jobPostId) {

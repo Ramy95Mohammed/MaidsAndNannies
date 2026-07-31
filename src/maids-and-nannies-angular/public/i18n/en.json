@@ -337,7 +337,10 @@
     "REPLACEMENT_REASON_PREFERENCE_DESC": "No fault with the worker, you'd just prefer a change — may involve a commission difference",
     "CONFIRM": "Confirm",
     "OUTSTANDING_AMOUNT_TITLE": "Outstanding Amount",
-    "OUTSTANDING_AMOUNT_DESC": "After the replacement, you have an outstanding amount to pay."
+    "OUTSTANDING_AMOUNT_DESC": "After the replacement, you have an outstanding amount to pay.",
+    "PAYMENT_TOTAL": "Total Payment Due",
+    "PAID_DIRECTLY": "Payment has been received. You may contact the worker directly.",
+        "SEND_PROOF_WHATSAPP": "Send the payment proof via WhatsApp — the admin will confirm the payment after receiving it"
   },
   "ADMIN": {
     "TITLE": "Admin Panel",
@@ -401,7 +404,9 @@
     "SPECIALIZATION_COOKING": "Cooking",
     "SPECIALIZATION_CHILDCARE": "Childcare",
     "SPECIALIZATION_ELDERLY_CARE": "Elderly Care",
-    "SPECIALIZATION_GENERAL": "General Housekeeping"
+    "SPECIALIZATION_GENERAL": "General Housekeeping",
+    "CONFIRM_PAYMENT":"Confirm payment",
+    "TABLE_PAYMENT_AMOUNT": "Payment Due"
   },
   "JOB_POST": {
     "CREATE": "Create Job Post",

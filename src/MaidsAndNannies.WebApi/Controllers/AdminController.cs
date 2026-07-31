@@ -6,8 +6,10 @@ using MaidsAndNannies.Application.Features.Admin.Commands.RegisterHomeowner;
 using MaidsAndNannies.Application.Features.Admin.Commands.RejectHomeowner;
 using MaidsAndNannies.Application.Features.Admin.Commands.RejectPayment;
 using MaidsAndNannies.Application.Features.Admin.Commands.RejectWorker;
+using MaidsAndNannies.Application.Features.Admin.Commands.UpdateHomeownerReplacementLimits;
 using MaidsAndNannies.Application.Features.Admin.Queries.GetAdminDashboard;
 using MaidsAndNannies.Application.Features.Admin.Queries.GetAllBookings;
+using MaidsAndNannies.Application.Features.Admin.Queries.GetAllHomeowners;
 using MaidsAndNannies.Application.Features.Admin.Queries.GetPendingHomeowners;
 using MaidsAndNannies.Application.Features.Admin.Queries.GetPendingPayments;
 using MaidsAndNannies.Application.Features.Admin.Queries.GetPendingWorkers;
@@ -97,6 +99,18 @@ public sealed class AdminController(ISender sender, ICurrentUserService currentU
     [HttpGet("bookings")]
     public async Task<IActionResult> GetAllBookings()
     => Ok(await sender.Send(new GetAllBookingsQuery()));
+
+
+    [HttpGet("homeowners")]
+    public async Task<IActionResult> GetAllHomeowners()
+    => Ok(await sender.Send(new GetAllHomeownersQuery()));
+
+    [HttpPut("homeowners/{id}/replacement-limits")]
+    public async Task<IActionResult> UpdateHomeownerReplacementLimits(int id, UpdateReplacementLimitsRequest request)
+    {
+        await sender.Send(new UpdateHomeownerReplacementLimitsCommand(id, request.MaxFaultReplacementCount, request.MaxPreferenceReplacementCount));
+        return Ok(new { Message = "تم تحديث حدود الاستبدال" });
+    }
 }
 
 public sealed class RejectRequest
@@ -114,3 +128,5 @@ public sealed record AdminRegisterHomeownerRequest
     [Required] public required string City { get; init; }
     [Required] public required string Address { get; init; }
 }
+
+public sealed record UpdateReplacementLimitsRequest(int? MaxFaultReplacementCount, int? MaxPreferenceReplacementCount);

@@ -46,12 +46,14 @@ export interface BookingDetailDto {
   totalAmountAfterConversion:number;
   commissionAmount: number;
   commissionType: number;
-  status: number;
+  status: any;
   isPaid: boolean;
   replacementCount: number;
   maxReplacement:number;
   maxFaultReplacement: number;
   maxPreferenceReplacement: number;
+    paymentAmount: number;
+  requirePaymentProof: boolean;
   outstandingAmount: number;
   adminNotes: string | null;
   createdAt: string;

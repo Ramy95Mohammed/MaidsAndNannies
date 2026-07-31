@@ -43,7 +43,8 @@ public sealed record AdminBookingListDto(
     bool IsPaid,
     int ReplacementCount,
     int MaxReplacement,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    decimal PaymentAmount);
 
 public sealed record BookingDetailDto(
     int Id,
@@ -78,7 +79,9 @@ public sealed record BookingDetailDto(
     int? JobPostId,
     decimal OutstandingAmount,
     int MaxFaultReplacement,
-    int MaxPreferenceReplacement);
+    int MaxPreferenceReplacement ,
+     decimal PaymentAmount,
+    bool RequirePaymentProof);
 
 
 public sealed record CreateBookingRequest(

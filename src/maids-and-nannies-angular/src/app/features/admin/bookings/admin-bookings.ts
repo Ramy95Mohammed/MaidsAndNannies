@@ -22,6 +22,7 @@ interface BookingRow {
     quantity: number;
     totalAmount: number;
     commissionAmount: number;
+    paymentAmount: number;
 }
 
 @Component({
@@ -46,6 +47,7 @@ interface BookingRow {
                         <th>{{ 'ADMIN.TABLE_TOTAL' | translate }}</th>
                          <th>{{ 'ADMIN.TABLE_TOTAL_AFTER_CONVERSION' | translate }}</th>
                         <th>{{ 'ADMIN.TABLE_COMMISSION' | translate }}</th>
+                        <th>{{ 'ADMIN.TABLE_PAYMENT_AMOUNT' | translate }}</th>
                          <th>{{ 'ADMIN.TABLE_STATUS' | translate }}</th>
                         <th>{{ 'ADMIN.TABLE_REPLACEMENT' | translate }}</th>
                         <th>{{ 'ADMIN.TABLE_ACTIONS' | translate }}</th>
@@ -62,12 +64,14 @@ interface BookingRow {
                         <td>{{ b.totalAmount | currency:b.currencyCode:'':'1.0-0' }} {{ b.currencyCode }}</td>
                         <td>{{ b.totalAmountAfterConversion | currency:'EGP':'code':'1.0-0' }}</td>
                         <td>{{ b.commissionAmount | currency:'EGP':'code':'1.0-0' }}</td>
+                        <td>{{ b.paymentAmount | currency:'EGP':'code':'1.0-0' }}</td>
                         <td><p-tag [value]="statusLabel(b.status)" [severity]="statusSeverity(b.status)"></p-tag></td>
                         <td>{{ b.replacementCount }}/{{b.maxReplacement}}</td>
                         <td>
                             <div class="flex gap-1">
                                 <p-button *ngIf="b.status === 0" [label]="'ADMIN.CONFIRM_WORKER' | translate" size="small" (onClick)="confirmWorker(b.id)"></p-button>
                                 <p-button *ngIf="b.status === 1" [label]="'ADMIN.REQUEST_PAYMENT' | translate" size="small" (onClick)="requestPayment(b.id)"></p-button>
+                                <p-button *ngIf="b.status === 2 || b.status === 8" [label]="'ADMIN.CONFIRM_PAYMENT' | translate" size="small" severity="success" (onClick)="confirmPayment(b.id)"></p-button>
                                 <p-button *ngIf="b.status === 3" [label]="'ADMIN.START_WORK' | translate" size="small" (onClick)="startWork(b.id)"></p-button>
                                 <p-button *ngIf="b.status === 4" [label]="'ADMIN.COMPLETE' | translate" severity="success" (onClick)="completeWork(b.id)"></p-button>                                
                                 <p-button *ngIf="b.status === 7" [label]="'ADMIN.CONFIRM_REPLACEMENT' | translate" size="small" severity="warn" (onClick)="confirmWorker(b.id)"></p-button>
@@ -132,6 +136,19 @@ export class AdminBookings implements OnInit {
             this.translate.instant('WORKER_DETAIL.HOURLY')][type] || '—';
 }
 
+    confirmPayment(id: number) {
+        this.confirmationService.confirm({
+            message: 'تأكيد استلام الدفع لهذا الحجز؟',
+            header: 'تأكيد',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+                this.bookingService.confirmPayment(id).subscribe({
+                    next: () => { this.messageService.add({ severity: 'success', detail: 'تم تأكيد الدفع' }); this.load(); }
+                });
+            }
+        });
+    }
+
     statusLabel(s: number): string {
     return [this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PENDING'),
             this.translate.instant('ADMIN.WORKER_CONFIRMED'),
@@ -146,4 +163,6 @@ export class AdminBookings implements OnInit {
   statusSeverity(s: number): string {
     return ['warn','info','warn','success','info','success','danger','warn','info'][s]||'secondary';
 }
+
+
 }

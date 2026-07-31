@@ -135,10 +135,17 @@ confirmPayment(id: number): Observable<any> {
 rejectPayment(id: number, reason?: string): Observable<any> {
     return this.http.post(`${this.API_URL}/admin/payments/${id}/reject`, { reason });
 }
-
-  // Admin: Register Homeowner
+  
   adminRegisterHomeowner(data: any): Observable<any> {
     return this.http.post(`${this.API_URL}/admin/homeowners/register`, data);
+  }
+
+    getAllHomeowners(): Observable<any> {
+    return this.http.get(`${this.API_URL}/admin/homeowners`);
+  }
+
+  updateHomeownerReplacementLimits(id: number, data: { maxFaultReplacementCount: number | null; maxPreferenceReplacementCount: number | null }): Observable<any> {
+    return this.http.put(`${this.API_URL}/admin/homeowners/${id}/replacement-limits`, data);
   }
 
 

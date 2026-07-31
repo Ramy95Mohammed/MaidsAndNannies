@@ -27,17 +27,17 @@ public sealed class RequestReplacementCommandHandler(
             var maxKey = r.Reason == ReplacementReason.WorkerFault
                 ? "MaxFaultReplacementCount"
                 : "MaxPreferenceReplacementCount";
-            var maxDefault = r.Reason == ReplacementReason.WorkerFault ? 3 : 1;
+            // ── حد أقصى للاستبدال: قيمة مخصصة لصاحبة المنزل إن وُجدت، وإلا من الإعدادات ──
+            var homeowner = await dbContext.HomeownerProfiles
+                .FirstOrDefaultAsync(h => h.UserId == booking.HomeownerId, ct);
 
             var maxSetting = await dbContext.AppSettings.FirstOrDefaultAsync(s => s.Key == maxKey, ct);
-            var max = int.TryParse(maxSetting?.Value, out var m) ? m : maxDefault;
 
-            var rows = await dbContext.Bookings
-                .Where(b => b.Id == r.BookingId && b.ReplacementCount < max)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(b => b.ReplacementCount, b => b.ReplacementCount + 1), ct);
-            if (rows == 0)
-                throw new InvalidOperationException($"تم تجاوز الحد الأقصى للاستبدال بهذا السبب ({max} مرات)");
+            var max = r.Reason == ReplacementReason.WorkerFault
+                ? homeowner?.MaxFaultReplacementCount
+                    ?? (int.TryParse(maxSetting?.Value, out var mf) ? mf : 3)
+                : homeowner?.MaxPreferenceReplacementCount
+                    ?? (int.TryParse(maxSetting?.Value, out var mp) ? mp : 1);
 
             booking = await dbContext.Bookings
                 .Include(b => b.Currency)

@@ -55,6 +55,20 @@ namespace MaidsAndNannies.Application.Features.Booking.Queries
                 var totalInEgp = totalAmount * currency.RateToEgp;
                 var commissionAmount = totalInEgp * commissionPercent / 100m;
 
+                // المبلغ الإجمالي المطلوب عند الدفع حسب الإعداد
+                var billingMode = settings.FirstOrDefault(s => s.Key == "CommissionBillingMode")?.Value ?? "CommissionOnly";
+
+                var workerFirstSalaryInEgp = request.BookingType switch
+                {
+                    BookingType.Daily => (worker.DailyRate ?? 0) * request.Quantity * currency.RateToEgp,
+                    BookingType.Hourly => (worker.HourlyRate ?? 0) * request.Quantity * currency.RateToEgp,
+                    _ => request.MonthlySalary * currency.RateToEgp
+                };
+
+                var paymentAmount = billingMode == "CommissionPlusSalary"
+                    ? commissionAmount + workerFirstSalaryInEgp
+                    : commissionAmount;
+
                 var commissionType = request.BookingType switch
                 {
                     BookingType.Monthly => request.CommissionType,
@@ -64,7 +78,7 @@ namespace MaidsAndNannies.Application.Features.Booking.Queries
                 var booking = new BookingDetailDto(0, "", "", null, "", "", null, null, null,
                     null, Specialization.Childcare, BookingType.Daily, 0, "", DateTime.Now, null,
                     0, 0, 0, totalAmount, totalInEgp, commissionAmount, CommissionType.OneTime, BookingStatus.Pending,
-                    false, 0, 0, null,DateTime.Now, null, 0, 0, 0);
+                    false, 0, 0, null,DateTime.Now, null, 0, 0, 0 ,paymentAmount ,true);
                                
                 await transaction.CommitAsync();
                 return booking;

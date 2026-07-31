@@ -69,6 +69,7 @@ import { BookingDetailDto } from '@/core/services/booking.service';
                                          <p>{{ 'BOOKING.TOTAL_AMOUNT' | translate }}:{{ bookingCreationInfo()?.totalAmount | currency: bookingCreationInfo()?.currencyCode:'':'1.0-0' }} {{ bookingCreationInfo()?.currencyCode }}</p>
                                             <p>{{ 'BOOKING.TOTAL_AMOUNT_AFTER_CONVERSION' | translate }}:{{ bookingCreationInfo()?.totalAmountAfterConversion | currency:'EGP':'code':'1.0-0' }}</p>
                                             <p>{{ 'BOOKING.COMMISSION' | translate }}: {{ bookingCreationInfo()?.commissionAmount | currency:'EGP':'code':'1.0-0' }}</p>                                        
+                                            <p>{{ 'BOOKING_DETAIL.PAYMENT_TOTAL' | translate }}: {{ bookingCreationInfo()?.paymentAmount | currency:'EGP':'code':'1.0-0' }}</p>
                                     </div>
                                 </div>
                             </div>

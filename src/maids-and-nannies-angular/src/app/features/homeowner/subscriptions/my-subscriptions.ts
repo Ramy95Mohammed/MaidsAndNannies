@@ -13,6 +13,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SubscriptionService, SubscriptionDto } from '../../../core/services/subscription.service';
+import { ApiService } from '@/core/services/api.service';
 
 @Component({
     selector: 'app-my-subscriptions',
@@ -79,11 +80,11 @@ import { SubscriptionService, SubscriptionDto } from '../../../core/services/sub
                     <label class="block font-bold mb-1">{{ 'PAYMENT.TRANSACTION_REF' | translate }}</label>
                     <input pInputText formControlName="transactionReference" class="w-full" />
                 </div>
-                <div>
+                <div *ngIf="requireProof">
                     <label class="block font-bold mb-1">{{ 'PAYMENT.UPLOAD_PROOF' | translate }}</label>
                     <p-fileupload name="proofImage" mode="basic" accept="image/*" maxFileSize="5000000" [auto]="false" chooseLabel="اختر صورة" (onSelect)="onProofSelected($event)"></p-fileupload>
                 </div>
-                <p-button label="{{ 'SUBSCRIPTION.RENEW' | translate }}" icon="pi pi-check" (onClick)="submitRenew()" [disabled]="renewForm.invalid || !proofFile"></p-button>
+               <p-button label="{{ 'SUBSCRIPTION.RENEW' | translate }}" icon="pi pi-check" (onClick)="submitRenew()" [disabled]="renewForm.invalid || (requireProof && !proofFile)"></p-button>                
             </form>
         </p-dialog>
     `
@@ -97,6 +98,8 @@ export class MySubscriptions implements OnInit {
     showRenewDialog = false;
     selectedSub: SubscriptionDto | null = null;
     proofFile: File | null = null;
+        requireProof = true;
+    private api = inject(ApiService);
 
     paymentMethods = [
         { label: 'فودافون كاش', value: 0 },
@@ -109,7 +112,14 @@ export class MySubscriptions implements OnInit {
         transactionReference: ['']
     });
 
-    ngOnInit() { this.load(); }
+    ngOnInit() { 
+                this.api.getSettings().subscribe((settings: any[]) => {
+                    const s = settings.find((x: any) => x.key === 'RequirePaymentProof');
+                    this.requireProof = s ? s.value !== 'false' : true;
+                });
+                
+        this.load(); 
+    }
 
     load() {
         this.subscriptionService.getMySubscriptions().subscribe({
@@ -129,13 +139,12 @@ export class MySubscriptions implements OnInit {
     }
 
     submitRenew() {
-        if (this.renewForm.invalid || !this.proofFile || !this.selectedSub) return;
-
+     if (this.renewForm.invalid || (this.requireProof && !this.proofFile) || !this.selectedSub) return;
         const fd = new FormData();
         fd.append('PaymentMethod', this.renewForm.get('paymentMethod')?.value);
         fd.append('Amount', this.renewForm.get('amount')?.value);
         fd.append('TransactionReference', this.renewForm.get('transactionReference')?.value || '');
-        fd.append('proofImage', this.proofFile);
+        fd.append('proofImage', this.proofFile!);
 
         this.subscriptionService.renewSubscription(this.selectedSub.id, fd).subscribe({
             next: () => {
