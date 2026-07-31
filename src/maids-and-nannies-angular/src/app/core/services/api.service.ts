@@ -12,16 +12,8 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   // Workers
-  getWorkers(filters?: any): Observable<any> {
-    let params = new HttpParams();
-    if (filters) {
-      Object.keys(filters).forEach(key => {
-        if (filters[key] !== null && filters[key] !== undefined && filters[key] !== '') {
-          params = params.set(key, filters[key]);
-        }
-      });
-    }
-    return this.http.get(`${this.API_URL}/worker`, { params });
+  getWorkers(filters?: any): Observable<any> {    
+    return this.http.post(`${this.API_URL}/worker`,filters);
   }
 
   getWorker(id: string | number): Observable<any> {
@@ -39,6 +31,10 @@ export class ApiService {
   // Bookings
   createBooking(data: any): Observable<any> {
     return this.http.post(`${this.API_URL}/booking`, data);
+  }
+
+  getBookingCreationInfo(data: any): Observable<any> {
+    return this.http.post(`${this.API_URL}/booking/bookingCreationInfo`, data);
   }
 
   getMyBookings(): Observable<any> {

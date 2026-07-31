@@ -8,13 +8,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MaidsAndNannies.Application.Features.Worker.Queries.GetWorkerById;
 
-public sealed class GetWorkerByIdQueryHandler(IApplicationDbContext dbContext)
+public sealed class GetWorkerByIdQueryHandler(IApplicationDbContext dbContext,
+    ICurrentUserService currentUser)
     : IRequestHandler<GetWorkerByIdQuery, WorkerDetailDto>
 {
     public async Task<WorkerDetailDto> Handle(GetWorkerByIdQuery request, CancellationToken cancellationToken)
     {
         var worker = await dbContext.WorkerProfiles
             .Include(w => w.User)
+            .Include(w=>w.Nationality)
+            .Include(w => w.State)
             .Include(w => w.Documents)
             .Include(w => w.WorkerSpecializationSpecs)
             .FirstOrDefaultAsync(w => w.Id == request.WorkerProfileId, cancellationToken);
@@ -35,6 +38,8 @@ public sealed class GetWorkerByIdQueryHandler(IApplicationDbContext dbContext)
         if (worker is null)
             throw new NotFoundException("WorkerProfile", request.WorkerProfileId);
 
+        var language = currentUser.CurrentLanguage;
+
         var reviews = await dbContext.Reviews
             .Include(r => r.Reviewer)
             .Where(r => r.RevieweeId == worker.UserId && r.IsVisible)
@@ -53,20 +58,19 @@ public sealed class GetWorkerByIdQueryHandler(IApplicationDbContext dbContext)
         return new WorkerDetailDto(
             worker.Id,
             worker.User.FullName,
-            worker.NationalityId,
+            ((language == "ar") ? worker.Nationality.Name_ar : worker.Nationality.Name_en) ?? "",
             (!canReveal) ? null : worker.NationalIdNumber,
             (!canReveal) ? null : worker.PassportNumber,
             (!canReveal) ? null : worker.PassportCountry,
             worker.Bio,
             worker.ExperienceYears,
-            (worker.WorkerSpecializationSpecs ?? [])
-                .Select(s => new WorkerSpecializationDto(s.Id, s.WorkerSpecialization)).ToList(),
+            worker.WorkerSpecializationSpecs.Select(s => (int)s.WorkerSpecialization).ToList(),
             worker.IsLiveIn,
             worker.MonthlyRate,
             worker.HourlyRate,
             worker.DailyRate,
             worker.CurrencyId,
-            worker.CityId,
+            ((language == "ar") ? worker.State.Name_ar : worker.State.Name_en) ?? "",
            (!canReveal) ? null : worker.Address,
             worker.AverageRating,
             worker.TotalReviews,

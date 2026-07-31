@@ -5,9 +5,10 @@ using MediatR;
 public sealed record GetWorkersQuery(
     int? StateId,
     int? CityId,
-    Specialization? Specialization,
+    List<Specialization>? Specializations,
     bool? IsLiveIn,
     decimal? MaxRate,
+    int? currencyId,
     int? NationalityId,
     string? Search,
     int Page,

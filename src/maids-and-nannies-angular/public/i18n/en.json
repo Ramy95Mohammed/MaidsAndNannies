@@ -303,7 +303,8 @@
     "COMMISSION_ONETIME": "One-time Commission",
     "COMMISSION_SUBSCRIPTION": "Monthly Subscription",
     "LIVE_IN":"Live-in",
-    "ALL":"All"
+    "ALL":"All",
+    "CALC_COMMISION":"Calculate commission"
   },
   "BOOKING_DETAIL": {
     "WORKER_PHONE_WILL_APPEAR": "Worker phone number will appear after payment confirmation",

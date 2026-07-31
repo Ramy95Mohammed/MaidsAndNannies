@@ -16,11 +16,12 @@ import { BookingService } from '@/core/services/booking.service';
 import { CurrencyService } from '@/core/services/currency.service';
 import { Paginator } from "primeng/paginator";
 import { LanguageService } from '@/core/services/language.service';
+import { MultiSelect } from "primeng/multiselect";
 
 @Component({
     selector: 'app-worker-search',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, RatingModule, ChipModule, TranslatePipe, Paginator],
+    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, RatingModule, ChipModule, TranslatePipe, Paginator, MultiSelect],
     template: `
         <div class="card">
            <h2>{{ 'WORKERS.SEARCH' | translate }}</h2>
@@ -86,7 +87,8 @@ import { LanguageService } from '@/core/services/language.service';
 
                 <div>
                     <label class="block font-bold mb-2">{{ 'WORKER_PROFILE.SPECIALIZATIONS_TITLE' | translate }}</label>
-                    <p-select [(ngModel)]="filters.specialization" [showClear]="true" [options]="specializations" optionLabel="label" optionValue="value" [placeholder]="'COMMON.ALL' | translate" (onChange)="search()" styleClass="w-full"></p-select>
+                    <p-multiselect (onChange)="search()" [options]="specializations" [(ngModel)]="filters.specializations" optionLabel="label" [placeholder]="'COMMON.ALL' | translate" class="w-full md:w-80" />
+                    <!-- <p-select [(ngModel)]="filters.specialization" [showClear]="true" [options]="specializations" optionLabel="label" optionValue="value" [placeholder]="'COMMON.ALL' | translate" (onChange)="search()" styleClass="w-full"></p-select> -->
                 </div>
                 <div>
                     <label class="block font-bold mb-2">{{ 'WORKER.IS_LIVEIN' | translate }}</label>
@@ -97,6 +99,11 @@ import { LanguageService } from '@/core/services/language.service';
 
                     <input pInputText [(ngModel)]="filters.maxRate" type="number" placeholder="5000" class="w-full" (input)="search()" />
                 </div>
+
+                  <div>
+                      <label class="block font-bold mb-2">{{ 'WORKER.CURRENCY' | translate }}</label>
+                        <p-select   (onChange)="search()" [(ngModel)]="filters.currencyId" [showClear]="true" [filter]="true"  filterBy="label"  [options]="currencyOptions()" optionLabel="label" optionValue="value" [placeholder]="'COMMON.ALL' | translate"  class="w-full"></p-select>
+                  </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -137,7 +144,7 @@ import { LanguageService } from '@/core/services/language.service';
                     </div>
 
                     <div class="text-sm text-muted-color mt-2">
-                        <i class="pi pi-map-marker mr-1"></i>{{ worker.country || ('COMMON.UNSPECIFIED' | translate) }} / 
+                        <i class="pi pi-map-marker mr-1"></i>{{ worker.state || ('COMMON.UNSPECIFIED' | translate) }} / 
                         <span class="ml-2">{{ 'COMMON.EXPERIENCE_YEARS' | translate:{years: worker.experienceYears} }}</span>
                     </div>
                 </div>
@@ -180,6 +187,7 @@ export class WorkerSearch implements OnInit {
     replacementBookingId = signal<number | null>(null);
     replacementReason = signal<0 | 1>(1);
     currenciesMap = signal<{ [id: number]: string }>({});
+    currencyOptions = signal<{ value: number; label: string }[]>([]);
 
     //paginator
     page = 1;
@@ -198,9 +206,10 @@ export class WorkerSearch implements OnInit {
     filters: any = {
         stateId: null,
         cityId: null,
-        specialization: null,
+        specializations: null,
         isLiveIn: null,
-        maxRate: null
+        maxRate: null,
+        currencyId:null
     };
 
    specializations:any = [];
@@ -242,7 +251,7 @@ private getliveInOptions(){
             this.replacementBookingId.set(Number(params['bookingId']));
             this.replacementReason.set(params['reason'] === '0' ? 0 : 1);
         }
-     
+      this.loadCurrencies();
 
     });
     
@@ -251,14 +260,15 @@ private getliveInOptions(){
         this.search();
     }
 
-    search() {
+    search() {                
         this.loading.set(true);
         const params: any = {};
         if (this.filters.stateId) params.stateId = this.filters.stateId;
         if (this.filters.cityId) params.cityId = this.filters.cityId;
-        if (this.filters.specialization !== null) params.specialization = this.filters.specialization;
+        if (this.filters.specializations !== null) params.specializations = this.filters.specializations?.map((s:any)=>s.value);
         if (this.filters.isLiveIn !== null) params.isLiveIn = this.filters.isLiveIn;
         if (this.filters.maxRate) params.maxRate = this.filters.maxRate;
+        if (this.filters.currencyId) params.currencyId = this.filters.currencyId;
         
         params.page = this.page;
         params.pageSize = this.pageSize;
@@ -279,6 +289,18 @@ private getliveInOptions(){
         this.page = (event.first / event.rows) + 1;
         this.pageSize = event.rows;
         this.search();
+    }
+
+     loadCurrencies() {
+        this.currencyService.getCurrencies().subscribe({
+            next: (data) => {
+                const isAr = this.langService.getCurrentLanguage() === 'ar';
+                this.currencyOptions.set(data.map(c => ({
+                    value: c.id,
+                    label: isAr ? `${c.nameAr} (${c.code})` : `${c.nameEn} (${c.code})`
+                })));
+            }
+        });
     }
 
    getSpecLabel(values: number[]): string {

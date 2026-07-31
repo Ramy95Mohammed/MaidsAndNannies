@@ -25,8 +25,12 @@ public sealed class GetWorkersQueryHandler(IApplicationDbContext dbContext,
             query = query.Where(w => w.StateId == request.StateId);
         if (request.CityId.HasValue)
             query = query.Where(w => w.CityId == request.CityId);
-        if (request.Specialization.HasValue)
-            query = query.Where(w => w.WorkerSpecializationSpecs.Any(s => s.WorkerSpecialization == request.Specialization));
+        if (request.currencyId.HasValue)
+            query = query.Where(w => w.CurrencyId == request.currencyId);
+        if (request.Specializations != null && request.Specializations.Count > 0)
+            query = query.Where(w =>
+    w.WorkerSpecializationSpecs.Any(ws =>
+        request.Specializations!.Contains(ws.WorkerSpecialization)));
         if (request.IsLiveIn.HasValue)
             query = query.Where(w => w.IsLiveIn == request.IsLiveIn);
         if (request.MaxRate.HasValue)
@@ -44,20 +48,20 @@ public sealed class GetWorkersQueryHandler(IApplicationDbContext dbContext,
             .Select(w => new WorkerSummaryDto(
                 w.Id,
                 w.User.FullName,
-              ((language == "ar")?  w.Nationality.Name_ar:w.Nationality.Name_en)??"",
-                w.WorkerSpecializationSpecs.Select(s => new WorkerSpecializationDto(s.Id, s.WorkerSpecialization)).ToList(),
+              ((language == "ar")?  w.Nationality.Name_ar:w.Nationality.Name_en)??"",                
                 w.IsLiveIn,
                 w.MonthlyRate,
                 w.HourlyRate,
                 w.DailyRate,
                 w.CurrencyId,
-                  ((language == "ar") ? w.Country.Name_ar : w.Country.Name_en) ?? "",
+                  ((language == "ar") ? w.State.Name_ar : w.State.Name_en) ?? "",
                 w.ExperienceYears,
                 w.AverageRating,
                 w.TotalReviews,
                 null,
                 w.Languages ,
-                w.WorkerSpecializationSpecs.Select(s=>(int)s.WorkerSpecialization).ToList()))
+                w.WorkerSpecializationSpecs.Select(s=>(int)s.WorkerSpecialization).ToList())
+            )
             .ToListAsync(ct);
 
         return new PagedResult<WorkerSummaryDto>(items, total, request.Page, request.PageSize);

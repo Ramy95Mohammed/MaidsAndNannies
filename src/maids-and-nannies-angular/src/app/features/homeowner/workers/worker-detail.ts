@@ -18,22 +18,17 @@ import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CurrencyService } from '@/core/services/currency.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { BookingDetailDto } from '@/core/services/booking.service';
 
 @Component({
     selector: 'app-worker-detail',
     standalone: true,
-    imports: [
-        CommonModule, FormsModule, RouterModule, CardModule, ButtonModule,
-        InputTextModule, SelectModule, RatingModule, ChipModule, DividerModule,
-        TextareaModule, DatePickerModule, DialogModule, ToastModule , TranslatePipe
-    ],
+    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, RatingModule, ChipModule, DividerModule, TextareaModule, DatePickerModule, DialogModule, ToastModule, TranslatePipe],
     providers: [MessageService],
     template: `
         <p-toast></p-toast>
         <div class="card">
-<a routerLink="/homeowner/workers" class="text-primary cursor-pointer">
-  <i class="pi pi-arrow-left mr-2"></i>{{ 'WORKER_DETAIL.BACK_TO_SEARCH' | translate }}
-</a>
+            <a routerLink="/homeowner/workers" class="text-primary cursor-pointer"> <i class="pi pi-arrow-left mr-2"></i>{{ 'WORKER_DETAIL.BACK_TO_SEARCH' | translate }} </a>
             <div *ngIf="worker()" class="mt-4">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2">
@@ -43,9 +38,9 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
                             </div>
                             <div>
                                 <h2 class="text-2xl font-bold m-0">{{ worker().fullName }}</h2>
-                                <p class="text-muted-color m-0">{{ worker().nationality }} - {{ worker().city || ('COMMON.UNSPECIFIED' | translate) }}</p>
+                                <p class="text-muted-color m-0">{{ worker().nationality }} - {{ worker().state || ('COMMON.UNSPECIFIED' | translate) }}</p>
                                 <p-rating [(ngModel)]="worker().averageRating"></p-rating>
-                                <span class="text-sm text-muted-color ml-2">{{ 'COMMON.RATING_COUNT' | translate:{count: worker().totalReviews} }}</span>
+                                <span class="text-sm text-muted-color ml-2">{{ 'COMMON.RATING_COUNT' | translate: { count: worker().totalReviews } }}</span>
                             </div>
                         </div>
 
@@ -53,18 +48,36 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
                         <h3>{{ 'WORKER_DETAIL.PERSONAL_INFO' | translate }}</h3>
                         <div class="grid grid-cols-2 gap-4">
-                            <div>{{ 'WORKER_DETAIL.AGE' | translate:{years: worker().age} }}</div>
-                            <div>{{ 'COMMON.EXPERIENCE_YEARS' | translate:{years: worker().experienceYears} }}</div>
-                            <div>{{ 'WORKER_DETAIL.IS_LIVEIN' | translate:{value: (worker().isLiveIn ? ('COMMON.YES' | translate) : ('COMMON.NO' | translate))} }}</div>
-                            <div>{{ 'WORKER_DETAIL.DAILY_RATE' | translate:{rate: worker().dailyRate, currency: currenciesMap()[worker().currencyId] || 'EGP'} }}</div>
-                            <div>{{ 'WORKER_DETAIL.MONTHLY_RATE' | translate:{rate: worker().monthlyRate, currency: currenciesMap()[worker().currencyId] || 'EGP'} }}</div>
-                            <div>{{ 'WORKER_DETAIL.HOURLY_RATE' | translate:{rate: worker().hourlyRate, currency: currenciesMap()[worker().currencyId] || 'EGP'} }}</div>
+                            <div>
+                                <div>{{ 'WORKER_DETAIL.AGE' | translate: { years: worker().age } }}</div>
+                                <div>{{ 'COMMON.EXPERIENCE_YEARS' | translate: { years: worker().experienceYears } }}</div>
+                                <div>{{ 'WORKER_DETAIL.IS_LIVEIN' | translate: { value: worker().isLiveIn ? ('COMMON.YES' | translate) : ('COMMON.NO' | translate) } }}</div>
+                            </div>
+
+                            <div>
+                                <div>{{ 'WORKER_DETAIL.DAILY_RATE' | translate: { rate: worker().dailyRate, currency: currenciesMap()[worker().currencyId] || 'EGP' } }}</div>
+                                <div>{{ 'WORKER_DETAIL.MONTHLY_RATE' | translate: { rate: worker().monthlyRate, currency: currenciesMap()[worker().currencyId] || 'EGP' } }}</div>
+                                <div>{{ 'WORKER_DETAIL.HOURLY_RATE' | translate: { rate: worker().hourlyRate, currency: currenciesMap()[worker().currencyId] || 'EGP' } }}</div>
+
+                                <div class="mt-2">
+                                    <div>
+                                        <hr />
+                                        <strong>{{ 'BOOKING.COMMISSION' | translate }}</strong>
+                                    </div>
+
+                                    <div class="mt-2">
+                                         <p>{{ 'BOOKING.TOTAL_AMOUNT' | translate }}:{{ bookingCreationInfo()?.totalAmount | currency: bookingCreationInfo()?.currencyCode:'':'1.0-0' }} {{ bookingCreationInfo()?.currencyCode }}</p>
+                                            <p>{{ 'BOOKING.TOTAL_AMOUNT_AFTER_CONVERSION' | translate }}:{{ bookingCreationInfo()?.totalAmountAfterConversion | currency:'EGP':'code':'1.0-0' }}</p>
+                                            <p>{{ 'BOOKING.COMMISSION' | translate }}: {{ bookingCreationInfo()?.commissionAmount | currency:'EGP':'code':'1.0-0' }}</p>                                        
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mt-4">
                             <strong>{{ 'WORKER_DETAIL.SPECIALIZATION' | translate }}</strong>
                             <div class="flex flex-wrap gap-2 mt-2">
-                                <p-chip [label]="getSpecLabel(worker().specialization)"></p-chip>
+                                <p-chip [label]="getSpecLabel(worker().specializations)"></p-chip>
                             </div>
                         </div>
 
@@ -86,16 +99,12 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
                         <div class="mb-3">
                             <label class="block font-bold mb-2">{{ 'WORKER_DETAIL.BOOKING_TYPE' | translate }}</label>
-                            <p-select [(ngModel)]="bookingType"
-                            (onChange)="disableOrEnableComissionTypeAndQuantity($event.value)"
-                             [options]="bookingTypes" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                            <p-select [(ngModel)]="bookingType" (onChange)="disableOrEnableComissionTypeAndQuantity($event.value)" [options]="bookingTypes" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
                         </div>
 
                         <div class="mb-3">
                             <label class="block font-bold mb-2">{{ 'WORKER_DETAIL.COMMISSION_TYPE' | translate }}</label>
-                            <p-select [(ngModel)]="commissionType"
-                            [disabled]="commissionTypeIsDisabled"
-                             [options]="commissionOptions" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                            <p-select [(ngModel)]="commissionType" [disabled]="commissionTypeIsDisabled" [options]="commissionOptions" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
                         </div>
 
                         <div class="mb-3">
@@ -103,7 +112,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
                             <p-datepicker [(ngModel)]="startDate" dateFormat="yy-mm-dd" styleClass="w-full" [placeholder]="'WORKER_DETAIL.START_DATE' | translate"></p-datepicker>
                         </div>
 
-                                                <div class="mb-3">
+                        <div class="mb-3">
                             <label class="block font-bold mb-2">{{ 'WORKER_DETAIL.QUANTITY' | translate }}</label>
                             <input pInputText [(ngModel)]="quantity" [disabled]="quantityIsDisabled" type="number" min="1" class="w-full" />
                         </div>
@@ -113,6 +122,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
                             <textarea pTextarea [(ngModel)]="notes" rows="3" class="w-full" [placeholder]="'WORKER_DETAIL.NOTES_PLACEHOLDER' | translate"></textarea>
                         </div>
 
+                        <p-button [label]="'WORKER_DETAIL.CALC_COMMISION' | translate" icon="pi pi-calculator" styleClass="w-full mb-2" (onClick)="getBookingCreationInfo()"></p-button>
                         <p-button [label]="'WORKER_DETAIL.CONFIRM_BOOKING' | translate" icon="pi pi-check" styleClass="w-full" (onClick)="createBooking()"></p-button>
                     </div>
                 </div>
@@ -122,7 +132,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
                     <div *ngFor="let review of worker().reviews || []" class="card mb-3">
                         <div class="flex align-items-center gap-2 mb-2">
                             <p-rating [(ngModel)]="review.rating"></p-rating>
-                            <span class="text-sm text-muted-color">{{ review.createdAt | date:'short' }}</span>
+                            <span class="text-sm text-muted-color">{{ review.createdAt | date: 'short' }}</span>
                         </div>
                         <p>{{ review.comment }}</p>
                     </div>
@@ -137,12 +147,15 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 export class WorkerDetail implements OnInit {
     private apiService = inject(ApiService);
     private route = inject(ActivatedRoute);
-    private router = inject(Router);    
+    private router = inject(Router);
     private messageService = inject(MessageService);
     private currencyService = inject(CurrencyService);
     private translate = inject(TranslateService);
 
-   currenciesMap = signal<{ [id: number]: string }>({});
+    currenciesMap = signal<{ [id: number]: string }>({});
+
+    bookingCreationInfo = signal<BookingDetailDto | null>(null);
+
     worker = signal<any>(null);
     bookingType = 0;
     commissionType = 0;
@@ -150,16 +163,14 @@ export class WorkerDetail implements OnInit {
     quantity = 1;
     notes = '';
 
-    commissionTypeIsDisabled:boolean = true;
-    quantityIsDisabled:boolean = false;
+    commissionTypeIsDisabled: boolean = true;
+    quantityIsDisabled: boolean = false;
 
-    bookingTypes:any = [
+    bookingTypes: any = [
         { label: 'يومي', value: 0 },
         { label: 'شهري', value: 1 },
         { label: 'ساعي', value: 2 }
     ];
-
-    
 
     commissionOptions = [
         { label: 'عمولة من أول شهر', value: 0 },
@@ -175,36 +186,35 @@ export class WorkerDetail implements OnInit {
             });
         }
 
-         this.currencyService.loadCurrencies(this.currenciesMap);
+        this.currencyService.loadCurrencies(this.currenciesMap);
 
-         setTimeout(() => {
-         this.bookingTypes = [
-                    { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
-                    { label: this.translate.instant('WORKER_DETAIL.MONTHLY'), value: 1 },
-                    { label: this.translate.instant('WORKER_DETAIL.HOURLY'), value: 2 }
-                    ];
-                            
-    this.commissionOptions = [
-        { label: this.translate.instant('WORKER_DETAIL.COMMISSION_ONETIME'), value: 0 },
-        { label: this.translate.instant('WORKER_DETAIL.COMMISSION_SUBSCRIPTION'), value: 1 }
-    ];
-    }, 1000);
-    
+        setTimeout(() => {
+            this.bookingTypes = [
+                { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
+                { label: this.translate.instant('WORKER_DETAIL.MONTHLY'), value: 1 },
+                { label: this.translate.instant('WORKER_DETAIL.HOURLY'), value: 2 }
+            ];
 
-
+            this.commissionOptions = [
+                { label: this.translate.instant('WORKER_DETAIL.COMMISSION_ONETIME'), value: 0 },
+                { label: this.translate.instant('WORKER_DETAIL.COMMISSION_SUBSCRIPTION'), value: 1 }
+            ];
+        }, 1000);
     }
 
-   getSpecLabel(value: number): string {
-    const labels: { [k: number]: string } = {
-        0: this.translate.instant('SPECIALIZATIONS.CLEANING'),
-        1: this.translate.instant('SPECIALIZATIONS.COOKING'),
-        2: this.translate.instant('SPECIALIZATIONS.CHILDCARE'),
-        3: this.translate.instant('SPECIALIZATIONS.ELDERLYCARE'),
-        4: this.translate.instant('SPECIALIZATIONS.GENERALHOUSEKEEPING')
-    };
-    return labels[value] || this.translate.instant('COMMON.UNSPECIFIED');
-}
-       createBooking() {
+    getSpecLabel(values: number[]): string {
+        const map: { [key: number]: string } = {
+            0: this.translate.instant('SPECIALIZATIONS.CLEANING'),
+            1: this.translate.instant('SPECIALIZATIONS.COOKING'),
+            2: this.translate.instant('SPECIALIZATIONS.CHILDCARE'),
+            3: this.translate.instant('SPECIALIZATIONS.ELDERLYCARE'),
+            4: this.translate.instant('SPECIALIZATIONS.GENERALHOUSEKEEPING')
+        };
+
+        return values?.map((v: any) => map[v] ?? this.translate.instant('COMMON.UNSPECIFIED')).join(', ');
+    }
+
+    getBookingCreationInfo() {
         if (!this.startDate) {
             this.messageService.add({ severity: 'warn', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_SELECT_START_DATE') });
             return;
@@ -214,26 +224,58 @@ export class WorkerDetail implements OnInit {
             return;
         }
 
-        this.apiService.createBooking({
-            workerId: this.worker().id,
-            serviceType: this.bookingType,
-            bookingType: this.bookingType,
-            quantity: this.quantity,
-            startDate: this.toDateOnlyString(this.startDate),
-            monthlySalary: this.worker().monthlyRate,
-            dailySalary: this.worker().dailyRate,
-            hourlySalary: this.worker().hourlyRate,
-            commissionType: this.commissionType
-        }).subscribe({
-            next: () => {
-                this.messageService.add({ severity: 'success', summary: this.translate.instant('COMMON.SUCCESS'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_CREATE_SUCCESS') });
-                setTimeout(() => this.router.navigate(['/homeowner/bookings']), 1500);
-            },
-            error: () => this.messageService.add({ severity: 'error', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_CREATE_ERROR') })
-        });
+        this.apiService
+            .getBookingCreationInfo({
+                workerId: this.worker().id,
+                serviceType: this.bookingType,
+                bookingType: this.bookingType,
+                quantity: this.quantity,
+                startDate: this.toDateOnlyString(this.startDate),
+                monthlySalary: this.worker().monthlyRate,
+                dailySalary: this.worker().dailyRate,
+                hourlySalary: this.worker().hourlyRate,
+                commissionType: this.commissionType
+            })
+            .subscribe({
+                next: (data) => {
+                    this.bookingCreationInfo.set(data);
+                },
+                error: () => this.messageService.add({ severity: 'error', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_CREATE_ERROR') })
+            });
     }
 
-      private toDateOnlyString(date: Date | null): string | null {
+    createBooking() {
+        if (!this.startDate) {
+            this.messageService.add({ severity: 'warn', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_SELECT_START_DATE') });
+            return;
+        }
+        if (!this.quantity || this.quantity < 1) {
+            this.messageService.add({ severity: 'warn', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_VALID_QUANTITY') });
+            return;
+        }
+
+        this.apiService
+            .createBooking({
+                workerId: this.worker().id,
+                serviceType: this.bookingType,
+                bookingType: this.bookingType,
+                quantity: this.quantity,
+                startDate: this.toDateOnlyString(this.startDate),
+                monthlySalary: this.worker().monthlyRate,
+                dailySalary: this.worker().dailyRate,
+                hourlySalary: this.worker().hourlyRate,
+                commissionType: this.commissionType
+            })
+            .subscribe({
+                next: () => {
+                    this.messageService.add({ severity: 'success', summary: this.translate.instant('COMMON.SUCCESS'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_CREATE_SUCCESS') });
+                    setTimeout(() => this.router.navigate(['/homeowner/bookings']), 1500);
+                },
+                error: () => this.messageService.add({ severity: 'error', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_CREATE_ERROR') })
+            });
+    }
+
+    private toDateOnlyString(date: Date | null): string | null {
         if (!date) return null;
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -241,16 +283,15 @@ export class WorkerDetail implements OnInit {
         return `${year}-${month}-${day}`;
     }
 
-    disableOrEnableComissionTypeAndQuantity(bookingType:number | null){
-      if(bookingType == null) return;
+    disableOrEnableComissionTypeAndQuantity(bookingType: number | null) {
+        if (bookingType == null) return;
 
-      if(bookingType == 0 || bookingType == 2){
-        this.commissionTypeIsDisabled = true;  
-        this.quantityIsDisabled = false;      
-      }
-      else{
-         this.commissionTypeIsDisabled = false;
-         this.quantityIsDisabled = true;
-      }
+        if (bookingType == 0 || bookingType == 2) {
+            this.commissionTypeIsDisabled = true;
+            this.quantityIsDisabled = false;
+        } else {
+            this.commissionTypeIsDisabled = false;
+            this.quantityIsDisabled = true;
+        }
     }
 }

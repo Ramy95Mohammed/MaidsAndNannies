@@ -1,5 +1,4 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
-using MaidsAndNannies.Domain.Entities;
 using MaidsAndNannies.Domain.Enums;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
@@ -68,7 +67,7 @@ public sealed class CreateBookingCommandHandler(
                 _ => CommissionType.OneTime
             };
 
-            var booking = new Booking
+            var booking = new MaidsAndNannies.Domain.Entities.Booking
             {
                 HomeownerId = request.HomeownerId,
                 WorkerId = worker.UserId,

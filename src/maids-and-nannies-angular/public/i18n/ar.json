@@ -307,7 +307,8 @@
     "COMMISSION_ONETIME": "عمولة من أول شهر",
     "COMMISSION_SUBSCRIPTION": "اشتراك شهري",
     "LIVE_IN":"مقيمة",
-    "ALL":"الكل"
+    "ALL":"الكل",
+    "CALC_COMMISION":"حساب العمولة"
   },
   "BOOKING_DETAIL": {
     "WORKER_PHONE_WILL_APPEAR": "سيظهر رقم العاملة بعد تأكيد الدفع",

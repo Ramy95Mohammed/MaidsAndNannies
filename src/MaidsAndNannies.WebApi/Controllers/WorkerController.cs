@@ -18,22 +18,15 @@ namespace MaidsAndNannies.WebApi.Controllers
     {
         private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-        [HttpGet]
+      
+        [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> GetWorkers(
-    [FromQuery] int? stateId,
-    [FromQuery] int? cityId,
-    [FromQuery] Specialization? specialization,
-    [FromQuery] bool? isLiveIn,
-    [FromQuery] decimal? maxRate,
-    [FromQuery] int? nationalityId,
-    [FromQuery] string? search,
-    [FromQuery] int page = 1,
-    [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetWorkers(GetWorkersQueryRequest? filters)
         {
             var result = await sender.Send(new GetWorkersQuery(
-                stateId,
-                cityId, specialization, isLiveIn, maxRate, nationalityId, search, page, pageSize,
+               filters?.stateId,
+                filters?.cityId, filters?.specializations, filters?.isLiveIn, filters?.maxRate, filters?.currencyId, filters?.nationalityId,
+                filters?.search, filters.page, filters.pageSize,
                 currentUser.UserId, currentUser.Role));
             return Ok(result);
         }
@@ -144,6 +137,18 @@ namespace MaidsAndNannies.WebApi.Controllers
 
         public List<WorkerSpecializationSpecRequest>? WorkerSpecializationSpecs { get; set; }
     }
+
+    public sealed record GetWorkersQueryRequest(int? stateId,
+   int? cityId,
+   List<Specialization>? specializations,
+   bool? isLiveIn,
+   decimal? maxRate,
+   int? currencyId,
+   int? nationalityId,
+   string? search,
+   int page = 1,
+   int pageSize = 10);
+
 
     public sealed class WorkerSpecializationSpecRequest
     {

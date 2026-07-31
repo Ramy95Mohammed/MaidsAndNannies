@@ -1,4 +1,5 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Booking.Queries;
 using MaidsAndNannies.Application.Features.Bookings.Commands.Admin;
 using MaidsAndNannies.Application.Features.Bookings.Commands.CancelBooking;
 using MaidsAndNannies.Application.Features.Bookings.Commands.CreateBooking;
@@ -28,6 +29,20 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
             request.BookingType,request.Quantity, request.StartDate, request.MonthlySalary ,request.DailySalary , request.HourlySalary, request.CommissionType));
 
         return Ok(new { BookingId = id, Message = "تم إنشاء الحجز بنجاح" });
+    }
+
+    [HttpPost("bookingCreationInfo")]
+    [Authorize(Roles = "Homeowner")]
+    public async Task<IActionResult> GetBookingCreationInfo(CreateBookingRequest request)
+    {
+        if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
+
+        var bookingInfo = await
+            sender.Send(new GetBookingCreationInfoQuery(
+            currentUser.UserId, request.WorkerId, request.ServiceType,
+            request.BookingType, request.Quantity, request.StartDate, request.MonthlySalary, request.DailySalary, request.HourlySalary, request.CommissionType));
+
+        return Ok(bookingInfo);
     }
 
     [HttpGet]

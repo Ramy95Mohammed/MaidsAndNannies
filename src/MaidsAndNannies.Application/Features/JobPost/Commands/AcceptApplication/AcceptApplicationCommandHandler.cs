@@ -68,7 +68,7 @@ public sealed class AcceptApplicationCommandHandler(IApplicationDbContext dbCont
             _ => CommissionType.OneTime
         };
 
-        var booking = new Booking
+        var booking = new Domain.Entities.Booking
         {
             HomeownerId = r.HomeownerId,
             WorkerId = app.WorkerId,

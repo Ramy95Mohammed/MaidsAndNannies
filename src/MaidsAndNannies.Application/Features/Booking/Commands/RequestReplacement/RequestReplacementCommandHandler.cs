@@ -79,7 +79,7 @@ public sealed class RequestReplacementCommandHandler(
                 var dailyNewTotalInEgp = newTotal * newWorker.RateToEgp;
                 var newCommissionInEgp = dailyNewTotalInEgp * commissionPercent / 100m;
 
-                var replacementBooking = new Booking
+                var replacementBooking = new Domain.Entities.Booking
                 {
                     HomeownerId = booking.HomeownerId,
                     WorkerId = newWorker.WorkerId,
@@ -230,7 +230,7 @@ public sealed class RequestReplacementCommandHandler(
         decimal MonthlyRate, int CurrencyId, decimal RateToEgp);
 
     private async Task<NewWorkerInfo> ResolveNewWorkerAsync(
-        RequestReplacementCommand r, Booking booking, CancellationToken ct)
+        RequestReplacementCommand r, Domain.Entities.Booking booking, CancellationToken ct)
     {
         if (r.ApplicationId.HasValue)
         {
