@@ -43,6 +43,13 @@ public sealed class RequestReplacementCommandHandler(
                 .Include(b => b.Currency)
                 .FirstAsync(b => b.Id == r.BookingId, ct);
 
+            // ── منع تجاوز الحد الأقصى للاستبدال ──
+            if (booking.ReplacementCount >= max)
+                throw new InvalidOperationException(
+                    r.Reason == ReplacementReason.WorkerFault
+                        ? "تم استنفاد عدد استبدالات خطأ العاملة المسموح به"
+                        : "تم استنفاد عدد الاستبدالات المسموح به");
+
             // تحرير العاملة القديمة
             var oldWorker = await dbContext.WorkerProfiles
                 .FirstOrDefaultAsync(w => w.UserId == booking.WorkerId, ct);
@@ -102,6 +109,7 @@ public sealed class RequestReplacementCommandHandler(
 
                 dbContext.Bookings.Add(replacementBooking);
                 await dbContext.SaveChangesAsync(ct);
+                await transaction.CommitAsync();
                 return Unit.Value;
             }
 
