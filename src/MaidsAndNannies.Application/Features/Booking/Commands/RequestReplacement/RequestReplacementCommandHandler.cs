@@ -60,10 +60,23 @@ public sealed class RequestReplacementCommandHandler(
             booking.UpdatedAt = DateTime.UtcNow;
 
             // ══════════════════════════════════════════════════════════════════
-            // الحالة 1: يومي/ساعي — حجز جديد مستقل بعمولته، ويُحسب العدد من الحجز الأصلي
+            // الحالة 1: يومي/ساعي — حجز جديد مستقل بعمولته، محسوب على الوحدات المتبقية فقط
+            // (وليس الكمية الأصلية كاملة) عشان صاحبة المنزل متدفعش عن أيام/ساعات
+            // اتصرفت بالفعل مع العاملة القديمة.
             // ══════════════════════════════════════════════════════════════════
             if (booking.BookingType is BookingType.Daily or BookingType.Hourly)
             {
+                // عدد الوحدات (أيام أو ساعات) اللي فاتت من الحجز الأصلي منذ بدايته
+                var elapsedUnits = booking.BookingType == BookingType.Daily
+                    ? (int)(DateTime.UtcNow - booking.StartDate).TotalDays
+                    : (int)(DateTime.UtcNow - booking.StartDate).TotalHours;
+                elapsedUnits = Math.Clamp(elapsedUnits, 0, booking.Quantity);
+                var remainingQuantity = booking.Quantity - elapsedUnits;
+
+                if (remainingQuantity <= 0)
+                    throw new InvalidOperationException(
+                        "الحجز الأصلي انتهت مدته بالفعل، لا يوجد وقت متبقٍ ليتم استبداله");
+
                 booking.Status = BookingStatus.Replaced;
 
                 var settings = await dbContext.AppSettings.ToListAsync(ct);
@@ -78,8 +91,8 @@ public sealed class RequestReplacementCommandHandler(
                     : getPercent("CommissionHourlyPercent", 10);
 
                 var newTotal = booking.BookingType == BookingType.Daily
-                    ? newWorker.DailyRate * booking.Quantity
-                    : newWorker.HourlyRate * booking.Quantity;
+                    ? newWorker.DailyRate * remainingQuantity
+                    : newWorker.HourlyRate * remainingQuantity;
                 var dailyNewTotalInEgp = newTotal * newWorker.RateToEgp;
                 var newCommissionInEgp = dailyNewTotalInEgp * commissionPercent / 100m;
 
@@ -90,7 +103,7 @@ public sealed class RequestReplacementCommandHandler(
                     OriginalWorkerId = newWorker.WorkerProfileId,
                     ServiceType = booking.ServiceType,
                     BookingType = booking.BookingType,
-                    Quantity = booking.Quantity,
+                    Quantity = remainingQuantity,
                     StartDate = DateTime.UtcNow,
                     DailySalary = booking.BookingType == BookingType.Daily ? newWorker.DailyRate : 0,
                     HourlySalary = booking.BookingType == BookingType.Hourly ? newWorker.HourlyRate : 0,
