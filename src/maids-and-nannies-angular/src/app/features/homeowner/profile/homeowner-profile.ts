@@ -9,11 +9,12 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { MessageService } from 'primeng/api';
 import { HomeownerService, HomeownerProfile } from '../../../core/services/homeowner.service';
 import { Rating } from "primeng/rating";
+import { ChangePasswordComponent } from "@/features/profile/change-password";
 
 @Component({
     selector: 'app-homeowner-profile',
     standalone: true,
-    imports: [CommonModule, FormsModule, ButtonModule, InputTextModule, Toast, MessageModule, TranslatePipe, Rating],
+    imports: [CommonModule, FormsModule, ButtonModule, InputTextModule, Toast, MessageModule, TranslatePipe, Rating, ChangePasswordComponent],
     providers: [MessageService],
     template: `
         <div class="card">
@@ -164,7 +165,10 @@ import { Rating } from "primeng/rating";
                     <p-button [label]="'COMMON.SAVE' | translate" icon="pi pi-check" (onClick)="save()" [loading]="isLoading"></p-button>
                 </div>
             </div>
+
+            
         </div>
+        <app-change-password class="mt-4" />
     `
 })
 export class HomeownerProfileComponent implements OnInit {

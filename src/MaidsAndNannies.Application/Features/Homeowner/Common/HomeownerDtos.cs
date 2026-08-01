@@ -23,4 +23,5 @@ public sealed record HomeownerProfileDto(
     DateTime? VerifiedAt,
       decimal AverageRating,
      int TotalReviews,
+        DateTime? TermsAcceptedAt,
     List<ReviewSummaryDto> Reviews);

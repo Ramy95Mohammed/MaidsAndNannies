@@ -47,6 +47,8 @@ public class Booking : Entity
     /// </summary>
     public int? ReplacedFromBookingId { get; set; }
 
+    public DateTime? ReminderSentAt { get; set; }
+
     public int? JobPostId { get; set; }
     public int? CurrencyId { get; set; }
     public virtual Currency? Currency { get; set; }

@@ -87,6 +87,15 @@ public sealed class CreateBookingCommandHandler(
                 CurrencyId = worker.CurrencyId,
             };
 
+            var homeownerProfile = await dbContext.HomeownerProfiles
+                  .FirstOrDefaultAsync(h => h.UserId == request.HomeownerId, ct);
+
+            if (homeownerProfile is not null && homeownerProfile.TermsAcceptedAt is null)
+            {
+                homeownerProfile.TermsAcceptedAt = DateTime.UtcNow;
+                homeownerProfile.TermsAcceptedVersion = "1.0";
+            }
+
             dbContext.Bookings.Add(booking);
 
             await dbContext.SaveChangesAsync(ct);

@@ -35,7 +35,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
   
-        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<INotificationService, NotificationService>();        
 
         return services;
     }

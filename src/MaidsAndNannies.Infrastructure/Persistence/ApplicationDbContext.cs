@@ -22,7 +22,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
-
+    
+    public DbSet<Policy> Policies => Set<Policy>();
     public DbSet<Country> Countries => Set<Country>();
     public DbSet<State> States => Set<State>();
     public DbSet<City> Cities => Set<City>();
@@ -240,6 +241,13 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             b.Property(s => s.Key).HasMaxLength(100).IsRequired();
             b.Property(s => s.Value).HasMaxLength(500).IsRequired();
             b.Property(s => s.Description).HasMaxLength(500);
+        });
+
+        builder.Entity<Policy>(b =>
+        {
+            b.HasIndex(p => p.Key).IsUnique();
+            b.Property(p => p.TitleAr).HasMaxLength(200);
+            b.Property(p => p.TitleEn).HasMaxLength(200);
         });
 
         // Seed settings

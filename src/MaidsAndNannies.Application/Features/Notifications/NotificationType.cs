@@ -12,5 +12,6 @@ public static class NotificationType
     public const string WorkStarted = "WorkStarted";
     public const string BookingCompleted = "BookingCompleted";
     public const string BookingCancelled = "BookingCancelled";
+    public const string BookingReminder = "BookingReminder";
     public const string NewReview = "NewReview";
 }

@@ -481,6 +481,29 @@
     "MINUTES_AGO": "{{count}}m ago",
     "HOURS_AGO": "{{count}}h ago",
     "DAYS_AGO": "{{count}}d ago",
-    "NEW_REVIEW": "You received a {{rating}}/5 rating on booking #{{bookingId}}"
-  }      
+    "NEW_REVIEW": "You received a {{rating}}/5 rating on booking #{{bookingId}}",
+    "BOOKING_REMINDER": "Reminder: your booking #{{bookingId}} starts tomorrow"
+  },
+    "POLICIES": {
+    "TITLE": "Platform Policies",
+    "SUBTITLE": "Terms and policies governing the use of the platform",
+    "LINK": "Terms & Policies",
+    "BACK": "Back"
+  },
+  "CHANGE_PASSWORD": {
+    "TITLE": "Change Password",
+    "CURRENT": "Current Password",
+    "NEW": "New Password",
+    "CONFIRM": "Confirm New Password",
+    "SAVE": "Change Password",
+    "FILL_ALL": "Please fill in all fields",
+    "MISMATCH": "New password and confirmation do not match",
+    "TOO_SHORT": "Password must be at least 8 characters",
+    "SUCCESS": "Password changed successfully"
+  },
+  "CONSENT": {
+    "AGREE": "I agree to the",
+    "TERMS_LINK": "Terms of Use and Platform Policies",
+    "REQUIRED": "You must agree to the terms and policies before booking"
+  }
 }

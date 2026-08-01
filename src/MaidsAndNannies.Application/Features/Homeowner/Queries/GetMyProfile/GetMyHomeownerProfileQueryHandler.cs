@@ -48,8 +48,9 @@ public sealed class GetMyHomeownerProfileQueryHandler(
             profile.VerificationStatus,
             profile.VerificationNotes,
             profile.VerifiedAt,
-            profile.AverageRating,
+             profile.AverageRating,
             profile.TotalReviews,
+            profile.TermsAcceptedAt,
             reviews);
     }
 

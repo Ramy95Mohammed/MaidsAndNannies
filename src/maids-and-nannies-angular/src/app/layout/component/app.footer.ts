@@ -1,11 +1,16 @@
 import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
     standalone: true,
     selector: 'app-footer',
+    imports: [RouterModule, TranslatePipe],
     template: `<div class="layout-footer">
-        SAKAI by
-        <a href="https://primeng.org" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">PrimeNG</a>
+        <span>SAKAI by
+            <a href="https://primeng.org" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">PrimeNG</a>
+        </span>
+        <a routerLink="/policies" class="text-primary font-medium hover:underline ml-3">{{ 'POLICIES.LINK' | translate }}</a>
     </div>`
 })
 export class AppFooter {}

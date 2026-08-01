@@ -30,6 +30,7 @@ import { WorkerProfile } from '@/core/interfaces/worker-profile';
 import { WorkerService } from '@/core/services/worker-service';
 import { CurrencyService } from '@/core/services/currency.service';
 import { LanguageService } from '@/core/services/language.service';
+import { ChangePasswordComponent } from "@/features/profile/change-password";
 
 // -- Domain enums (mirrors backend MaidsPlatform.API.Domain.Enums) --------
 enum Specialization {
@@ -76,23 +77,24 @@ const CURRENCY_KEYS = [
     selector: 'app-worker-profile',
     standalone: true,
     imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        RouterModule,
-        CardModule,
-        ButtonModule,
-        InputTextModule,
-        InputNumberModule,
-        SelectModule,
-        CheckboxModule,
-        TextareaModule,
-        DatePickerModule,
-        TableModule,
-        FileUploadModule,
-        TagModule,
-        ToastModule,
-        TranslatePipe
-    ],
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    InputNumberModule,
+    SelectModule,
+    CheckboxModule,
+    TextareaModule,
+    DatePickerModule,
+    TableModule,
+    FileUploadModule,
+    TagModule,
+    ToastModule,
+    TranslatePipe,
+    ChangePasswordComponent
+],
     providers: [MessageService],
     template: `
         <p-toast></p-toast>
@@ -438,6 +440,7 @@ const CURRENCY_KEYS = [
                 <p-button [label]="'WORKER_PROFILE.SAVE_CHANGES' | translate" icon="pi pi-save" type="submit" [loading]="saving()" [disabled]="form.invalid || saving()"></p-button>
             </div>
         </form>
+                <app-change-password />
     `
 })
 export class WorkerProfileComponent implements OnInit {

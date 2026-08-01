@@ -31,6 +31,8 @@ public interface IApplicationDbContext
 
     DbSet<AppSetting> AppSettings { get; }
 
+    DbSet<Policy> Policies { get; }
+
     DbSet<Country> Countries { get; }
     DbSet<State> States { get; }
     DbSet<City> Cities { get; }

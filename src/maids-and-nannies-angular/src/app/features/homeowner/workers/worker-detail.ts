@@ -19,11 +19,12 @@ import { AuthService } from '../../../core/services/auth.service';
 import { CurrencyService } from '@/core/services/currency.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { BookingDetailDto } from '@/core/services/booking.service';
+import { Checkbox } from "primeng/checkbox";
 
 @Component({
     selector: 'app-worker-detail',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, RatingModule, ChipModule, DividerModule, TextareaModule, DatePickerModule, DialogModule, ToastModule, TranslatePipe],
+    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, RatingModule, ChipModule, DividerModule, TextareaModule, DatePickerModule, DialogModule, ToastModule, TranslatePipe, Checkbox],
     providers: [MessageService],
     template: `
         <p-toast></p-toast>
@@ -124,6 +125,13 @@ import { BookingDetailDto } from '@/core/services/booking.service';
                         </div>
 
                         <p-button [label]="'WORKER_DETAIL.CALC_COMMISION' | translate" icon="pi pi-calculator" styleClass="w-full mb-2" (onClick)="getBookingCreationInfo()"></p-button>
+                                                <div class="flex align-items-center gap-2 mb-3">
+                            <p-checkbox [(ngModel)]="termsAccepted" binary="true" inputId="terms"></p-checkbox>
+                            <label for="terms">{{ 'CONSENT.AGREE' | translate }}
+                                <a (click)="goToPolicies()" class="text-primary cursor-pointer font-medium">{{ 'CONSENT.TERMS_LINK' | translate }}</a>
+                            </label>
+                        </div>
+
                         <p-button [label]="'WORKER_DETAIL.CONFIRM_BOOKING' | translate" icon="pi pi-check" styleClass="w-full" (onClick)="createBooking()"></p-button>
                     </div>
                 </div>
@@ -163,6 +171,8 @@ export class WorkerDetail implements OnInit {
     startDate: Date | null = null;
     quantity = 1;
     notes = '';
+
+        termsAccepted = false;
 
     commissionTypeIsDisabled: boolean = true;
     quantityIsDisabled: boolean = false;
@@ -255,6 +265,11 @@ export class WorkerDetail implements OnInit {
             return;
         }
 
+                if (!this.termsAccepted) {
+            this.messageService.add({ severity: 'warn', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('CONSENT.REQUIRED') });
+            return;
+        }
+
         this.apiService
             .createBooking({
                 workerId: this.worker().id,
@@ -295,4 +310,6 @@ export class WorkerDetail implements OnInit {
             this.quantityIsDisabled = true;
         }
     }
+
+        goToPolicies() { this.router.navigate(['/policies']); }
 }

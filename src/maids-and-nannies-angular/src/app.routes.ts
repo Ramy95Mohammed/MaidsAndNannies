@@ -35,6 +35,7 @@ export const appRoutes: Routes = [
             }
         ]
     },
+    { path: 'policies', loadComponent: () => import('./app/pages/policies/policies').then(m => m.PoliciesComponent) },
     { path: 'landing', component: Landing },
     { path: 'notfound', component: Notfound },
     { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') },

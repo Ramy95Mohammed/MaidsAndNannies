@@ -1,9 +1,11 @@
+using MaidsAndNannies.Application.Features.Auth.Commands.ChangePassword;
 using MaidsAndNannies.Application.Features.Auth.Commands.Login;
 using MaidsAndNannies.Application.Features.Auth.Commands.Register;
 using MaidsAndNannies.Application.Features.Auth.Commands.RegisterHomeowner;
 using MaidsAndNannies.Application.Features.Auth.Commands.RegisterWorker;
 using MaidsAndNannies.Application.Features.Auth.Common;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -60,6 +62,14 @@ public sealed class AuthController(ISender sender) : BaseApiController
     {
         return Ok(await sender.Send(new LoginCommand(request.Email, request.Password)));
     }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<ActionResult> ChangePassword(ChangePasswordRequest request)
+    {
+        await sender.Send(new ChangePasswordCommand(request.CurrentPassword, request.NewPassword));
+        return NoContent();
+    }
 }
 
 public sealed class RegisterRequest
@@ -104,4 +114,10 @@ public sealed class LoginRequest
 {
     [Required, EmailAddress] public required string Email { get; init; }
     [Required] public required string Password { get; init; }
+}
+
+public sealed class ChangePasswordRequest
+{
+    [Required] public required string CurrentPassword { get; init; }
+    [Required, MinLength(8)] public required string NewPassword { get; init; }
 }

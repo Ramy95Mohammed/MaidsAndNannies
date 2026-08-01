@@ -32,6 +32,9 @@ public class HomeownerProfile : Entity
     public decimal AverageRating { get; set; }
     public int TotalReviews { get; set; }
 
+    public DateTime? TermsAcceptedAt { get; set; }
+    public string? TermsAcceptedVersion { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 

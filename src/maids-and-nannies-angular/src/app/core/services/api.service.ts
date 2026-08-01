@@ -181,6 +181,15 @@ reviewJobPost(id: number, data: any): Observable<any> {
   return this.http.put(`${this.API_URL}/adminjobposts/${id}/review`, data);
 }
 
+  // Policies
+  getPolicies(): Observable<any> {
+    return this.http.get(`${this.API_URL}/policies`);
+  }
+
+  updatePolicy(key: string, data: any): Observable<any> {
+    return this.http.put(`${this.API_URL}/policies/${key}`, data);
+  }
+
  // Settings
   getSettings(): Observable<any> {
     return this.http.get(`${this.API_URL}/adminsettings`);

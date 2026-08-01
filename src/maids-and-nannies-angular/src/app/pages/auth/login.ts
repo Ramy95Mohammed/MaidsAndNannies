@@ -57,6 +57,11 @@ import {LanguageService} from '../../core/services/language.service';
                                 <p-button [label]="'LANGUAGE.AR' | translate" [outlined]="langService.getCurrentLanguage() !== 'ar'" severity="secondary" size="small" (onClick)="langService.setLanguage('ar')"></p-button>
                                 <p-button [label]="'LANGUAGE.EN' | translate" [outlined]="langService.getCurrentLanguage() !== 'en'" severity="secondary" size="small" (onClick)="langService.setLanguage('en')"></p-button>
                             </div>
+                           
+                            <div class="text-center mt-4">
+                                <a (click)="goToPolicies()" class="text-primary cursor-pointer font-medium">{{ 'POLICIES.LINK' | translate }}</a>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -106,4 +111,6 @@ export class Login{
             }
         });
     }
+
+        goToPolicies() { this.router.navigate(['/policies']); }
 }
