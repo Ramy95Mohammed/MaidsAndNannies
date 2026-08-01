@@ -23,14 +23,12 @@ public sealed class RequestReplacementCommandHandler(
         .FirstOrDefaultAsync(b => b.Id == r.BookingId && b.HomeownerId == r.HomeownerId, ct)
         ?? throw new KeyNotFoundException("الحجز غير موجود");
 
-            // ── حد أقصى للاستبدال ──
+            // ── حد أقصى للاستبدال: قيمة مخصصة لصاحبة المنزل إن وُجدت، وإلا من الإعدادات ──
             var maxKey = r.Reason == ReplacementReason.WorkerFault
                 ? "MaxFaultReplacementCount"
                 : "MaxPreferenceReplacementCount";
-            // ── حد أقصى للاستبدال: قيمة مخصصة لصاحبة المنزل إن وُجدت، وإلا من الإعدادات ──
             var homeowner = await dbContext.HomeownerProfiles
                 .FirstOrDefaultAsync(h => h.UserId == booking.HomeownerId, ct);
-
             var maxSetting = await dbContext.AppSettings.FirstOrDefaultAsync(s => s.Key == maxKey, ct);
 
             var max = r.Reason == ReplacementReason.WorkerFault
@@ -62,8 +60,7 @@ public sealed class RequestReplacementCommandHandler(
             booking.UpdatedAt = DateTime.UtcNow;
 
             // ══════════════════════════════════════════════════════════════════
-            // الحالة 1: يومي/ساعي — وحدات ذرية مستقلة.
-            // الحجز القديم يتقفل ويتم إنشاء حجز جديد بعمولته المستقلة.
+            // الحالة 1: يومي/ساعي — حجز جديد مستقل بعمولته، ويُحسب العدد من الحجز الأصلي
             // ══════════════════════════════════════════════════════════════════
             if (booking.BookingType is BookingType.Daily or BookingType.Hourly)
             {
@@ -101,7 +98,7 @@ public sealed class RequestReplacementCommandHandler(
                     CommissionAmount = newCommissionInEgp,
                     CommissionType = CommissionType.OneTime,
                     Status = BookingStatus.Pending,
-                    ReplacementCount = 0,
+                    ReplacementCount = booking.ReplacementCount + 1,
                     CurrencyId = newWorker.CurrencyId,
                     ReplacedFromBookingId = booking.Id,
                     JobPostId = booking.JobPostId
@@ -114,10 +111,8 @@ public sealed class RequestReplacementCommandHandler(
             }
 
             // ══════════════════════════════════════════════════════════════════
-            // الحالة 2: شهري (OneTime أو Subscription) — تناسب زمني موحد.
-            // العمولة تُحسب نسبياً للأيام المتبقية فقط بسعر العاملة الجديدة.
+            // الحالة 2: شهري — عمولة متناسبة مع الأيام المتبقية بسعر العاملة الجديدة
             // ══════════════════════════════════════════════════════════════════
-
             var daysElapsed = Math.Clamp((int)(DateTime.UtcNow - booking.StartDate).TotalDays, 0, BillingPeriodDays);
             var daysRemaining = BillingPeriodDays - daysElapsed;
             var remainingRatio = daysRemaining / (decimal)BillingPeriodDays;
@@ -129,48 +124,28 @@ public sealed class RequestReplacementCommandHandler(
             // النسبة المئوية للعمولة المتفق عليها أصلاً
             var commissionRatio = oldTotalInEgp > 0 ? booking.CommissionAmount / oldTotalInEgp : 0;
 
-            // العمولة المستحقة عن الأيام اللي مضت (ثابتة، غير قابلة للاسترداد)
+            // العمولة المستحقة عن الأيام الماضية (ثابتة، غير قابلة للاسترداد)
             var earnedCommission = booking.CommissionAmount * (1 - remainingRatio);
-
-            // العمولة القديمة المخصصة للأيام المتبقية (التي سيتم استبدالها)
+            // العمولة القديمة المخصصة للأيام المتبقية
             var oldRemainingCommission = booking.CommissionAmount * remainingRatio;
-
             // العمولة الجديدة للأيام المتبقية بسعر العاملة الجديدة
             var newRemainingCommission = monthlyNewTotalInEgp * commissionRatio * remainingRatio;
-
             // المبلغ الواجب دفعه أو استرداده
             var diff = newRemainingCommission - oldRemainingCommission;
 
-            // ══════════════════════════════════════════════════════════
             // استثناء: خطأ العاملة — المنصة تتحمل الفرق
-            // ══════════════════════════════════════════════════════════
             if (r.Reason == ReplacementReason.WorkerFault)
             {
-                // العمولة تبقى كما هي (المنصة تتحمل فرق السعر)
                 booking.CommissionAmount = earnedCommission + oldRemainingCommission;
                 booking.OutstandingAmount = 0;
             }
             else
             {
-                // رغبة شخصية — العمولة الجديدة للفترة المتبقية
                 booking.CommissionAmount = earnedCommission + newRemainingCommission;
-
-                if (diff > 0 && booking.IsPaid)
-                {
-                    // العاملة الجديدة أغلى — يحتاج دفع الفرق
-                    booking.OutstandingAmount = diff;
-                }
-                else
-                {
-                    // نفس السعر أو أقل — لا دفع إضافي
-                    booking.OutstandingAmount = 0;
-                }
+                booking.OutstandingAmount = diff > 0 && booking.IsPaid ? diff : 0;
             }
 
-
-            // ══════════════════════════════════════════════════════════════════
             // تحديث الاشتراك الشهري إن وجد
-            // ══════════════════════════════════════════════════════════════════
             if (booking.CommissionType == CommissionType.Subscription)
             {
                 var subscription = await dbContext.Subscriptions
@@ -178,23 +153,23 @@ public sealed class RequestReplacementCommandHandler(
 
                 if (subscription is not null)
                 {
-                    // العمولة الجديدة (earned + newRemaining) المحتسبة في الـ logic أعلاه
                     var newTotalCommission = earnedCommission + newRemainingCommission;
                     subscription.Amount = newTotalCommission;
                     subscription.UpdatedAt = DateTime.UtcNow;
 
                     // إذا كان الفرق موجباً ولم يُدفع بعد، الاشتراك ينتظر
                     if (booking.OutstandingAmount > 0)
-                        subscription.IsActive = false; // يتوقف الاشتراك لحين دفع الفرق
+                        subscription.IsActive = false;
                 }
             }
 
-            // تحديث بيانات العاملة الجديدة
+            // تحديث بيانات العاملة الجديدة + ترقيم الاستبدال
             booking.WorkerId = newWorker.WorkerId;
             booking.OriginalWorkerId = newWorker.WorkerProfileId;
             booking.MonthlySalary = newWorker.MonthlyRate;
             booking.CurrencyId = newWorker.CurrencyId;
             booking.TotalAmount = newWorker.MonthlyRate;
+            booking.ReplacementCount++;
 
             // تعيين الحالة
             if (booking.OutstandingAmount > 0)
@@ -210,14 +185,14 @@ public sealed class RequestReplacementCommandHandler(
                 booking.Status = BookingStatus.Pending;
             }
 
-            // تعيين العاملة الجديدة كغير متاحة (لأننا تخطينا ConfirmWorker)
+            // تعيين العاملة الجديدة كغير متاحة
             var newWorkerProfile = await dbContext.WorkerProfiles
                 .FirstOrDefaultAsync(w => w.UserId == newWorker.WorkerId, ct);
             if (newWorkerProfile is not null)
                 newWorkerProfile.IsAvailable = false;
 
             await dbContext.SaveChangesAsync(ct);
-            
+
             await transaction.CommitAsync();
 
             return Unit.Value;
@@ -227,11 +202,8 @@ public sealed class RequestReplacementCommandHandler(
             await transaction.RollbackAsync();
             throw;
         }
-    
-    }
 
-    private static string AppendNote(string? existing, string note) =>
-        string.IsNullOrWhiteSpace(existing) ? note : $"{existing} | {note}";
+    }
 
     private sealed record NewWorkerInfo(
         string WorkerId, int WorkerProfileId, decimal DailyRate, decimal HourlyRate,
@@ -247,12 +219,20 @@ public sealed class RequestReplacementCommandHandler(
                 .FirstOrDefaultAsync(a => a.Id == r.ApplicationId && a.JobPostId == booking.JobPostId, ct)
                 ?? throw new KeyNotFoundException("الطلب غير موجود");
 
+            // ترقية حالة الطلب إلى "مقبول" حتى لا يظل ظاهراً في قوائم المتقدمين
+            var rows = await dbContext.JobApplications
+                .Where(a => a.Id == r.ApplicationId && a.Status == ApplicationStatus.Pending)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(a => a.Status, ApplicationStatus.Accepted), ct);
+            if (rows == 0)
+                throw new InvalidOperationException("الطلب لم يعد قيد الانتظار");
+
             var workerId = (await dbContext.WorkerProfiles.FirstOrDefaultAsync(w => w.UserId == app.WorkerId))?.Id;
-            if(workerId == null)
+            if (workerId == null)
                 throw new KeyNotFoundException("عاملة غير موجودة");
 
             return new NewWorkerInfo(
-                app.WorkerId, workerId??0, app.JobPost.DailySalary, app.JobPost.HourlySalary,
+                app.WorkerId, workerId ?? 0, app.JobPost.DailySalary, app.JobPost.HourlySalary,
                 app.JobPost.MonthlySalary, app.JobPost.CurrencyId, app.JobPost.Currency.RateToEgp);
         }
 
@@ -260,6 +240,19 @@ public sealed class RequestReplacementCommandHandler(
             .Include(w => w.Currency)
             .FirstOrDefaultAsync(w => w.Id == r.NewWorkerId, ct)
             ?? throw new KeyNotFoundException("العاملة غير موجودة");
+
+        // الحجز ناتج من إعلان وظيفة: الراتب ثابت من الإعلان بغض النظر عن العاملة الجديدة،
+        // فلا فرق في العمولة عند الاستبدال ولو برغبة صاحبة المنزل
+        if (booking.JobPostId.HasValue)
+        {
+            var post = await dbContext.JobPosts
+                .Include(j => j.Currency)
+                .FirstOrDefaultAsync(j => j.Id == booking.JobPostId, ct);
+            if (post is not null)
+                return new NewWorkerInfo(
+                    newWorker.UserId, newWorker.Id, post.DailySalary, post.HourlySalary,
+                    post.MonthlySalary, post.CurrencyId, post.Currency.RateToEgp);
+        }
 
         return new NewWorkerInfo(
             newWorker.UserId, newWorker.Id, newWorker.DailyRate ?? 0, newWorker.HourlyRate ?? 0,

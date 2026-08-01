@@ -14,12 +14,13 @@ import { ApiService } from '../../../core/services/api.service';
 import { Textarea } from 'primeng/textarea';
 import { CurrencyDto, CurrencyService } from '@/core/services/currency.service';
 import { LanguageService } from '@/core/services/language.service';
+import { MultiSelect } from "primeng/multiselect";
 
 @Component({
   selector: 'app-job-create',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule,
-    InputTextModule, Textarea, SelectModule, DatePickerModule, ToastModule, TranslatePipe],
+    InputTextModule, Textarea, SelectModule, DatePickerModule, ToastModule, TranslatePipe, MultiSelect],
   providers: [MessageService],
   template: `
     <p-toast />
@@ -45,16 +46,22 @@ import { LanguageService } from '@/core/services/language.service';
         </div>
         <div class="col-span-12 md:col-span-4">
           <label class="block font-bold mb-2">{{ 'BOOKING.TYPE' | translate }}</label>
-          <p-select [(ngModel)]="bookingType" [options]="bookingTypes" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+          <p-select (onChange)="disableOrEnableComissionTypeAndQuantity($event.value)" [(ngModel)]="bookingType"  [options]="bookingTypes" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
         </div>
         <div class="col-span-12 md:col-span-4">
           <label class="block font-bold mb-2">{{ 'BOOKING.COMMISSION_TYPE' | translate }}</label>
-          <p-select [(ngModel)]="commissionType" [options]="commissionOptions" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+          <p-select [(ngModel)]="commissionType" [disabled]="commissionTypeIsDisabled" [options]="commissionOptions" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
         </div>
         <div class="col-span-12 md:col-span-4">
           <label class="block font-bold mb-2">{{ 'WORKER.SPECIALIZATION' | translate }}</label>
           <p-select [(ngModel)]="specialization" [options]="specializations" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
         </div>
+        
+        <div class="col-span-12 md:col-span-8">
+            <label class="block font-bold mb-2">{{ 'WORKER.SPECIALIZATION_ADDITIONAL' | translate }}</label>
+          <p-multiselect [(ngModel)]="additionalSpecializations" [options]="specializations" optionLabel="label" optionValue="value" class="w-full"></p-multiselect>
+        </div>
+
         <div class="col-span-12 md:col-span-4">
           <label class="block font-bold mb-2">{{ 'BOOKING.START_DATE' | translate }}</label>
           <p-datepicker [(ngModel)]="startDate" styleClass="w-full"></p-datepicker>
@@ -67,7 +74,7 @@ import { LanguageService } from '@/core/services/language.service';
 
         <div class="col-span-12 md:col-span-4">
           <label class="block font-bold mb-2">{{ 'BOOKING.QUANTITY' | translate }}</label>
-          <input pInputText [(ngModel)]="quantity" type="number" min="1" class="w-full" />
+          <input pInputText [(ngModel)]="quantity" [disabled]="quantityIsDisabled" type="number" min="1" class="w-full" />
         </div>
         <div class="col-span-12 text-center">
           <p-button [label]="'JOB_POST.SUBMIT' | translate" icon="pi pi-send" (onClick)="submit()" [loading]="loading"></p-button>
@@ -87,12 +94,15 @@ export class JobCreate implements OnInit {
  currencyOptions = signal<{ value: number; label: string }[]>([]);
   description = '';
   monthlySalary = 0; dailySalary = 0; hourlySalary = 0;
-  bookingType = 1; commissionType = 0; specialization = 0;
+  bookingType = 0; commissionType = 0; specialization = 0;
+  additionalSpecializations: number[] = [];
   startDate: Date | null = null; quantity = 1;
   loading = false;
   private translate = inject(TranslateService);
  private currencyService = inject(CurrencyService);
 
+ commissionTypeIsDisabled: boolean = true;
+ quantityIsDisabled: boolean = false;
  bookingTypes:any;
  commissionOptions:any;
  specializations:any;
@@ -138,6 +148,18 @@ export class JobCreate implements OnInit {
  }, 1000);
 }
 
+ disableOrEnableComissionTypeAndQuantity(bookingType: number | null) {
+        if (bookingType == null) return;
+
+        if (bookingType == 0 || bookingType == 2) {
+            this.commissionTypeIsDisabled = true;
+            this.quantityIsDisabled = false;
+        } else {
+            this.commissionTypeIsDisabled = false;
+            this.quantityIsDisabled = true;
+        }
+    }
+
 
  private toDateOnlyString(date: Date | null): string | null {
         if (!date) return null;
@@ -160,6 +182,7 @@ export class JobCreate implements OnInit {
       bookingType: this.bookingType,
       commissionType: this.commissionType,
       specialization: this.specialization,
+      specializations: this.additionalSpecializations,
       startDate: this.toDateOnlyString(this.startDate),
       quantity: this.quantity,
       currencyId: this.currencyId

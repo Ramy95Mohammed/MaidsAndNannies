@@ -31,6 +31,7 @@ import { ApiService } from '../../../core/services/api.service';
           <div class="col-span-12 md:col-span-3"><strong>{{ 'BOOKING.START_DATE' | translate }}:</strong> {{ post().startDate | date:'shortDate' }}</div>
           <div class="col-span-12 md:col-span-3"><strong>{{ 'BOOKING.QUANTITY' | translate }}:</strong> {{ post().quantity }}</div>
           <div class="col-span-12 md:col-span-4"><strong>{{ 'WORKER.CURRENCY' | translate }}:</strong> {{ post().currencyCode }}</div>
+                    <div class="col-span-12 md:col-span-4"><strong>{{ 'WORKER.SPECIALIZATION' | translate }}:</strong> {{ getSpecsLabel(post()) }}</div>
         </div>
         <div class="mt-4" *ngIf="post().rejectionReason">
           <p-card header="{{ 'JOB_POST.REJECTION_REASON' | translate }}" styleClass="bg-red-50">
@@ -57,4 +58,9 @@ export class JobDetail implements OnInit {
   getBookingTypeLabel(t: number) { return ['يومي', 'شهري', 'ساعي'][t] || '—'; }
   statusLabel(s: number) { return ['بانتظار المراجعة', 'معتمد', 'مرفوض'][s] || '—'; }
   statusSeverity(s: number) { return ['warn', 'success', 'danger'][s] || 'secondary'; }
+    getSpecsLabel(p: any): string {
+    const names = ['تنظيف', 'طبخ', 'رعاية أطفال', 'رعاية مسنين', 'عمل منزلي'];
+    const list = [p.specialization, ...(p.specializations || [])];
+    return [...new Set(list)].map((s: number) => names[s] || s).join('، ');
+  }
 }

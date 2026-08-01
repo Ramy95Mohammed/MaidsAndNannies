@@ -28,12 +28,15 @@ import { ApiService } from '../../../core/services/api.service';
             <p class="text-sm whitespace-pre-wrap line-height-3">{{ post.description | slice:0:150 }}...</p>
           </div>
           <div class="flex flex-wrap gap-2 mb-3">
+            <!-- <p-chip [label]="getSpecLabel(post.specialization)"></p-chip> -->
             <p-chip [label]="getSpecLabel(post.specialization)"></p-chip>
+            <p-chip *ngFor="let s of post.specializations || []" [label]="getSpecLabel(s)"></p-chip>
+            
             <p-chip [label]="getTypeLabel(post.bookingType)"></p-chip>
           </div>
           <div class="flex align-items-center justify-content-between">
             <div>
-              <span class="text-xl font-bold text-primary">{{ post.monthlySalary | currency:'EGP':'symbol':'1.0-0' }}</span>
+              <!-- <span class="text-xl font-bold text-primary">{{ post.monthlySalary | currency:'EGP':'symbol':'1.0-0' }}</span> -->
               <span class="text-xl font-bold text-primary">{{ post.monthlySalary }} {{ post.currencyCode }}</span>
               <span class="text-muted-color text-sm">/ {{ post.bookingType === 0 ? 'يوم' : post.bookingType === 2 ? 'ساعة' : 'شهر' }}</span>
             </div>

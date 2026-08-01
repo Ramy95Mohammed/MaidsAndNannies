@@ -28,6 +28,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<City> Cities => Set<City>();
 
     public DbSet<JobPost> JobPosts => Set<JobPost>();
+    public DbSet<JobPostSpecializationSpec> JobPostSpecializationSpecs => Set<JobPostSpecializationSpec>();
     public DbSet<JobApplication> JobApplications => Set<JobApplication>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -319,6 +320,17 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
              .WithMany(u => u.JobPosts)
              .HasForeignKey(j => j.HomeownerId)
              .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // JobPostSpecializationSpec configuration
+        builder.Entity<JobPostSpecializationSpec>(b =>
+        {
+            b.HasKey(s => s.Id);
+            b.HasOne(s => s.JobPost)
+             .WithMany(j => j.Specializations)
+             .HasForeignKey(s => s.JobPostId)
+             .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(s => new { s.JobPostId, s.JobSpecialization }).IsUnique();
         });
 
         // JobApplication configuration

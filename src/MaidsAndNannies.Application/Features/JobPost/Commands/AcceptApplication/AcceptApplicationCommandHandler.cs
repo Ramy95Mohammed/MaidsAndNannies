@@ -12,98 +12,113 @@ public sealed class AcceptApplicationCommandHandler(IApplicationDbContext dbCont
 {
     public async Task<int> Handle(AcceptApplicationCommand r, CancellationToken ct)
     {
-        var post = await dbContext.JobPosts
-            .Include(j => j.Applications)
-            .Include(j => j.Currency)
-            .FirstOrDefaultAsync(j => j.Id == r.PostId && j.HomeownerId == r.HomeownerId, ct)
-            ?? throw new KeyNotFoundException("الإعلان غير موجود");
-
-        if (post.PostStatus != JobPostStatus.Approved)
-            throw new InvalidOperationException("الإعلان غير معتمد بعد");
-
-        var app = post.Applications.FirstOrDefault(a => a.Id == r.AppId)
-            ?? throw new KeyNotFoundException("الطلب غير موجود");
-        if (app.Status != ApplicationStatus.Pending)
-            throw new InvalidOperationException("الطلب لم يعد قيد الانتظار");
-
-        // منع سباق التزامن: التأكد بعد التحديث المباشر
-        var rows = await dbContext.JobApplications
-            .Where(a => a.Id == r.AppId && a.Status == ApplicationStatus.Pending)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(a => a.Status, ApplicationStatus.Accepted), ct);
-        if (rows == 0)
-            throw new InvalidOperationException("الطلب لم يعد قيد الانتظار");
-
-        decimal totalAmount = post.BookingType switch
+       var transaction = await dbContext.Database.BeginTransactionAsync();
+        try
         {
-            BookingType.Daily => post.DailySalary * post.Quantity,
-            BookingType.Hourly => post.HourlySalary * post.Quantity,
-            BookingType.Monthly => post.MonthlySalary,
-            _ => post.MonthlySalary
-        };
+            var post = await dbContext.JobPosts
+           .Include(j => j.Applications)
+           .Include(j => j.Currency)
+           .FirstOrDefaultAsync(j => j.Id == r.PostId && j.HomeownerId == r.HomeownerId, ct)
+           ?? throw new KeyNotFoundException("الإعلان غير موجود");
 
-        var settings = await dbContext.AppSettings.ToListAsync(ct);
-        var getPercent = (string key, int fallback) =>
-        {
-            var val = settings.FirstOrDefault(s => s.Key == key)?.Value;
-            return int.TryParse(val, out var p) ? p : fallback;
-        };
+            if (post.PostStatus != JobPostStatus.Approved)
+                throw new InvalidOperationException("الإعلان غير معتمد بعد");
 
-        var commissionPercent = post.BookingType switch
-        {
-            BookingType.Daily => getPercent("CommissionDailyPercent", 10),
-            BookingType.Hourly => getPercent("CommissionHourlyPercent", 10),
-            BookingType.Monthly => post.CommissionType == CommissionType.OneTime
-                ? getPercent("CommissionMonthlyOneTimePercent", 10)
-                : getPercent("CommissionMonthlySubscriptionPercent", 10),
-            _ => 10
-        };
+            var app = post.Applications.FirstOrDefault(a => a.Id == r.AppId)
+                ?? throw new KeyNotFoundException("الطلب غير موجود");
+            if (app.Status != ApplicationStatus.Pending)
+                throw new InvalidOperationException("الطلب لم يعد قيد الانتظار");
 
-        var totalInEgp = totalAmount * post.Currency.RateToEgp;
-        var commissionAmount = totalInEgp * commissionPercent / 100m;
+            // منع سباق التزامن: التأكد بعد التحديث المباشر
+            var rows = await dbContext.JobApplications
+                .Where(a => a.Id == r.AppId && a.Status == ApplicationStatus.Pending)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(a => a.Status, ApplicationStatus.Accepted), ct);
+            if (rows == 0)
+                throw new InvalidOperationException("الطلب لم يعد قيد الانتظار");
 
-        var commissionType = post.BookingType switch
-        {
-            BookingType.Monthly => post.CommissionType,
-            _ => CommissionType.OneTime
-        };
+            decimal totalAmount = post.BookingType switch
+            {
+                BookingType.Daily => post.DailySalary * post.Quantity,
+                BookingType.Hourly => post.HourlySalary * post.Quantity,
+                BookingType.Monthly => post.MonthlySalary,
+                _ => post.MonthlySalary
+            };
 
-        var booking = new Domain.Entities.Booking
-        {
-            HomeownerId = r.HomeownerId,
-            WorkerId = app.WorkerId,
-            ServiceType = post.Specialization,
-            BookingType = post.BookingType,
-            Quantity = post.Quantity,
-            StartDate = post.StartDate,
-            MonthlySalary = post.MonthlySalary,
-            DailySalary = post.DailySalary,
-            HourlySalary = post.HourlySalary,
-            TotalAmount = totalAmount,
-            CommissionAmount = commissionAmount,
-            CommissionType = commissionType,
-            Status = BookingStatus.Pending,
-            JobPostId = r.PostId,
-            ReplacementCount = 0,
-            CurrencyId = post.CurrencyId,
-        };
-        dbContext.Bookings.Add(booking);
+            var settings = await dbContext.AppSettings.ToListAsync(ct);
+            var getPercent = (string key, int fallback) =>
+            {
+                var val = settings.FirstOrDefault(s => s.Key == key)?.Value;
+                return int.TryParse(val, out var p) ? p : fallback;
+            };
 
-        if (commissionType == CommissionType.Subscription)
-        {
-            dbContext.Subscriptions.Add(new Domain.Entities.Subscription
+            var commissionPercent = post.BookingType switch
+            {
+                BookingType.Daily => getPercent("CommissionDailyPercent", 10),
+                BookingType.Hourly => getPercent("CommissionHourlyPercent", 10),
+                BookingType.Monthly => post.CommissionType == CommissionType.OneTime
+                    ? getPercent("CommissionMonthlyOneTimePercent", 10)
+                    : getPercent("CommissionMonthlySubscriptionPercent", 10),
+                _ => 10
+            };
+
+            var totalInEgp = totalAmount * post.Currency.RateToEgp;
+            var commissionAmount = totalInEgp * commissionPercent / 100m;
+
+            var commissionType = post.BookingType switch
+            {
+                BookingType.Monthly => post.CommissionType,
+                _ => CommissionType.OneTime
+            };
+
+            var booking = new Domain.Entities.Booking
             {
                 HomeownerId = r.HomeownerId,
-                BookingId = booking.Id,
-                PlanType = CommissionType.Subscription,
-                Amount = commissionAmount,
+                WorkerId = app.WorkerId,
+                ServiceType = post.Specialization,
+                BookingType = post.BookingType,
+                Quantity = post.Quantity,
                 StartDate = post.StartDate,
-                EndDate = post.StartDate.AddDays(30),
-                IsActive = true
-            });
-        }
+                MonthlySalary = post.MonthlySalary,
+                DailySalary = post.DailySalary,
+                HourlySalary = post.HourlySalary,
+                TotalAmount = totalAmount,
+                CommissionAmount = commissionAmount,
+                CommissionType = commissionType,
+                Status = BookingStatus.Pending,
+                JobPostId = r.PostId,
+                ReplacementCount = 0,
+                CurrencyId = post.CurrencyId,
+            };
+            dbContext.Bookings.Add(booking);
 
-        await dbContext.SaveChangesAsync(ct);
-        return booking.Id;
+            await dbContext.SaveChangesAsync(ct);
+
+            if (commissionType == CommissionType.Subscription)
+            {
+                dbContext.Subscriptions.Add(new Domain.Entities.Subscription
+                {
+                    HomeownerId = r.HomeownerId,
+                    BookingId = booking.Id,
+                    PlanType = CommissionType.Subscription,
+                    Amount = commissionAmount,
+                    StartDate = post.StartDate,
+                    EndDate = post.StartDate.AddDays(30),
+                    IsActive = true
+                });
+            }
+
+            await dbContext.SaveChangesAsync(ct);
+
+            await transaction.CommitAsync();
+
+            return booking.Id;
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+       
     }
 }

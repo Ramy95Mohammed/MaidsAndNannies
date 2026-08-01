@@ -62,7 +62,8 @@
     "LANGUAGES": "Languages",
     "MAXIMUM_MONTHLY_SALARY":"Maximum monthly salary",
     "BIRTHDATE":"Birth of date",
-    "DAILY_RATE": "Daily Rate"
+    "DAILY_RATE": "Daily Rate",
+    "SPECIALIZATION_ADDITIONAL": "Additional Specialization (optional)"
   },
   "SPECIALIZATIONS": {
     "CLEANING": "Cleaning",
@@ -413,7 +414,7 @@
     "MY_POSTS": "My Job Posts",
     "DETAIL": "Job Post",
     "DESCRIPTION": "Description",
-    "DESC_PLACEHOLDER": "Write job details here... You can include your phone number for contact",
+    "DESC_PLACEHOLDER": "Write job details here...",
     "SUBMIT": "Submit for Review",
     "APPLICATIONS": "Applications",
     "APPLY": "Apply for this Job",
@@ -431,7 +432,11 @@
     "SUBMIT_APPLICATION": "Submit Application",
     "DATE": "Date",
     "POST_ID": "Post #",
-    "NO_APPLICANTS": "There are no new applicants."
+    "NO_APPLICANTS": "There are no new applicants.",
+    "ACCEPT_CREATE": "Accept & Create Booking",
+    "ACCEPT_CONFIRM_TITLE": "Confirm New Booking",
+    "ACCEPT_CONFIRM_MSG": "Accepting this application will create a new independent booking with its own commission and payments. It will not modify any existing booking for this post. Continue?",
+    "ACCEPT_CONFIRM_MSG_ACTIVE": "You already have an active booking for this post. Accepting will create a new independent booking and will not modify the current one. Continue?"
   },
   "MENU": {
     "ADMIN": "Admin",

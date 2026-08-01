@@ -17,7 +17,8 @@ public sealed class GetApprovedJobPostsQueryHandler(IApplicationDbContext dbCont
             .Select(j => new JobPostListDto(
                 j.Id, j.SanitizedDescription!, j.MonthlySalary, j.DailySalary, j.HourlySalary,
                 j.Specialization, j.BookingType, j.CommissionType, j.StartDate, j.Quantity,
-                j.PostStatus, j.RejectionReason, j.CreatedAt, j.Applications.Count , j.Currency.Code))
+                j.PostStatus, j.RejectionReason, j.CreatedAt, j.Applications.Count , j.Currency.Code , 
+                j.Specializations.Select(s => s.JobSpecialization).ToList()))
             .ToListAsync(ct);
     }
 }

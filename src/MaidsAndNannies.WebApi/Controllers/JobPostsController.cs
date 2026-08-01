@@ -26,7 +26,8 @@ public sealed class JobPostsController(ISender sender, ICurrentUserService curre
         var id = await sender.Send(new CreateJobPostCommand(
             currentUser.UserId, request.Description, request.MonthlySalary,
             request.DailySalary, request.HourlySalary, request.Specialization,
-            request.BookingType, request.CommissionType, request.StartDate, request.Quantity , request.CurrencyId));
+            request.BookingType, request.CommissionType, request.StartDate, request.Quantity, request.CurrencyId,
+            request.Specializations));
         return Ok(new { JobPostId = id, Message = "تم إنشاء الإعلان بانتظار مراجعة الإدارة" });
     }
 
@@ -91,6 +92,7 @@ public sealed class JobPostsController(ISender sender, ICurrentUserService curre
 public sealed record CreateJobPostRequest(
     string Description, decimal MonthlySalary, decimal DailySalary,
     decimal HourlySalary, Specialization Specialization, BookingType BookingType,
-    CommissionType CommissionType, DateTime StartDate, int Quantity , int CurrencyId);
+    CommissionType CommissionType, DateTime StartDate, int Quantity , int CurrencyId ,
+    List<Specialization>? Specializations = null);
 
 public sealed record ApplyRequest(string? Message);

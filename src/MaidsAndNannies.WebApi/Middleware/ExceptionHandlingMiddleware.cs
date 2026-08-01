@@ -35,6 +35,14 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
         {
             await WriteAsync(context, HttpStatusCode.Unauthorized, new { message = ex.Message });
         }
+        catch (KeyNotFoundException ex)
+        {
+            await WriteAsync(context, HttpStatusCode.NotFound, new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            await WriteAsync(context, HttpStatusCode.BadRequest, new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Unhandled exception while processing {Path}", context.Request.Path);

@@ -27,4 +27,13 @@ public class JobPost : Entity
     public virtual ApplicationUser Homeowner { get; set; } = null!;
     public virtual Currency Currency { get; set; } = null!;
     public virtual ICollection<JobApplication> Applications { get; set; } = new List<JobApplication>();
+    public virtual ICollection<JobPostSpecializationSpec> Specializations { get; set; } = new List<JobPostSpecializationSpec>();
+}
+
+/// <summary>تخصصات إضافية للإعلان (الرئيسي في JobPost.Specialization ويُنسخ إلى الحجز).</summary>
+public sealed class JobPostSpecializationSpec : Entity
+{
+    public int JobPostId { get; set; }
+    public JobPost JobPost { get; set; } = null!;
+    public Specialization JobSpecialization { get; set; }
 }

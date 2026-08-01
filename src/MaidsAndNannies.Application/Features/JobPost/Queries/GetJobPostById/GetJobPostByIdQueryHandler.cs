@@ -12,6 +12,7 @@ public sealed class GetJobPostByIdQueryHandler(IApplicationDbContext dbContext)
     public async Task<JobPostDetailDto> Handle(GetJobPostByIdQuery r, CancellationToken ct)
     {
         var j = await dbContext.JobPosts.Include(p => p.Currency)
+             .Include(p => p.Specializations)
             .FirstOrDefaultAsync(j => j.Id == r.Id, ct)
             ?? throw new KeyNotFoundException("الإعلان غير موجود");
 
@@ -27,10 +28,11 @@ public sealed class GetJobPostByIdQueryHandler(IApplicationDbContext dbContext)
             description = j.SanitizedDescription;
 
         return new JobPostDetailDto(
-            j.Id, description,
-            j.MonthlySalary, j.DailySalary, j.HourlySalary,
-            j.Specialization, j.BookingType, j.CommissionType,
-            j.StartDate, j.Quantity, j.PostStatus, j.RejectionReason,
-            j.CreatedAt, isOwner, j.Currency.Code);
+    j.Id, description,
+    j.MonthlySalary, j.DailySalary, j.HourlySalary,
+    j.Specialization, j.BookingType, j.CommissionType,
+    j.StartDate, j.Quantity, j.PostStatus, j.RejectionReason,
+    j.CreatedAt, isOwner, j.Currency.Code,
+    j.Specializations.Select(s => s.JobSpecialization).ToList());
     }
 }
