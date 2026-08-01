@@ -8,11 +8,12 @@ import { MessageModule } from 'primeng/message';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MessageService } from 'primeng/api';
 import { HomeownerService, HomeownerProfile } from '../../../core/services/homeowner.service';
+import { Rating } from "primeng/rating";
 
 @Component({
     selector: 'app-homeowner-profile',
     standalone: true,
-    imports: [CommonModule, FormsModule, ButtonModule, InputTextModule, Toast, MessageModule, TranslatePipe],
+    imports: [CommonModule, FormsModule, ButtonModule, InputTextModule, Toast, MessageModule, TranslatePipe, Rating],
     providers: [MessageService],
     template: `
         <div class="card">
@@ -56,6 +57,30 @@ import { HomeownerService, HomeownerProfile } from '../../../core/services/homeo
                             </label>
                             <input pInputText class="w-full" [(ngModel)]="formData.whatsAppNumber"  />
                         </div>
+                    </div>
+                </div>
+
+                                <!-- Ratings from workers -->
+                <div class="col-span-12 md:col-span-6">
+                    <div class="card">
+                        <h3>{{ 'REVIEW.PROFILE_TITLE' | translate }}</h3>
+                        <div *ngIf="profile && profile.totalReviews > 0">
+                            <div class="flex align-items-center gap-2">
+                                <p-rating [(ngModel)]="profile.averageRating" [readonly]="true" ></p-rating>
+                                <span class="text-sm text-muted-color">({{ profile.totalReviews }})</span>
+                            </div>
+                            <div *ngFor="let r of profile.reviews" class="border-top-1 border-surface mt-3 pt-3">
+                                <div class="flex justify-content-between">
+                                    <span class="font-bold">{{ r.reviewerName }}</span>
+                                    <span class="text-sm text-muted-color">{{ r.createdAt | date:'shortDate' }}</span>
+                                </div>
+                                <p-rating [(ngModel)]="r.rating" [readonly]="true" ></p-rating>
+                                <p class="text-sm mt-1">{{ r.comment }}</p>
+                            </div>
+                        </div>
+                        <p *ngIf="!profile || profile.totalReviews === 0" class="text-muted-color">
+                            {{ 'REVIEW.NO_REVIEWS' | translate }}
+                        </p>
                     </div>
                 </div>
 

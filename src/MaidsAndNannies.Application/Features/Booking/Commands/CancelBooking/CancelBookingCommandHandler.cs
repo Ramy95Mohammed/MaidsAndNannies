@@ -1,4 +1,5 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Notifications;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace MaidsAndNannies.Application.Features.Bookings.Commands.CancelBooking;
 
 public sealed class CancelBookingCommandHandler(
-    IApplicationDbContext dbContext)
+    IApplicationDbContext dbContext ,
+    INotificationService notifications)
     : IRequestHandler<CancelBookingCommand, Unit>
 {
     public async Task<Unit> Handle(CancelBookingCommand request, CancellationToken ct)
@@ -27,6 +29,10 @@ public sealed class CancelBookingCommandHandler(
             worker.IsAvailable = true;
 
         await dbContext.SaveChangesAsync(ct);
+
+        await notifications.NotifyAsync(booking.WorkerId, NotificationType.BookingCancelled, "NOTIF.BOOKING_CANCELLED",
+    new { BookingId = booking.Id }, ct);
+
         return Unit.Value;
     }
 }

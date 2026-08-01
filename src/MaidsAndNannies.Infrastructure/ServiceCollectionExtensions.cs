@@ -1,13 +1,15 @@
 using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Contracts;
+using MaidsAndNannies.Application.Services;
+using MaidsAndNannies.Domain.Entities.Identity;
 using MaidsAndNannies.Infrastructure.Persistence;
 using MaidsAndNannies.Infrastructure.Services;
 using MaidsAndNannies.Infrastructure.Storage;
-using MaidsAndNannies.Application.Contracts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MaidsAndNannies.Domain.Entities.Identity;
+
 
 namespace MaidsAndNannies.Infrastructure;
 
@@ -31,6 +33,9 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IFileStorage, LocalPrivateFileStorage>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+
+  
+        services.AddScoped<INotificationService, NotificationService>();
 
         return services;
     }

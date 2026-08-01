@@ -1,4 +1,5 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Notifications;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace MaidsAndNannies.Application.Features.Bookings.Commands.Admin;
 
 public sealed class CompleteWorkCommandHandler(
-    IApplicationDbContext dbContext)
+    IApplicationDbContext dbContext ,
+     INotificationService notifications)
     : IRequestHandler<CompleteWorkCommand, Unit>
 {
     public async Task<Unit> Handle(CompleteWorkCommand request, CancellationToken ct)
@@ -33,6 +35,12 @@ public sealed class CompleteWorkCommandHandler(
             subscription.IsActive = false;
 
         await dbContext.SaveChangesAsync(ct);
+
+        await notifications.NotifyAsync(booking.HomeownerId, NotificationType.BookingCompleted, "NOTIF.BOOKING_COMPLETED",
+    new { BookingId = booking.Id }, ct);
+        await notifications.NotifyAsync(booking.WorkerId, NotificationType.BookingCompleted, "NOTIF.BOOKING_COMPLETED",
+            new { BookingId = booking.Id }, ct);
+
         return Unit.Value;
     }
 }

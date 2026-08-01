@@ -20,6 +20,7 @@ export interface BookingListDto {
   isPaid: boolean;
   replacementCount: number;
   createdAt: string;
+  hasReviewed: boolean;
 }
 
 export interface BookingDetailDto {
@@ -58,6 +59,7 @@ export interface BookingDetailDto {
   adminNotes: string | null;
   createdAt: string;
   jobPostId:number;  
+  hasReviewed: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -122,5 +124,9 @@ requestReplacement(
 
   completeWork(id: number): Observable<any> {
     return this.http.post(`${this.API_URL}/booking/${id}/complete`, {});
+  }
+
+    reviewBooking(id: number, rating: number, comment: string | null): Observable<any> {
+    return this.http.post(`${this.API_URL}/booking/${id}/review`, { rating, comment });
   }
 }

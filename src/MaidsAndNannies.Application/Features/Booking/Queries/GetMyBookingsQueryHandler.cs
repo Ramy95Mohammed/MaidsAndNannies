@@ -47,6 +47,9 @@ public sealed class GetMyBookingsQueryHandler(
                     RateToEgp = w.Currency.RateToEgp
                 }
             }).ToListAsync(ct);
+        
+        var bokkingIds = bookingList.Select(b => b.Id).ToList();
+        
 
         var bookingListDto = bookingList.Select(b => new BookingListDto(
                 b.Id,
@@ -66,7 +69,9 @@ public sealed class GetMyBookingsQueryHandler(
                 b.Status,
                 b.IsPaid,
                 b.ReplacementCount,
-                b.CreatedAt)).ToList();            
+                b.CreatedAt,
+                 dbContext.Reviews.Any(x => x.BookingId == b.Id && x.ReviewerId == request.UserId)
+                )).ToList();            
                 
             return bookingListDto;
     }

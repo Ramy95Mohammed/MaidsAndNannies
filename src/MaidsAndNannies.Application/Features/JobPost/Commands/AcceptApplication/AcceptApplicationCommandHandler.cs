@@ -4,10 +4,12 @@ using MaidsAndNannies.Domain.Enums;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using MaidsAndNannies.Application.Features.Notifications;
 
 namespace MaidsAndNannies.Application.Features.JobPosts.Commands.AcceptApplication;
 
-public sealed class AcceptApplicationCommandHandler(IApplicationDbContext dbContext)
+public sealed class AcceptApplicationCommandHandler(IApplicationDbContext dbContext,
+     INotificationService notifications)
     : IRequestHandler<AcceptApplicationCommand, int>
 {
     public async Task<int> Handle(AcceptApplicationCommand r, CancellationToken ct)
@@ -111,6 +113,9 @@ public sealed class AcceptApplicationCommandHandler(IApplicationDbContext dbCont
             await dbContext.SaveChangesAsync(ct);
 
             await transaction.CommitAsync();
+
+              await notifications.NotifyAsync(app.WorkerId, NotificationType.ApplicationAccepted, "NOTIF.APPLICATION_ACCEPTED",
+            new { BookingId = booking.Id, PostTitle = post.Description }, ct);
 
             return booking.Id;
         }

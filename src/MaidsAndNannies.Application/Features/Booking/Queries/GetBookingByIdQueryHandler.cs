@@ -69,6 +69,9 @@ public sealed class GetBookingByIdQueryHandler(
             ? booking.CommissionAmount + workerFirstSalaryInEgp
             : booking.CommissionAmount;
 
+        var hasReviewed = await dbContext.Reviews
+           .AnyAsync(x => x.BookingId == booking.Id && x.ReviewerId == request.UserId, ct);
+
         return new BookingDetailDto(
             booking.Id,
             booking.HomeownerId,
@@ -104,6 +107,8 @@ public sealed class GetBookingByIdQueryHandler(
             maxFault,
             maxPreference,
             paymentAmount,
-            requireProof);
+            requireProof,
+            hasReviewed);
+
     }
 }

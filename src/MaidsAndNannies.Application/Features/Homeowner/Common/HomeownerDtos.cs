@@ -1,3 +1,4 @@
+using MaidsAndNannies.Application.Features.Worker.Common;
 using MaidsPlatform.API.Domain.Enums;
 
 namespace MaidsAndNannies.Application.Features.Homeowner.Common;
@@ -19,4 +20,7 @@ public sealed record HomeownerProfileDto(
     string? District,
     VerificationStatus VerificationStatus,
     string? VerificationNotes,
-    DateTime? VerifiedAt);
+    DateTime? VerifiedAt,
+      decimal AverageRating,
+     int TotalReviews,
+    List<ReviewSummaryDto> Reviews);

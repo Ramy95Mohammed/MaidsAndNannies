@@ -1,4 +1,5 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Notifications;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace MaidsAndNannies.Application.Features.Bookings.Commands.Admin;
 
 public sealed class StartWorkCommandHandler(
-    IApplicationDbContext dbContext)
+    IApplicationDbContext dbContext ,
+    INotificationService notifications)
     : IRequestHandler<StartWorkCommand, Unit>
 {
     public async Task<Unit> Handle(StartWorkCommand request, CancellationToken ct)
@@ -21,6 +23,10 @@ public sealed class StartWorkCommandHandler(
         booking.UpdatedAt = DateTime.UtcNow;      
 
         await dbContext.SaveChangesAsync(ct);
+
+        await notifications.NotifyAsync(booking.HomeownerId, NotificationType.WorkStarted, "NOTIF.WORK_STARTED",
+    new { BookingId = booking.Id }, ct);
+
         return Unit.Value;
     }
 }

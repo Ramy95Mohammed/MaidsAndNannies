@@ -18,6 +18,9 @@ import { BookingService, BookingDetailDto } from '../../../core/services/booking
 import { ApiService } from '@/core/services/api.service';
 import { TableModule } from "primeng/table";
 import { Rating } from "primeng/rating";
+import { RatingModule } from 'primeng/rating';
+import { TextareaModule } from 'primeng/textarea';
+
 
 @Component({
     selector: 'app-booking-detail',
@@ -27,7 +30,7 @@ import { Rating } from "primeng/rating";
     ButtonModule, SelectModule, InputTextModule, FileUpload,
     ToastModule, RouterModule, TranslatePipe,
     TableModule, DialogModule, RadioButtonModule, MessageModule,
-    Rating , FormsModule
+    Rating , FormsModule , TextareaModule
 ],
     providers: [MessageService],
     template: `
@@ -138,6 +141,20 @@ import { Rating } from "primeng/rating";
                         {{ 'JOB_POST.NO_APPLICANTS' | translate }}
                         </p>
                     </p-card>
+                    </div>
+
+                                        <!-- تقييم العاملة بعد إتمام الحجز -->
+                    <div class="col-span-12" *ngIf="booking.status === 5 && !booking.hasReviewed">
+                        <p-card header="{{ 'REVIEW.RATE_WORKER' | translate }}">
+                            <div class="flex flex-column gap-3">
+                                <p-rating [(ngModel)]="reviewRating" ></p-rating>
+
+                                <textarea pInputTextarea [(ngModel)]="reviewComment" rows="3" class="w-full"
+                                    [placeholder]="'REVIEW.COMMENT' | translate"></textarea>
+                                <p-button [label]="'REVIEW.SUBMIT' | translate" (onClick)="submitReview()"
+                                    [loading]="isSubmitting"></p-button>
+                            </div>
+                        </p-card>
                     </div>
 
                 <!-- Payment Proof Upload (WaitingPayment, or ReplacementRequested with a pending difference) -->
@@ -289,6 +306,9 @@ export class BookingDetail implements OnInit {
     proofFile: File | null = null;
     proofFileName = '';
 
+        reviewRating = 5;
+    reviewComment = '';
+
     showReasonDialog = false;
     selectedReason: 0 | 1 = 1;
     private pendingAction: 'navigate' | 'applicant' | null = null;
@@ -336,6 +356,22 @@ export class BookingDetail implements OnInit {
                 if (data.jobPostId) {
                 this.loadApplicants(data.jobPostId);
                 }
+            }
+        });
+    }
+
+        submitReview() {
+        if (!this.booking) return;
+        this.isSubmitting = true;
+        this.bookingService.reviewBooking(this.booking.id, this.reviewRating, this.reviewComment || null).subscribe({
+            next: () => {
+                this.isSubmitting = false;
+                this.messageService.add({ severity: 'success', detail: this.translate.instant('REVIEW.SUCCESS') });
+                if (this.booking) this.booking.hasReviewed = true;
+            },
+            error: () => {
+                this.isSubmitting = false;
+                this.messageService.add({ severity: 'error', detail: this.translate.instant('REVIEW.ERROR') });
             }
         });
     }

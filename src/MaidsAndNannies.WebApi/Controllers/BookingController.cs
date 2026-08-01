@@ -11,6 +11,7 @@ using MaidsAndNannies.Application.Features.Bookings.Queries.GetMyBookings;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MaidsAndNannies.Application.Features.Reviews.Commands.ReviewBooking;
 
 namespace MaidsAndNannies.WebApi.Controllers;
 
@@ -30,6 +31,7 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
 
         return Ok(new { BookingId = id, Message = "تم إنشاء الحجز بنجاح" });
     }
+
 
     [HttpPost("bookingCreationInfo")]
     [Authorize(Roles = "Homeowner")]
@@ -153,9 +155,22 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
         await sender.Send(new CompleteWorkCommand(id, currentUser.UserId));
         return Ok(new { Message = "تم إنهاء الحجز" });
     }
+
+    // ── تقييم بعد إتمام الحجز (صاحبة منزل أو عاملة) ──
+
+    [HttpPost("{id}/review")]
+    [Authorize(Roles = "Homeowner,Worker")]
+    public async Task<IActionResult> Review(int id, [FromBody] ReviewBookingRequest request)
+    {
+        if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
+        await sender.Send(new ReviewBookingCommand(id, currentUser.UserId, request.Rating, request.Comment));
+        return Ok(new { Message = "تم إرسال التقييم بنجاح" });
+    }
 }
 
 public sealed record ReplaceBookingRequest(
     int? NewWorkerId,
     int? ApplicationId,
     MaidsAndNannies.Domain.Enums.ReplacementReason Reason);
+
+public sealed record ReviewBookingRequest(int Rating, string? Comment);

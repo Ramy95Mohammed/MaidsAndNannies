@@ -3,3 +3,22 @@
 @use './layout/layout.scss';
 @use 'primeicons/primeicons.css';
 @use './demo/demo.scss';
+
+
+/* ── Notification bell ── */
+.notification-badge {
+    position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; border-radius: 9px;
+    background: #ef4444; color: #fff; font-size: 11px; line-height: 18px; text-align: center; padding: 0 4px;
+}
+.notification-panel {
+    position: absolute; right: 0; top: 44px; width: 360px; max-width: 90vw; z-index: 1000;
+    background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .15); overflow: hidden;
+}
+.notification-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--surface-border); }
+.notification-list { max-height: 360px; overflow-y: auto; }
+.notification-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--surface-border); font-size: 13px; }
+.notification-item:hover { background: var(--surface-hover); }
+.notification-item.unread { background: var(--highlight-bg); }
+.notification-time { font-size: 11px; color: var(--text-color-secondary); margin-top: 2px; }
+.notification-empty { padding: 16px; text-align: center; color: var(--text-color-secondary); font-size: 13px; }

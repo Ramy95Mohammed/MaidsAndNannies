@@ -21,6 +21,9 @@ export interface HomeownerProfile {
   verificationStatus: number;
   verificationNotes: string | null;
   verifiedAt: string | null;
+    averageRating: number;
+  totalReviews: number;
+  reviews: { id: number; reviewerName: string; rating: number; comment: string | null; createdAt: string }[];
 }
 
 @Injectable({ providedIn: 'root' })

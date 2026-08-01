@@ -1,5 +1,6 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Application.Contracts;
+using MaidsAndNannies.Application.Features.Notifications;
 using MaidsAndNannies.Domain.Entities;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
@@ -9,7 +10,8 @@ namespace MaidsAndNannies.Application.Features.Bookings.Commands.UploadPaymentPr
 
 public sealed class UploadPaymentProofCommandHandler(
     IApplicationDbContext dbContext,
-    IFileStorage fileStorage)
+    IFileStorage fileStorage,
+    INotificationService notifications)
     : IRequestHandler<UploadPaymentProofCommand, Unit>
 {
     public async Task<Unit> Handle(UploadPaymentProofCommand request, CancellationToken ct)
@@ -42,6 +44,10 @@ public sealed class UploadPaymentProofCommandHandler(
         booking.UpdatedAt = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync(ct);
+
+        await notifications.NotifyAdminsAsync(NotificationType.PaymentSubmitted, "NOTIF.PAYMENT_SUBMITTED",
+         new { BookingId = request.BookingId }, ct);
+
         return Unit.Value;
     }
 }

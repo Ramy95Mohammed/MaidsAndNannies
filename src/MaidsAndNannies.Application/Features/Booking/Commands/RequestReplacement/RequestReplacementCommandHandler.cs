@@ -1,4 +1,5 @@
 using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Notifications;
 using MaidsAndNannies.Domain.Entities;
 using MaidsAndNannies.Domain.Enums;
 using MaidsPlatform.API.Domain.Enums;
@@ -8,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 namespace MaidsAndNannies.Application.Features.Bookings.Commands.RequestReplacement;
 
 public sealed class RequestReplacementCommandHandler(
-    IApplicationDbContext dbContext)
+    IApplicationDbContext dbContext ,
+     INotificationService notifications)
     : IRequestHandler<RequestReplacementCommand, Unit>
 {
     private const int BillingPeriodDays = 30;
@@ -55,6 +57,13 @@ public sealed class RequestReplacementCommandHandler(
                 oldWorker.IsAvailable = true;
 
             var newWorker = await ResolveNewWorkerAsync(r, booking, ct);
+
+            // إشعارات الاستبدال (تشمل مساري اليومي/الساعي والشهري — old أولاً قبل استبدال WorkerId)
+            await notifications.NotifyAsync(booking.WorkerId, NotificationType.ReplacedWorker, "NOTIF.REPLACED_WORKER",
+                new { BookingId = booking.Id }, ct);
+            await notifications.NotifyAsync(newWorker.WorkerId, NotificationType.ReplacementAssigned, "NOTIF.REPLACEMENT_ASSIGNED",
+                new { BookingId = booking.Id }, ct);
+
 
             booking.LastReplacementReason = r.Reason;
             booking.UpdatedAt = DateTime.UtcNow;

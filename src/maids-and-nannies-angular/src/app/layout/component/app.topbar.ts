@@ -9,11 +9,12 @@ import { LayoutService } from '../service/layout.service';
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageService } from '../../core/services/language.service';
 import { TranslatePipe } from '@ngx-translate/core';
+import { NotificationsBell } from '../../core/components/notifications-bell';
 
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [RouterModule, CommonModule, StyleClassModule, AppConfigurator, ButtonModule, TranslatePipe],
+    imports: [RouterModule, CommonModule, StyleClassModule, AppConfigurator, ButtonModule, TranslatePipe , NotificationsBell],
     template: ` <div   class="layout-topbar" dir="ltr">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
@@ -29,8 +30,10 @@ import { TranslatePipe } from '@ngx-translate/core';
                 <p-button [label]="langService.getCurrentLanguage() === 'ar' ? 'EN' : 'عربي'"
                           severity="secondary"
                           [text]="true"
-                          (onClick)="langService.setLanguage(langService.getCurrentLanguage() === 'ar' ? 'en' : 'ar')">
-                </p-button>
+                          (onClick)="langService.setLanguage(langService.getCurrentLanguage() === 'ar' ? 'en' : 'ar')">                                          
+                                        </p-button>
+                                        
+                                        <app-notifications-bell />
 
                 <button type="button" class="layout-topbar-action" (click)="toggleDarkMode()">
                     <i [ngClass]="{ 'pi ': true, 'pi-moon': layoutService.isDarkTheme(), 'pi-sun': !layoutService.isDarkTheme() }"></i>

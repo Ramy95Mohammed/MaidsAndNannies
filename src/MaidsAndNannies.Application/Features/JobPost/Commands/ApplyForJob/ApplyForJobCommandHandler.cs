@@ -1,4 +1,5 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Notifications;
 using MaidsAndNannies.Domain.Entities;
 using MaidsAndNannies.Domain.Enums;
 using MediatR;
@@ -6,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MaidsAndNannies.Application.Features.JobPosts.Commands.ApplyForJob;
 
-public sealed class ApplyForJobCommandHandler(IApplicationDbContext dbContext)
+public sealed class ApplyForJobCommandHandler(
+    IApplicationDbContext dbContext,
+    INotificationService notifications)
     : IRequestHandler<ApplyForJobCommand, Unit>
 {
     public async Task<Unit> Handle(ApplyForJobCommand r, CancellationToken ct)
@@ -35,6 +38,15 @@ public sealed class ApplyForJobCommandHandler(IApplicationDbContext dbContext)
             // Unique constraint violation => duplicate
             throw new InvalidOperationException("لقد تقدمت لهذا الإعلان مسبقاً");
         }
+
+        var workerName = await dbContext.Users
+            .Where(u => u.Id == r.WorkerId)
+            .Select(u => u.FullName)
+            .FirstOrDefaultAsync(ct) ?? "عاملة";
+
+        await notifications.NotifyAsync(post.HomeownerId, NotificationType.NewApplication, "NOTIF.NEW_APPLICATION",
+            new { WorkerId = r.WorkerId, WorkerName = workerName, PostId = post.Id, PostTitle = post.Description }, ct);
+
         return Unit.Value;
     }
 }

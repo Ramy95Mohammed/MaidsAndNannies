@@ -29,6 +29,9 @@ public class HomeownerProfile : Entity
 
     public CommissionType CommissionType { get; set; } = CommissionType.OneTime;
 
+    public decimal AverageRating { get; set; }
+    public int TotalReviews { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 

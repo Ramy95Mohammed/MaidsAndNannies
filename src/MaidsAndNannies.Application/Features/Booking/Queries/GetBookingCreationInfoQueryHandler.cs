@@ -78,7 +78,7 @@ namespace MaidsAndNannies.Application.Features.Booking.Queries
                 var booking = new BookingDetailDto(0, "", "", null, "", "", null, null, null,
                     null, Specialization.Childcare, BookingType.Daily, 0, "", DateTime.Now, null,
                     0, 0, 0, totalAmount, totalInEgp, commissionAmount, CommissionType.OneTime, BookingStatus.Pending,
-                    false, 0, 0, null,DateTime.Now, null, 0, 0, 0 ,paymentAmount ,true);
+                    false, 0, 0, null,DateTime.Now, null, 0, 0, 0 ,paymentAmount ,true,false);
                                
                 await transaction.CommitAsync();
                 return booking;

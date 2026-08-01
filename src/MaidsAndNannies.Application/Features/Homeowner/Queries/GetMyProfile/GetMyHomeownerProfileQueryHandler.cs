@@ -2,6 +2,7 @@
 using MaidsAndNannies.Application.Common.Helpers;
 using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Application.Features.Homeowner.Common;
+using MaidsAndNannies.Application.Features.Worker.Common;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,13 @@ public sealed class GetMyHomeownerProfileQueryHandler(
         if (profile is null)
             throw new NotFoundException("HomeownerProfile", request.UserId);
 
+        var reviews = await dbContext.Reviews
+    .Include(x => x.Reviewer)
+    .Where(x => x.RevieweeId == profile.UserId && x.IsVisible)
+    .OrderByDescending(x => x.CreatedAt)
+    .Select(x => new ReviewSummaryDto(x.Id, x.Reviewer.FullName, x.Rating, x.Comment, x.CreatedAt))
+    .ToListAsync(cancellationToken);
+
         return new HomeownerProfileDto(
             profile.Id,
             profile.UserId,
@@ -39,7 +47,10 @@ public sealed class GetMyHomeownerProfileQueryHandler(
             profile.District,
             profile.VerificationStatus,
             profile.VerificationNotes,
-            profile.VerifiedAt);
+            profile.VerifiedAt,
+            profile.AverageRating,
+            profile.TotalReviews,
+            reviews);
     }
 
     private string? ToAbsolute(string? relativeUrl) =>

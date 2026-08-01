@@ -1,4 +1,5 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Notifications;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace MaidsAndNannies.Application.Features.Bookings.Commands.Admin;
 
 public sealed class ConfirmPaymentCommandHandler(
-    IApplicationDbContext dbContext)
+    IApplicationDbContext dbContext ,
+    INotificationService notifications)
     : IRequestHandler<ConfirmPaymentCommand, Unit>
 {
     public async Task<Unit> Handle(ConfirmPaymentCommand request, CancellationToken ct)
@@ -31,6 +33,12 @@ public sealed class ConfirmPaymentCommandHandler(
             subscription.IsActive = true;
 
         await dbContext.SaveChangesAsync(ct);
+
+        await notifications.NotifyAsync(booking.HomeownerId, NotificationType.PaymentConfirmed, "NOTIF.PAYMENT_CONFIRMED",
+    new { BookingId = booking.Id }, ct);
+        await notifications.NotifyAsync(booking.WorkerId, NotificationType.PaymentConfirmed, "NOTIF.PAYMENT_CONFIRMED",
+            new { BookingId = booking.Id }, ct);
+
         return Unit.Value;
     }
 }

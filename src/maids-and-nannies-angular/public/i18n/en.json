@@ -120,12 +120,19 @@
     "CONFIRM": "Confirm",
     "REJECT": "Reject"
   },
-  "REVIEW": {
-    "TITLE": "Reviews",
-    "WRITE": "Write Review",
+  "REVIEW": {    
+    "WRITE": "Write Review",            
+    "TITLE": "Rate booking",
+    "RATE_WORKER": "Rate the worker",
+    "RATE_HOMEOWNER": "Rate the homeowner",
     "RATING": "Rating",
-    "COMMENT": "Comment",
-    "SUBMIT": "Submit"
+    "COMMENT": "Your comment (optional)",
+    "SUBMIT": "Submit review",
+    "SUCCESS": "Review submitted successfully",
+    "ERROR": "Failed to submit review",
+    "DONE": "Reviewed",
+    "PROFILE_TITLE": "Ratings from workers",
+    "NO_REVIEWS": "No reviews yet"
   },
   "WORKERS": {
     "SEARCH": "Search Workers",
@@ -455,5 +462,25 @@
     "MY_BOOKINGS": "My Bookings",
     "MY_SUBSCRIPTIONS": "My Subscriptions",
     "WORKER": "Worker"
-  }
+  },
+    "NOTIF": {
+    "TITLE": "Notifications",
+    "EMPTY": "No notifications",
+    "MARK_ALL_READ": "Mark all as read",
+    "NEW_APPLICATION": "{{workerName}} applied to your job post",
+    "APPLICATION_ACCEPTED": "Your application was accepted — Booking #{{bookingId}}",
+    "BOOKING_CONFIRMED": "Worker {{workerName}} confirmed booking #{{bookingId}}",
+    "REPLACEMENT_ASSIGNED": "You were assigned as a replacement for booking #{{bookingId}}",
+    "REPLACED_WORKER": "You were replaced in booking #{{bookingId}}",
+    "PAYMENT_SUBMITTED": "New payment proof for booking #{{bookingId}} awaiting your confirmation",
+    "PAYMENT_CONFIRMED": "Payment confirmed for booking #{{bookingId}}",
+    "WORK_STARTED": "Work started on booking #{{bookingId}}",
+    "BOOKING_COMPLETED": "Booking #{{bookingId}} completed",
+    "BOOKING_CANCELLED": "Booking #{{bookingId}} cancelled",
+    "JUST_NOW": "Now",
+    "MINUTES_AGO": "{{count}}m ago",
+    "HOURS_AGO": "{{count}}h ago",
+    "DAYS_AGO": "{{count}}d ago",
+    "NEW_REVIEW": "You received a {{rating}}/5 rating on booking #{{bookingId}}"
+  }      
 }

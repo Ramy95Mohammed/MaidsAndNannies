@@ -1,4 +1,5 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Notifications;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace MaidsAndNannies.Application.Features.Bookings.Commands.Admin;
 
 public sealed class ConfirmWorkerCommandHandler(
-    IApplicationDbContext dbContext)
+    IApplicationDbContext dbContext ,
+     INotificationService notifications)
     : IRequestHandler<ConfirmWorkerCommand, Unit>
 {
     public async Task<Unit> Handle(ConfirmWorkerCommand request, CancellationToken ct)
@@ -45,6 +47,15 @@ public sealed class ConfirmWorkerCommandHandler(
 
         booking.UpdatedAt = DateTime.UtcNow;
         await dbContext.SaveChangesAsync(ct);
+
+        var workerName = await dbContext.Users
+    .Where(u => u.Id == booking.WorkerId)
+    .Select(u => u.FullName)
+    .FirstOrDefaultAsync(ct) ?? "العاملة";
+
+        await notifications.NotifyAsync(booking.HomeownerId, NotificationType.BookingConfirmed, "NOTIF.BOOKING_CONFIRMED",
+            new { BookingId = booking.Id, WorkerName = workerName }, ct);
+
         return Unit.Value;
     }
 }

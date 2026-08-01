@@ -122,12 +122,19 @@
     "CONFIRM": "تأكيد",
     "REJECT": "رفض"
   },
-  "REVIEW": {
-    "TITLE": "التقييمات",
-    "WRITE": "كتابة تقييم",
+  "REVIEW": {    
+    "WRITE": "كتابة تقييم",            
+     "TITLE": "تقييم الحجز",
+    "RATE_WORKER": "قيمي العاملة",
+    "RATE_HOMEOWNER": "قيمي صاحبة المنزل",
     "RATING": "التقييم",
-    "COMMENT": "التعليق",
-    "SUBMIT": "إرسال"
+    "COMMENT": "تعليقك (اختياري)",
+    "SUBMIT": "إرسال التقييم",
+    "SUCCESS": "تم إرسال التقييم بنجاح",
+    "ERROR": "تعذر إرسال التقييم",
+    "DONE": "تم التقييم",
+    "PROFILE_TITLE": "تقييماتي من العاملات",
+    "NO_REVIEWS": "لا توجد تقييمات بعد"
   },
   "WORKERS": {
     "SEARCH": "البحث عن عاملة",
@@ -458,5 +465,25 @@
     "MY_BOOKINGS": "حجوزاتي",
     "MY_SUBSCRIPTIONS": "اشتراكاتي",
     "WORKER": "العاملة"    
-  }
+  },
+    "NOTIF": {
+    "TITLE": "الإشعارات",
+    "EMPTY": "لا توجد إشعارات",
+    "MARK_ALL_READ": "تحديد الكل كمقروء",
+    "NEW_APPLICATION": "تقدّمت {{workerName}} على إعلانك",
+    "APPLICATION_ACCEPTED": "تم قبول طلبك — تم إنشاء الحجز #{{bookingId}}",
+    "BOOKING_CONFIRMED": "أكّدت العاملة {{workerName}} الحجز #{{bookingId}}",
+    "REPLACEMENT_ASSIGNED": "تم تعيينك بديلةً في الحجز #{{bookingId}}",
+    "REPLACED_WORKER": "تم استبدالك في الحجز #{{bookingId}}",
+    "PAYMENT_SUBMITTED": "إثبات دفع جديد للحجز #{{bookingId}} بانتظار تأكيدك",
+    "PAYMENT_CONFIRMED": "تم تأكيد الدفع للحجز #{{bookingId}}",
+    "WORK_STARTED": "بدأ العمل في الحجز #{{bookingId}}",
+    "BOOKING_COMPLETED": "تم إتمام الحجز #{{bookingId}}",
+    "BOOKING_CANCELLED": "تم إلغاء الحجز #{{bookingId}}",
+    "JUST_NOW": "الآن",
+    "MINUTES_AGO": "قبل {{count}} دقيقة",
+    "HOURS_AGO": "قبل {{count}} ساعة",
+    "DAYS_AGO": "قبل {{count}} يوم",
+     "NEW_REVIEW": "تلقيت تقييماً {{rating}}/5 على الحجز #{{bookingId}}"
+  }     
 }

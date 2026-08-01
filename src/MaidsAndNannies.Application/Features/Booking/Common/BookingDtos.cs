@@ -21,7 +21,8 @@ public sealed record BookingListDto(
     BookingStatus Status,
     bool IsPaid,
     int ReplacementCount,
-    DateTime CreatedAt);
+    DateTime CreatedAtm,
+     bool HasReviewed);
 
 public sealed record AdminBookingListDto(
     int Id,
@@ -81,7 +82,8 @@ public sealed record BookingDetailDto(
     int MaxFaultReplacement,
     int MaxPreferenceReplacement ,
      decimal PaymentAmount,
-    bool RequirePaymentProof);
+    bool RequirePaymentProof,
+    bool HasReviewed);
 
 
 public sealed record CreateBookingRequest(
