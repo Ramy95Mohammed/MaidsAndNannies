@@ -8,13 +8,12 @@ import { MessageModule } from 'primeng/message';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MessageService } from 'primeng/api';
 import { HomeownerService, HomeownerProfile } from '../../../core/services/homeowner.service';
-import { Rating } from "primeng/rating";
 import { ChangePasswordComponent } from "@/features/profile/change-password";
 
 @Component({
     selector: 'app-homeowner-profile',
     standalone: true,
-    imports: [CommonModule, FormsModule, ButtonModule, InputTextModule, Toast, MessageModule, TranslatePipe, Rating, ChangePasswordComponent],
+    imports: [CommonModule, FormsModule, ButtonModule, InputTextModule, Toast, MessageModule, TranslatePipe, ChangePasswordComponent],
     providers: [MessageService],
     template: `
         <div class="card">
@@ -62,7 +61,7 @@ import { ChangePasswordComponent } from "@/features/profile/change-password";
                 </div>
 
                                 <!-- Ratings from workers -->
-                <div class="col-span-12 md:col-span-6">
+                <!-- <div class="col-span-12 md:col-span-6">
                     <div class="card">
                         <h3>{{ 'REVIEW.PROFILE_TITLE' | translate }}</h3>
                         <div *ngIf="profile && profile.totalReviews > 0">
@@ -83,7 +82,7 @@ import { ChangePasswordComponent } from "@/features/profile/change-password";
                             {{ 'REVIEW.NO_REVIEWS' | translate }}
                         </p>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Address Info (editable) -->
                 <div class="col-span-12 md:col-span-6">
@@ -167,8 +166,8 @@ import { ChangePasswordComponent } from "@/features/profile/change-password";
             </div>
 
             
+            <app-change-password class="mt-4" />
         </div>
-        <app-change-password class="mt-4" />
     `
 })
 export class HomeownerProfileComponent implements OnInit {

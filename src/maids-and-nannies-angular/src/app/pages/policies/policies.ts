@@ -7,6 +7,7 @@ import { ApiService } from '../../core/services/api.service';
 import { LanguageService } from '../../core/services/language.service';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { Location } from '@angular/common';
 
 
 interface PolicyItem {
@@ -53,6 +54,7 @@ export class PoliciesComponent implements OnInit {
     private apiService = inject(ApiService);
     private router = inject(Router);
     private langService = inject(LanguageService);
+    private location = inject(Location);    
 
     policies = signal<PolicyItem[]>([]);
     loading = signal(true);
@@ -69,5 +71,5 @@ export class PoliciesComponent implements OnInit {
 
     title(p: PolicyItem) { return this.isAr ? p.titleAr : p.titleEn; }
     content(p: PolicyItem) { return this.isAr ? p.contentAr : p.contentEn; }
-    goBack() { this.router.navigate(['/auth/login']); }
+    goBack() {  this.location.back(); }
 }
