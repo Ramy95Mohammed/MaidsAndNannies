@@ -1,11 +1,14 @@
 using MaidsAndNannies.Application.Features.Auth.Commands.ChangePassword;
+using MaidsAndNannies.Application.Features.Auth.Commands.ForgotPassword;
 using MaidsAndNannies.Application.Features.Auth.Commands.Login;
 using MaidsAndNannies.Application.Features.Auth.Commands.Register;
 using MaidsAndNannies.Application.Features.Auth.Commands.RegisterHomeowner;
 using MaidsAndNannies.Application.Features.Auth.Commands.RegisterWorker;
+using MaidsAndNannies.Application.Features.Auth.Commands.ResetPassword;
 using MaidsAndNannies.Application.Features.Auth.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -70,6 +73,22 @@ public sealed class AuthController(ISender sender) : BaseApiController
         await sender.Send(new ChangePasswordCommand(request.CurrentPassword, request.NewPassword));
         return NoContent();
     }
+
+    [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult> ForgotPassword(ForgotPasswordRequest request)
+    {
+        await sender.Send(new ForgotPasswordCommand(request.Email));
+        return Ok(new { message = "إذا كان البريد مسجلًا، سيصلك كود الاستعادة عبر الواتساب من فريق الدعم." });
+    }
+
+    [AllowAnonymous]
+    [HttpPost("reset-password")]
+    public async Task<ActionResult> ResetPassword(ResetPasswordRequest request)
+    {
+        await sender.Send(new ResetPasswordCommand(request.Email, request.Code, request.NewPassword));
+        return Ok(new { message = "تم تعيين كلمة المرور الجديدة بنجاح." });
+    }
 }
 
 public sealed class RegisterRequest
@@ -119,5 +138,18 @@ public sealed class LoginRequest
 public sealed class ChangePasswordRequest
 {
     [Required] public required string CurrentPassword { get; init; }
+    [Required, MinLength(8)] public required string NewPassword { get; init; }
+}
+
+
+public sealed class ForgotPasswordRequest
+{
+    [Required, EmailAddress] public required string Email { get; init; }
+}
+
+public sealed class ResetPasswordRequest
+{
+    [Required, EmailAddress] public required string Email { get; init; }
+    [Required, StringLength(6, MinimumLength = 6)] public required string Code { get; init; }
     [Required, MinLength(8)] public required string NewPassword { get; init; }
 }

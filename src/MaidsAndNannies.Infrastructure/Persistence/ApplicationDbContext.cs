@@ -24,6 +24,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
     
     public DbSet<Policy> Policies => Set<Policy>();
+
+    public DbSet<PasswordResetRequest> PasswordResetRequests => Set<PasswordResetRequest>();
     public DbSet<Country> Countries => Set<Country>();
     public DbSet<State> States => Set<State>();
     public DbSet<City> Cities => Set<City>();
@@ -250,6 +252,13 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             b.Property(p => p.TitleEn).HasMaxLength(200);
         });
 
+        builder.Entity<PasswordResetRequest>(b =>
+        {
+            b.HasIndex(r => r.UserId);
+            b.HasIndex(r => r.Status);
+            b.Property(r => r.Email).HasMaxLength(200);
+        });
+
         // Seed settings
         builder.Entity<AppSetting>().HasData(
             new AppSetting { Key = "MaxFaultReplacementCount", Value = "3", Description = "الحد الأقصى لعدد مرات الاستبدال بسبب تقصير العاملة" },
@@ -261,7 +270,13 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             new AppSetting { Key = "AutoCancelPendingBookingHours", Value = "48", Description = "إلغاء الحجوزات المعلقة تلقائياً بعد (ساعة)" },
             new AppSetting { Key = "MaxActiveBookingsPerHomeowner", Value = "5", Description = "الحد الأقصى للحجوزات النشطة لكل صاحبة منزل" },
              new AppSetting { Key = "CommissionBillingMode", Value = "CommissionOnly", Description = "المبلغ المطلوب من صاحبة المنزل عند الدفع: CommissionOnly = العمولة فقط، CommissionPlusSalary = العمولة + مرتب العاملة" },
-            new AppSetting { Key = "RequirePaymentProof", Value = "true", Description = "إظهار قسم رفع إثبات الدفع: true = ترفع صاحبة المنزل إثبات الدفع، false = يُعتبر الحجز مدفوعاً فور طلب الدفع (التواصل عبر واتساب)" }
+            new AppSetting { Key = "RequirePaymentProof", Value = "true", Description = "إظهار قسم رفع إثبات الدفع: true = ترفع صاحبة المنزل إثبات الدفع، false = يُعتبر الحجز مدفوعاً فور طلب الدفع (التواصل عبر واتساب)"},
+            new AppSetting
+            {
+                Key = "MonthlyWorkingDaysPerMonth",
+                Value = "26",
+                Description = "عدد أيام العمل القياسية في الشهر لحساب الأجر الشهري النسبي"
+            }
         );
 
 

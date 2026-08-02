@@ -92,8 +92,7 @@ const CURRENCY_KEYS = [
     FileUploadModule,
     TagModule,
     ToastModule,
-    TranslatePipe,
-    ChangePasswordComponent
+    TranslatePipe    
 ],
     providers: [MessageService],
     template: `
@@ -440,7 +439,7 @@ const CURRENCY_KEYS = [
                 <p-button [label]="'WORKER_PROFILE.SAVE_CHANGES' | translate" icon="pi pi-save" type="submit" [loading]="saving()" [disabled]="form.invalid || saving()"></p-button>
             </div>
         </form>
-                <app-change-password />
+                <!-- <app-change-password /> -->
     `
 })
 export class WorkerProfileComponent implements OnInit {

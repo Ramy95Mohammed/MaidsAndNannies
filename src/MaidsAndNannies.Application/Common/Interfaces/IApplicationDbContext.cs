@@ -32,6 +32,7 @@ public interface IApplicationDbContext
     DbSet<AppSetting> AppSettings { get; }
 
     DbSet<Policy> Policies { get; }
+    DbSet<PasswordResetRequest> PasswordResetRequests { get; }
 
     DbSet<Country> Countries { get; }
     DbSet<State> States { get; }

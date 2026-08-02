@@ -312,7 +312,8 @@
     "COMMISSION_SUBSCRIPTION": "Monthly Subscription",
     "LIVE_IN":"Live-in",
     "ALL":"All",
-    "CALC_COMMISION":"Calculate commission"
+    "CALC_COMMISION":"Calculate commission",
+    "QUANTITY_MONTHLY": "Working days per month"
   },
   "BOOKING_DETAIL": {
     "WORKER_PHONE_WILL_APPEAR": "Worker phone number will appear after payment confirmation",
@@ -505,5 +506,33 @@
     "AGREE": "I agree to the",
     "TERMS_LINK": "Terms of Use and Platform Policies",
     "REQUIRED": "You must agree to the terms and policies before booking"
+  },
+    "FORGOT": {
+    "TITLE": "Reset Password",
+    "EMAIL_HINT": "Enter your registered email and our support team will send you the recovery code via WhatsApp.",
+    "SEND_CODE": "Send Code",
+    "CODE": "Recovery Code",
+    "CODE_HINT": "Enter the 6-digit code sent to your email (valid for 15 minutes).",
+    "NEW_PASSWORD": "New Password",
+    "CONFIRM": "Confirm Password",
+    "RESET": "Set New Password",
+    "EMAIL_REQUIRED": "Please enter your email",
+    "CODE_REQUIRED": "Please enter the recovery code",
+    "MISMATCH": "Passwords do not match",
+    "TOO_SHORT": "Password must be at least 8 characters",
+    "SENT_SUCCESS": "Request sent — you will receive the recovery code via WhatsApp",
+    "RESET_SUCCESS": "New password set. You can now log in"
+  },
+    "ADMIN_RESET": {
+    "TITLE": "Password Reset Requests",
+    "CODE": "Code",
+    "REQUESTED_AT": "Requested At",
+    "EXPIRES_AT": "Code Expires",
+    "WA_LINK": "WhatsApp",
+    "WA_TEXT": "Your password recovery code",
+    "MARK_SENT": "Mark Sent",
+    "COPIED": "Code copied",
+    "SENT_OK": "Request status updated",
+    "EMPTY": "No requests right now"
   }
 }

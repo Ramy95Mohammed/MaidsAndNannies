@@ -13,6 +13,9 @@ public sealed class ApplicationUser : IdentityUser
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
+    public string? ResetCodeHash { get; set; }
+    public DateTime? ResetCodeExpiresAt { get; set; }
+
     public  HomeownerProfile? HomeownerProfile { get; set; }
     public  WorkerProfile? WorkerProfile { get; set; }
     public  ICollection<Booking> BookingsAsHomeowner { get; set; } = new List<Booking>();

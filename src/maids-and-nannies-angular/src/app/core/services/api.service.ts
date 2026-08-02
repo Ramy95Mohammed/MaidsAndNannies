@@ -148,6 +148,15 @@ rejectPayment(id: number, reason?: string): Observable<any> {
     return this.http.put(`${this.API_URL}/admin/homeowners/${id}/replacement-limits`, data);
   }
 
+    // Password Reset (admin)
+  getPasswordResetRequests(): Observable<any> {
+    return this.http.get(`${this.API_URL}/admin/password-reset`);
+  }
+
+  markResetRequestSent(id: number): Observable<any> {
+    return this.http.post(`${this.API_URL}/admin/password-reset/${id}/mark-sent`, {});
+  }
+
 
   // ── Job Posts ──
 createJobPost(data: any): Observable<any> {

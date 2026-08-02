@@ -75,6 +75,14 @@ registerWorker(data: FormData): Observable<{ message: string }> {
     return this.http.post(`${this.API_URL}/auth/change-password`, { currentPassword, newPassword });
   }
 
+    forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(email: string, code: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/auth/reset-password`, { email, code, newPassword });
+  }
+
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);

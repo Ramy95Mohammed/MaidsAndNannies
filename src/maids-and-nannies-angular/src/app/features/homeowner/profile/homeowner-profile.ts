@@ -13,7 +13,7 @@ import { ChangePasswordComponent } from "@/features/profile/change-password";
 @Component({
     selector: 'app-homeowner-profile',
     standalone: true,
-    imports: [CommonModule, FormsModule, ButtonModule, InputTextModule, Toast, MessageModule, TranslatePipe, ChangePasswordComponent],
+    imports: [CommonModule, FormsModule, ButtonModule, InputTextModule, Toast, MessageModule, TranslatePipe],
     providers: [MessageService],
     template: `
         <div class="card">
@@ -166,7 +166,7 @@ import { ChangePasswordComponent } from "@/features/profile/change-password";
             </div>
 
             
-            <app-change-password class="mt-4" />
+            <!-- <app-change-password class="mt-4" /> -->
         </div>
     `
 })

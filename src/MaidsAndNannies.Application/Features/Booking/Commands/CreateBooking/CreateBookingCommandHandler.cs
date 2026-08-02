@@ -40,6 +40,13 @@ public sealed class CreateBookingCommandHandler(
                 return int.TryParse(val, out var p) ? p : fallback;
             };
 
+            var monthlyWorkingDays = getPercent("MonthlyWorkingDaysPerMonth", 26);
+            if (monthlyWorkingDays < 1) monthlyWorkingDays = 26;
+
+            var monthlyTotal = request.Quantity > 0
+                ? request.MonthlySalary / monthlyWorkingDays * request.Quantity
+                : request.MonthlySalary;
+
             var commissionPercent = request.BookingType switch
             {
                 BookingType.Daily => getPercent("CommissionDailyPercent", 10),
@@ -54,8 +61,8 @@ public sealed class CreateBookingCommandHandler(
             {
                 BookingType.Daily => (worker.DailyRate ?? 0) * request.Quantity,
                 BookingType.Hourly => (worker.HourlyRate ?? 0) * request.Quantity,
-                BookingType.Monthly => request.MonthlySalary,
-                _ => request.MonthlySalary
+                BookingType.Monthly => monthlyTotal,
+                _ => monthlyTotal
             };
 
             var totalInEgp = totalAmount * currency.RateToEgp;

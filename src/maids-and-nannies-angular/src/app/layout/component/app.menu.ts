@@ -43,6 +43,7 @@ export class AppMenu {
                     { label: isAr ? 'الاشتراكات' : 'Subscriptions', icon: 'pi pi-fw pi-credit-card', routerLink: ['/admin/subscriptions'] },
                     { label: isAr ? 'العملات' : 'Currencies', icon: 'pi pi-fw pi-money-bill', routerLink: ['/admin/currencies'] },
                     { label: isAr ? 'الإعدادات' : 'Settings', icon: 'pi pi-fw pi-cog', routerLink: ['/admin/settings'] },
+                    { label: isAr ? 'استعادة كلمات المرور' : 'Password Resets', icon: 'pi pi-fw pi-key', routerLink: ['/admin/password-reset'] },
                     { label: isAr ? 'إعلانات الوظائف' : 'Job Posts', icon: 'pi pi-fw pi-briefcase', routerLink: ['/admin/job-posts'] },
                     { label: isAr ? 'تسجيل صاحبة منزل' : 'Register Homeowner', icon: 'pi pi-fw pi-user-plus', routerLink: ['/admin/register-homeowner'] },
                 ]

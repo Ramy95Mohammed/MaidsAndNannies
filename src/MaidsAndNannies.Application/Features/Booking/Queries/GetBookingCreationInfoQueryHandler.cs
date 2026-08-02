@@ -34,6 +34,13 @@ namespace MaidsAndNannies.Application.Features.Booking.Queries
                     return int.TryParse(val, out var p) ? p : fallback;
                 };
 
+                var monthlyWorkingDays = getPercent("MonthlyWorkingDaysPerMonth", 26);
+                if (monthlyWorkingDays < 1) monthlyWorkingDays = 26;
+
+                var monthlyTotal = request.Quantity > 0
+                   ? request.MonthlySalary / monthlyWorkingDays * request.Quantity
+                   : request.MonthlySalary;
+
                 var commissionPercent = request.BookingType switch
                 {
                     BookingType.Daily => getPercent("CommissionDailyPercent", 10),
@@ -48,8 +55,8 @@ namespace MaidsAndNannies.Application.Features.Booking.Queries
                 {
                     BookingType.Daily => (worker.DailyRate ?? 0) * request.Quantity,
                     BookingType.Hourly => (worker.HourlyRate ?? 0) * request.Quantity,
-                    BookingType.Monthly => request.MonthlySalary,
-                    _ => request.MonthlySalary
+                    BookingType.Monthly => monthlyTotal,
+                    _ => monthlyTotal
                 };
 
                 var totalInEgp = totalAmount * currency.RateToEgp;
@@ -62,7 +69,7 @@ namespace MaidsAndNannies.Application.Features.Booking.Queries
                 {
                     BookingType.Daily => (worker.DailyRate ?? 0) * request.Quantity * currency.RateToEgp,
                     BookingType.Hourly => (worker.HourlyRate ?? 0) * request.Quantity * currency.RateToEgp,
-                    _ => request.MonthlySalary * currency.RateToEgp
+                    _ => monthlyTotal * currency.RateToEgp
                 };
 
                 var paymentAmount = billingMode == "CommissionPlusSalary"

@@ -114,9 +114,9 @@ import { Checkbox } from "primeng/checkbox";
                             <p-datepicker [(ngModel)]="startDate" dateFormat="yy-mm-dd" styleClass="w-full" [placeholder]="'WORKER_DETAIL.START_DATE' | translate"></p-datepicker>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="block font-bold mb-2">{{ 'WORKER_DETAIL.QUANTITY' | translate }}</label>
-                            <input pInputText [(ngModel)]="quantity" [disabled]="quantityIsDisabled" type="number" min="1" class="w-full" />
+                       <div class="mb-3">
+                            <label class="block font-bold mb-2">{{ bookingType === 1 ? ('WORKER_DETAIL.QUANTITY_MONTHLY' | translate) : ('WORKER_DETAIL.QUANTITY' | translate) }}</label>
+                            <input pInputText [(ngModel)]="quantity" [disabled]="quantityIsDisabled" type="number" min="1" max="31" class="w-full" />
                         </div>
 
                         <div class="mb-3">
@@ -299,15 +299,19 @@ export class WorkerDetail implements OnInit {
         return `${year}-${month}-${day}`;
     }
 
-    disableOrEnableComissionTypeAndQuantity(bookingType: number | null) {
+       disableOrEnableComissionTypeAndQuantity(bookingType: number | null) {
         if (bookingType == null) return;
+
+        if (bookingType == 1 && this.quantity === 1) {
+            this.quantity = 26;
+        }
 
         if (bookingType == 0 || bookingType == 2) {
             this.commissionTypeIsDisabled = true;
             this.quantityIsDisabled = false;
         } else {
             this.commissionTypeIsDisabled = false;
-            this.quantityIsDisabled = true;
+            this.quantityIsDisabled = false;
         }
     }
 
