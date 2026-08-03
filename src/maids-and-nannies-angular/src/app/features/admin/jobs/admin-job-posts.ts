@@ -24,7 +24,7 @@ import { Textarea } from 'primeng/textarea';
     <p-toast />
     <div class="card">
       <h2>{{ 'JOB_POST.REVIEW_TITLE' | translate }}</h2>
-      <p-table [value]="posts()" [rows]="10">
+          <p-table [value]="posts()" [rows]="10" [paginator]="true">
         <ng-template #header>
           <tr>
             <th>{{ 'COMMON.ID' | translate }}</th>

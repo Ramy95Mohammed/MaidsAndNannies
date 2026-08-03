@@ -13,7 +13,7 @@ import { ApiService } from '../../../core/services/api.service';
   template: `
     <div class="card">
       <h2>{{ 'JOB_POST.MY_APPLICATIONS' | translate }}</h2>
-      <p-table [value]="apps()" [rows]="10">
+           <p-table [value]="apps()" [rows]="10" [paginator]="true">
         <ng-template #header>
           <tr>
             <th>{{ 'COMMON.ID' | translate }}</th>

@@ -20,7 +20,7 @@ import { SubscriptionService, SubscriptionDto } from '../../../core/services/sub
         <div class="card">
             <h2>{{ 'SUBSCRIPTION.ALL_SUBSCRIPTIONS' | translate }}</h2>
 
-            <p-table [value]="subscriptions()" [rows]="15" [tableStyle]="{ 'min-width': '60rem' }">
+              <p-table [value]="subscriptions()" [rows]="15" [paginator]="true" [tableStyle]="{ 'min-width': '60rem' }">
                 <ng-template #header>
                     <tr>
                         <th>#</th>

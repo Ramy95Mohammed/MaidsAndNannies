@@ -74,7 +74,7 @@ import { TranslatePipe } from '@ngx-translate/core';
                             <p-button [label]="'WORKER_DASHBOARD.EDIT_PROFILE' | translate" routerLink="/worker/profile" size="small" [text]="true"></p-button>
                         </div>
                     </ng-template>
-                    <p-table [value]="pendingBookings()" [rows]="5" [tableStyle]="{ 'min-width': '40rem' }">
+                    <p-table [value]="pendingBookings()" [rows]="5" [paginator]="true" [tableStyle]="{ 'min-width': '40rem' }">
                         <ng-template #header>
                             <tr>
                                 <th>{{ 'WORKER_DASHBOARD.HOMEOWNER' | translate }}</th>

@@ -28,7 +28,7 @@ import { CurrencyService, CurrencyDto } from '../../../core/services/currency.se
                 <p-button [label]="'CURRENCY.ADD' | translate" icon="pi pi-plus" (onClick)="showAddDialog()"></p-button>
             </div>
 
-            <p-table [value]="currencies()" [rows]="15" [tableStyle]="{'min-width':'50rem'}">
+            <p-table [value]="currencies()" [rows]="15" [paginator]="true" [tableStyle]="{'min-width':'50rem'}">
                 <ng-template #header>
                     <tr>
                         <th>{{ 'COMMON.ID' | translate }}</th>

@@ -28,8 +28,7 @@ import { ApiService } from '@/core/services/api.service';
         <p-toast />
         <div class="card">
             <h2>{{ 'SUBSCRIPTION.MY_SUBSCRIPTIONS' | translate }}</h2>
-
-            <p-table [value]="subscriptions()" [rows]="10" [tableStyle]="{ 'min-width': '50rem' }">
+             <p-table [value]="subscriptions()" [rows]="10" [paginator]="true" [tableStyle]="{ 'min-width': '50rem' }">
                 <ng-template #header>
                     <tr>
                         <th>{{ 'SUBSCRIPTION.PLAN' | translate }}</th>

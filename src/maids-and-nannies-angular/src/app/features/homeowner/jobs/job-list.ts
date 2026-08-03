@@ -18,7 +18,7 @@ import { ApiService } from '../../../core/services/api.service';
         <h2 class="m-0">{{ 'JOB_POST.MY_POSTS' | translate }}</h2>
         <p-button [label]="'JOB_POST.CREATE' | translate" icon="pi pi-plus" routerLink="/homeowner/jobs/create"></p-button>
       </div>
-      <p-table [value]="posts()" [rows]="10">
+          <p-table [value]="posts()" [rows]="10" [paginator]="true">
         <ng-template #header>
           <tr>
             <th>{{ 'COMMON.ID' | translate }}</th>

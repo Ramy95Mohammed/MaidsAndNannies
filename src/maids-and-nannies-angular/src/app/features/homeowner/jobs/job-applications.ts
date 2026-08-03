@@ -25,7 +25,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
     <div class="card">
       <a routerLink="/homeowner/jobs" class="text-primary cursor-pointer"><i class="pi pi-arrow-left mr-2"></i>{{ 'COMMON.BACK' | translate }}</a>
       <h2 class="mt-4">{{ 'JOB_POST.APPLICATIONS' | translate }}</h2>
-      <p-table [value]="applications()" [rows]="10">
+           <p-table [value]="applications()" [rows]="10" [paginator]="true">
         <ng-template #header>
           <tr>
             <th>{{ 'ADMIN.NAME' | translate }}</th>
