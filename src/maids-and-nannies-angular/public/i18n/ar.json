@@ -176,7 +176,20 @@
     "AGE": "العمر: {{years}} سنة",
     "RATING_COUNT": "({{count}} تقييم)",
     "UNSPECIFIED": "غير محدد",
-    "TABLE_ACTIONS": "إجراءات"    
+    "TABLE_ACTIONS": "إجراءات",
+    "UNKNOWN": "غير معروف",
+    "UNPAID": "غير مدفوع",
+    "DAY": "يوم",
+    "HOUR": "ساعة",
+    "MONTH": "شهر",
+    "DONE": "تم",
+    "CLEAR": "مسح",
+    "STATUS": "الحالة",
+    "BOOKING_TYPE": "نوع الحجز",
+    "FROM_DATE": "من تاريخ",
+    "TO_DATE": "إلى تاريخ",
+    "SEARCH_BY_NAME": "بحث بالاسم",
+    "APPLY": "تطبيق" 
   },
   "LANGUAGE": {
     "AR": "العربية",
@@ -224,7 +237,8 @@
     "TOAST_LOAD_PROFILE_ERROR": "فشل تحميل الملف الشخصي",
     "TOAST_SAVE_SUCCESS": "تم حفظ التعديلات",
     "TOAST_SAVE_ERROR": "فشل حفظ التعديلات",
-    "SELFIE_REQUIRED": "الرجاء رفع الصورة الشخصية"
+    "SELFIE_REQUIRED": "الرجاء رفع الصورة الشخصية",
+    "UPDATE_FAILED": "فشل التحديث"
   },
   "SUBSCRIPTION": {
     "MY_SUBSCRIPTIONS": "اشتراكاتي",
@@ -236,7 +250,10 @@
     "STATUS": "الحالة",
     "RENEW": "تجديد",
     "NO_SUBSCRIPTIONS": "لا توجد اشتراكات",
-    "DAYS_REMAINING": "باقي {{days}} يوم"
+    "DAYS_REMAINING": "باقي {{days}} يوم",
+    "ACTIVE_TAG": "نشط - باقي {{days}} يوم",
+    "EXPIRING_TAG": "ينتهي قريباً - باقي {{days}} يوم",
+    "RENEWAL_SENT": "تم إرسال طلب التجديد"
   },
   "CURRENCY": {
     "MANAGE": "إدارة العملات",
@@ -251,7 +268,34 @@
   },
   "SETTINGS": {
     "TITLE": "الإعدادات",
-    "REGISTER_HOMEOWNER": "تسجيل صاحبة منزل"
+    "REGISTER_HOMEOWNER": "تسجيل صاحبة منزل",
+    "PAYMENT": "الدفع",
+    "PAYMENT_AMOUNT_LABEL": "المبلغ المطلوب عند الدفع",
+    "COMMISSION_ONLY": "العمولة فقط (لصاحب التطبيق)",
+    "COMMISSION_PLUS_SALARY": "العمولة + مرتب العاملة",
+    "PAYMENT_MODE_DESC": "هل تدفع صاحبة المنزل العمولة فقط أم العمولة مع مرتب العاملة الأول؟",
+    "REQUIRE_PAYMENT_PROOF": "طلب إثبات الدفع",
+    "PROOF_YES": "نعم - ترفع صاحبة المنزل إثبات الدفع",
+    "PROOF_NO": "لا - يُعتبر الحجز مدفوعاً فور طلب الدفع",
+    "PROOF_DESC": "للحجوزات والاشتراكات - إذا لا، يتم التأكيد عبر واتساب",
+    "COMMISSION_RATES": "نسب العمولة",
+    "DAILY_LABEL": "عمولة يومي (٪)",
+    "DAILY_DESC": "نسبة العمولة للحجوزات اليومية",
+    "HOURLY_LABEL": "عمولة ساعي (٪)",
+    "HOURLY_DESC": "نسبة العمولة للحجوزات بالساعة",
+    "MONTHLY_ONETIME_LABEL": "عمولة شهري - مرة واحدة (٪)",
+    "MONTHLY_ONETIME_DESC": "نسبة العمولة للحجز الشهري (مرة واحدة)",
+    "MONTHLY_SUBSCRIPTION_LABEL": "عمولة شهري - اشتراك (٪)",
+    "MONTHLY_SUBSCRIPTION_DESC": "نسبة العمولة للحجز الشهري (اشتراك شهري)",
+    "LIMITS": "الحدود",
+    "MAX_FAULT_LABEL": "الحد الأقصى للاستبدال (تقصير العاملة)",
+    "MAX_FAULT_DESC": "عدد مرات الاستبدال المجاني المسموح بها بسبب تقصير العاملة",
+    "MAX_PREFERENCE_LABEL": "الحد الأقصى للاستبدال (رغبة شخصية)",
+    "MAX_PREFERENCE_DESC": "عدد مرات الاستبدال المسموح بها برغبة شخصية من صاحبة المنزل",
+    "MAX_ACTIVE_LABEL": "أقصى حجوزات نشطة",
+    "MAX_ACTIVE_DESC": "الحد الأقصى للحجوزات النشطة لكل صاحبة منزل",
+    "PENDING_CANCEL_LABEL": "إلغاء الحجز المعلق بعد (ساعة)",
+    "PENDING_CANCEL_DESC": "إلغاء الحجوزات المعلقة تلقائياً بعد هذه المدة"
   },
   "ERROR_PAGES": {
     "ACCESS_DENIED": "الدخول ممنوع",
@@ -273,7 +317,11 @@
     "EDIT_PROFILE": "تعديل الملف",
     "HOMEOWNER": "صاحبة المنزل",
     "DATE": "التاريخ",
-    "AMOUNT": "المبلغ"
+    "AMOUNT": "المبلغ",
+    "ACCEPTED": "تم قبول الحجز",
+    "ACCEPT_FAILED": "فشل قبول الحجز",
+    "REJECTED": "تم رفض الحجز",
+    "REJECT_FAILED": "فشل رفض الحجز"
   },
   "HOMEOWNER_DASHBOARD": {
     "WELCOME": "مرحباً {{name}}",
@@ -285,7 +333,8 @@
     "RECENT_BOOKINGS": "حجوزاتي الأخيرة",
     "SEARCH_BUTTON": "بحث عن عاملة",
     "RENEW": "تجديد",
-    "DAYS_LEFT": "باقي {{days}} يوم على تجديد الاشتراك"
+    "DAYS_LEFT": "باقي {{days}} يوم على تجديد الاشتراك",
+    "DATE":"التاريخ"
   },
   "WORKER_DETAIL": {
     "BACK_TO_SEARCH": "العودة للبحث",
@@ -352,7 +401,10 @@
     "OUTSTANDING_AMOUNT_DESC": "بعد الاستبدال، بقي مبلغ مستحق عليك",
     "PAYMENT_TOTAL": "المبلغ المطلوب دفعه",
     "PAID_DIRECTLY": "تم استلام الدفع — يمكنكم التواصل مع العاملة مباشرة",
-    "SEND_PROOF_WHATSAPP": "أرسلي إثبات الدفع عبر الواتساب — سيؤكد الأدمن الدفع بعد الاستلام"
+    "SEND_PROOF_WHATSAPP": "أرسلي إثبات الدفع عبر الواتساب — سيؤكد الأدمن الدفع بعد الاستلام",
+    "CONFIRM_PAYMENT_MSG": "تأكيد استلام الدفع لهذا الحجز؟",
+    "REPLACEMENT_REQUESTED": "تم طلب الاستبدال بنجاح",
+    "PAYMENT_METHOD": "وسيلة الدفع"
   },
   "ADMIN": {
     "TITLE": "لوحة الإدارة",
@@ -418,7 +470,13 @@
     "SPECIALIZATION_ELDERLY_CARE": "رعاية مسنين",
     "SPECIALIZATION_GENERAL": "عمل منزلي عام",
     "CONFIRM_PAYMENT":"تأكيد الدفع",
-    "TABLE_PAYMENT_AMOUNT": "المبلغ المستحق عند الدفع"
+    "TABLE_PAYMENT_AMOUNT": "المبلغ المستحق عند الدفع",
+    "AS_PER_SETTINGS": "حسب الإعدادات",
+    "REPLACEMENT_LIMITS_UPDATED": "تم تحديث حدود الاستبدال",
+    "REJECTED_DONE": "تم الرفض من الإدارة",
+    "HOMEOWNER_REGISTERED": "تم تسجيل صاحبة المنزل بنجاح",
+    "CONFIRM_RENEW_MSG": "تأكيد تجديد الاشتراك؟",
+    "RENEWAL_CONFIRMED": "تم تأكيد التجديد"
   },
   "JOB_POST": {
     "CREATE": "إنشاء إعلان وظيفة",
@@ -447,7 +505,20 @@
           "ACCEPT_CREATE": "قبول وإنشاء حجز",
       "ACCEPT_CONFIRM_TITLE": "تأكيد إنشاء حجز جديد",
       "ACCEPT_CONFIRM_MSG": "قبول هذا الطلب سينشئ حجزاً جديداً مستقلاً بعمولته ومدفوعاته الخاصة، ولن يعدّل أي حجز قائم لهذا الإعلان. هل تريد المتابعة؟",
-      "ACCEPT_CONFIRM_MSG_ACTIVE": "لديك حجز نشط لهذا الإعلان. القبول سينشئ حجزاً جديداً مستقلاً ولن يعدّل الحجز الحالي. هل تريد المتابعة؟"
+      "ACCEPT_CONFIRM_MSG_ACTIVE": "لديك حجز نشط لهذا الإعلان. القبول سينشئ حجزاً جديداً مستقلاً ولن يعدّل الحجز الحالي. هل تريد المتابعة؟",
+      "CREATED": "تم إنشاء الإعلان",
+      "CREATE_FAILED": "فشل إنشاء الإعلان",
+      "APPROVED": "تم اعتماد الإعلان",
+      "REJECTED": "تم رفض الإعلان",
+      "REVIEW_FAILED": "فشل المراجعة",
+      "REJECTED_BY_ADMIN": "مرفوض من الإدارة",
+      "STATUS_REVIEW_PENDING": "بانتظار المراجعة",
+      "STATUS_APPROVED": "معتمد",
+      "APPLICATION_STATUS_PENDING": "بانتظار",
+      "APPLICATION_ACCEPTED": "تم قبول الطلب",
+      "APPLICATION_ACCEPT_FAILED": "فشل قبول الطلب",
+      "APPLICATION_SUBMITTED": "تم تقديم الطلب",
+"APPLICATION_SUBMIT_FAILED": "فشل تقديم الطلب"
   },
   "MENU": {
     "ADMIN": "الإدارة",
@@ -465,7 +536,10 @@
     "SEARCH_WORKERS": "البحث عن عاملة",
     "MY_BOOKINGS": "حجوزاتي",
     "MY_SUBSCRIPTIONS": "اشتراكاتي",
-    "WORKER": "العاملة"    
+    "WORKER": "العاملة",
+    "PASSWORD_RESET": "استعادة كلمات المرور",
+    "JOB_POSTS": "إعلانات الوظائف",
+    "BROWSE_JOBS": "وظائف"
   },
     "NOTIF": {
     "TITLE": "الإشعارات",

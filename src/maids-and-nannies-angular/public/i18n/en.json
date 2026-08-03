@@ -20,13 +20,15 @@
     "REGISTER_AS_HOMEOWNER": "Register as Homeowner",
     "REGISTER_AS_WORKER": "Register as Worker",
     "PENDING_VERIFICATION": "Your account is pending admin verification",
-    "HOUSEHOLD_ASSISTANT" : "Household assistant",
-    "AS_HOUSEHOLD_ASSISTANT" : "As household assistant",
-    "BASIC_INFO":"Basic info",
-    "HOME_WORKER_INFO":"Home worker info",
-    "HOME_WORKER_IMAGE":"Home worker image",
+    "HOUSEHOLD_ASSISTANT": "Household assistant",
+    "AS_HOUSEHOLD_ASSISTANT": "As household assistant",
+    "BASIC_INFO": "Basic info",
+    "HOME_WORKER_INFO": "Home worker info",
+    "HOME_WORKER_IMAGE": "Home worker image",
     "FILL_ALL_FIELDS": "Please fill in all fields",
-    "LOGIN_FAILED": "Login failed"
+    "LOGIN_FAILED": "Login failed",
+    "PASSWORDS_MISMATCH": "Passwords do not match",
+    "REGISTRATION_FAILED": "Registration failed"
   },
   "HOMEOWNER": {
     "REGISTER": "Homeowner Registration",
@@ -37,13 +39,13 @@
     "ADDRESS": "Address",
     "CITY": "City",
     "DISTRICT": "District",
-     "PROFILE": "Profile",
+    "PROFILE": "Profile",
     "BASIC_INFO": "Basic Info",
-    "ADDRESS_INFO": "Address Info",            
-    "NATIONAL_ID_NUMBER": "National ID Number",    
-    "SELFIE_IMAGE": "Selfie Image",    
+    "ADDRESS_INFO": "Address Info",
+    "NATIONAL_ID_NUMBER": "National ID Number",
+    "SELFIE_IMAGE": "Selfie Image",
     "VERIFICATION_STATUS": "Verification Status",
-    "STATE":"State/Province"
+    "STATE": "State/Province"
   },
   "WORKER": {
     "REGISTER": "Worker Registration",
@@ -60,8 +62,8 @@
     "HOURLY_RATE": "Hourly Rate",
     "CURRENCY": "Currency",
     "LANGUAGES": "Languages",
-    "MAXIMUM_MONTHLY_SALARY":"Maximum monthly salary",
-    "BIRTHDATE":"Birth of date",
+    "MAXIMUM_MONTHLY_SALARY": "Maximum monthly salary",
+    "BIRTHDATE": "Birth of date",
     "DAILY_RATE": "Daily Rate",
     "SPECIALIZATION_ADDITIONAL": "Additional Specialization (optional)"
   },
@@ -102,13 +104,13 @@
     "REJECT": "Reject",
     "START": "Start Work",
     "COMPLETE": "Complete",
-     "REPLACEMENT": "Replacement",
+    "REPLACEMENT": "Replacement",
     "REPLACEMENT_HINT": "Two replacement used",
     "TYPE": "Booking Type",
     "QUANTITY": "Quantity",
     "TOTAL_AMOUNT": "Total amount",
-    "TOTAL_AMOUNT_AFTER_CONVERSION":"Total amount after conversion",
-    "SALARY":"Salary"
+    "TOTAL_AMOUNT_AFTER_CONVERSION": "Total amount after conversion",
+    "SALARY": "Salary"
   },
   "PAYMENT": {
     "UPLOAD_PROOF": "Upload Payment Proof",
@@ -120,8 +122,8 @@
     "CONFIRM": "Confirm",
     "REJECT": "Reject"
   },
-  "REVIEW": {    
-    "WRITE": "Write Review",            
+  "REVIEW": {
+    "WRITE": "Write Review",
     "TITLE": "Rate booking",
     "RATE_WORKER": "Rate the worker",
     "RATE_HOMEOWNER": "Rate the homeowner",
@@ -158,22 +160,36 @@
     "PREVIOUS": "Previous",
     "YES": "Yes",
     "NO": "No",
-    "COUNTRY":"Country",
-    "STATE":"State/Province",
+    "COUNTRY": "Country",
+    "STATE": "State/Province",
     "WHATSAPP_NUMBER": "WhatsApp Number",
-    "EX_CAIRO":"Ex.cairo",
-    "EX_FIFTHSETTLEMENT":"Ex.Fifth Settlement",
-    "EX_90ThSTREET":"Ex.90th Street",
+    "EX_CAIRO": "Ex.cairo",
+    "EX_FIFTHSETTLEMENT": "Ex.Fifth Settlement",
+    "EX_90ThSTREET": "Ex.90th Street",
     "CITY": "City",
-     "ID": "ID",
+    "ID": "ID",
     "PER_DAY": "/ Day",
     "PER_MONTH": "/ Month",
     "PER_HOUR": "/ Hour",
     "EXPERIENCE_YEARS": "Experience: {{years}} years",
     "AGE": "Age",
-    "RATING_COUNT": "({{count}} reviews)",        
+    "RATING_COUNT": "({{count}} reviews)",
     "UNSPECIFIED": "Not specified",
-    "TABLE_ACTIONS": "Actions"
+    "TABLE_ACTIONS": "Actions",
+    "UNKNOWN": "Unknown",
+    "UNPAID": "Unpaid",
+    "DAY": "day",
+    "HOUR": "hour",
+    "MONTH": "month",
+    "DONE": "Done",
+    "CLEAR": "Clear",
+    "STATUS": "Status",
+    "BOOKING_TYPE": "Booking Type",
+    "FROM_DATE": "From",
+    "TO_DATE": "To",
+    "SEARCH_BY_NAME": "Search by name",
+    "APPLY": "Apply",
+    "ALL": "All"
   },
   "LANGUAGE": {
     "AR": "العربية",
@@ -220,10 +236,12 @@
     "TOAST_LOAD_CITIES_ERROR": "Failed to load cities list",
     "TOAST_LOAD_PROFILE_ERROR": "Failed to load profile",
     "TOAST_SAVE_SUCCESS": "Changes saved successfully",
-    "TOAST_SAVE_ERROR": "Failed to save changes"
-  } ,
+    "TOAST_SAVE_ERROR": "Failed to save changes",
+    "UPDATE_FAILED": "Update failed",
+    "SELFIE_REQUIRED": "Selfie photo is required"
+  },
   "SUBSCRIPTION": {
-   "MY_SUBSCRIPTIONS": "My Subscriptions",
+    "MY_SUBSCRIPTIONS": "My Subscriptions",
     "ALL_SUBSCRIPTIONS": "All Subscriptions",
     "PLAN": "Plan",
     "AMOUNT": "Amount",
@@ -232,8 +250,11 @@
     "STATUS": "Status",
     "RENEW": "Renew",
     "NO_SUBSCRIPTIONS": "No Subscriptions",
-    "DAYS_REMAINING": "{{days}} days remaining"
-},
+    "DAYS_REMAINING": "{{days}} days remaining",
+    "ACTIVE_TAG": "Active - {{days}} days left",
+    "EXPIRING_TAG": "Expiring soon - {{days}} days left",
+    "RENEWAL_SENT": "Renewal request sent"
+  },
   "CURRENCY": {
     "MANAGE": "Manage Currencies",
     "ADD": "Add Currency",
@@ -245,10 +266,37 @@
     "RATE": "Exchange Rate to EGP",
     "ACTIVE": "Active"
   },
-   "SETTINGS": {
+  "SETTINGS": {
     "TITLE": "Settings",
-    "REGISTER_HOMEOWNER": "Register Homeowner"
-  },  
+    "REGISTER_HOMEOWNER": "Register Homeowner",
+    "PAYMENT": "Payment",
+    "PAYMENT_AMOUNT_LABEL": "Amount required at payment",
+    "COMMISSION_ONLY": "Commission only (for the app owner)",
+    "COMMISSION_PLUS_SALARY": "Commission + worker's salary",
+    "PAYMENT_MODE_DESC": "Does the homeowner pay commission only or commission with the worker's first salary?",
+    "REQUIRE_PAYMENT_PROOF": "Require payment proof",
+    "PROOF_YES": "Yes, homeowner uploads payment proof",
+    "PROOF_NO": "No, booking is considered paid when payment is requested",
+    "PROOF_DESC": "For bookings and subscriptions - if no, confirmation is done via WhatsApp",
+    "COMMISSION_RATES": "Commission rates",
+    "DAILY_LABEL": "Daily commission (%)",
+    "DAILY_DESC": "Commission rate for daily bookings",
+    "HOURLY_LABEL": "Hourly commission (%)",
+    "HOURLY_DESC": "Commission rate for hourly bookings",
+    "MONTHLY_ONETIME_LABEL": "Monthly commission - one time (%)",
+    "MONTHLY_ONETIME_DESC": "Commission rate for monthly bookings (one time)",
+    "MONTHLY_SUBSCRIPTION_LABEL": "Monthly commission - subscription (%)",
+    "MONTHLY_SUBSCRIPTION_DESC": "Commission rate for monthly bookings (monthly subscription)",
+    "LIMITS": "Limits",
+    "MAX_FAULT_LABEL": "Max replacement (worker fault)",
+    "MAX_FAULT_DESC": "Free replacements allowed due to worker fault",
+    "MAX_PREFERENCE_LABEL": "Max replacement (homeowner preference)",
+    "MAX_PREFERENCE_DESC": "Replacements allowed at homeowner's own preference",
+    "MAX_ACTIVE_LABEL": "Max active bookings",
+    "MAX_ACTIVE_DESC": "Max active bookings per homeowner",
+    "PENDING_CANCEL_LABEL": "Cancel pending booking after (hours)",
+    "PENDING_CANCEL_DESC": "Auto-cancel pending bookings after this period"
+  },
   "ERROR_PAGES": {
     "ACCESS_DENIED": "Access Denied",
     "ACCESS_DENIED_MSG": "You do not have the necessary permissions. Please contact admins.",
@@ -269,7 +317,11 @@
     "EDIT_PROFILE": "Edit Profile",
     "HOMEOWNER": "Homeowner",
     "DATE": "Date",
-    "AMOUNT": "Amount"
+    "AMOUNT": "Amount",
+    "ACCEPTED": "Booking accepted",
+    "ACCEPT_FAILED": "Failed to accept booking",
+    "REJECTED": "Booking rejected",
+    "REJECT_FAILED": "Failed to reject booking"
   },
   "HOMEOWNER_DASHBOARD": {
     "WELCOME": "Welcome {{name}}",
@@ -281,7 +333,8 @@
     "RECENT_BOOKINGS": "My Recent Bookings",
     "SEARCH_BUTTON": "Search Worker",
     "RENEW": "Renew",
-    "DAYS_LEFT": "{{days}} days remaining for subscription renewal"
+    "DAYS_LEFT": "{{days}} days remaining for subscription renewal",
+    "DATE":"Date"
   },
   "WORKER_DETAIL": {
     "BACK_TO_SEARCH": "Back to Search",
@@ -310,9 +363,9 @@
     "HOURLY": "Hourly",
     "COMMISSION_ONETIME": "One-time Commission",
     "COMMISSION_SUBSCRIPTION": "Monthly Subscription",
-    "LIVE_IN":"Live-in",
-    "ALL":"All",
-    "CALC_COMMISION":"Calculate commission",
+    "LIVE_IN": "Live-in",
+    "ALL": "All",
+    "CALC_COMMISION": "Calculate commission",
     "QUANTITY_MONTHLY": "Working days per month"
   },
   "BOOKING_DETAIL": {
@@ -349,7 +402,9 @@
     "OUTSTANDING_AMOUNT_DESC": "After the replacement, you have an outstanding amount to pay.",
     "PAYMENT_TOTAL": "Total Payment Due",
     "PAID_DIRECTLY": "Payment has been received. You may contact the worker directly.",
-        "SEND_PROOF_WHATSAPP": "Send the payment proof via WhatsApp — the admin will confirm the payment after receiving it"
+    "SEND_PROOF_WHATSAPP": "Send the payment proof via WhatsApp — the admin will confirm the payment after receiving it",
+    "CONFIRM_PAYMENT_MSG": "Confirm payment received for this booking?",
+    "REPLACEMENT_REQUESTED": "Replacement requested successfully"
   },
   "ADMIN": {
     "TITLE": "Admin Panel",
@@ -414,8 +469,14 @@
     "SPECIALIZATION_CHILDCARE": "Childcare",
     "SPECIALIZATION_ELDERLY_CARE": "Elderly Care",
     "SPECIALIZATION_GENERAL": "General Housekeeping",
-    "CONFIRM_PAYMENT":"Confirm payment",
-    "TABLE_PAYMENT_AMOUNT": "Payment Due"
+    "CONFIRM_PAYMENT": "Confirm payment",
+    "TABLE_PAYMENT_AMOUNT": "Payment Due",
+    "AS_PER_SETTINGS": "Per settings",
+    "REPLACEMENT_LIMITS_UPDATED": "Replacement limits updated",
+    "REJECTED_DONE": "Rejected by admin",
+    "HOMEOWNER_REGISTERED": "Homeowner registered successfully",
+    "CONFIRM_RENEW_MSG": "Confirm subscription renewal?",
+    "RENEWAL_CONFIRMED": "Renewal confirmed"
   },
   "JOB_POST": {
     "CREATE": "Create Job Post",
@@ -444,7 +505,20 @@
     "ACCEPT_CREATE": "Accept & Create Booking",
     "ACCEPT_CONFIRM_TITLE": "Confirm New Booking",
     "ACCEPT_CONFIRM_MSG": "Accepting this application will create a new independent booking with its own commission and payments. It will not modify any existing booking for this post. Continue?",
-    "ACCEPT_CONFIRM_MSG_ACTIVE": "You already have an active booking for this post. Accepting will create a new independent booking and will not modify the current one. Continue?"
+    "ACCEPT_CONFIRM_MSG_ACTIVE": "You already have an active booking for this post. Accepting will create a new independent booking and will not modify the current one. Continue?",
+    "CREATED": "Job post created",
+    "CREATE_FAILED": "Failed to create job post",
+    "APPROVED": "Job post approved",
+    "REJECTED": "Job post rejected",
+    "REVIEW_FAILED": "Review failed",
+    "REJECTED_BY_ADMIN": "Rejected by admin",
+    "STATUS_REVIEW_PENDING": "Pending review",
+    "STATUS_APPROVED": "Approved",
+    "APPLICATION_STATUS_PENDING": "Pending",
+    "APPLICATION_ACCEPTED": "Application accepted",
+    "APPLICATION_ACCEPT_FAILED": "Failed to accept application",
+    "APPLICATION_SUBMITTED": "Application submitted",
+    "APPLICATION_SUBMIT_FAILED": "Failed to submit application"
   },
   "MENU": {
     "ADMIN": "Admin",
@@ -462,9 +536,12 @@
     "SEARCH_WORKERS": "Search Workers",
     "MY_BOOKINGS": "My Bookings",
     "MY_SUBSCRIPTIONS": "My Subscriptions",
-    "WORKER": "Worker"
+    "WORKER": "Worker",
+    "PASSWORD_RESET": "Password Resets",
+    "JOB_POSTS": "Job Posts",
+    "BROWSE_JOBS": "Browse Jobs"
   },
-    "NOTIF": {
+  "NOTIF": {
     "TITLE": "Notifications",
     "EMPTY": "No notifications",
     "MARK_ALL_READ": "Mark all as read",
@@ -485,7 +562,7 @@
     "NEW_REVIEW": "You received a {{rating}}/5 rating on booking #{{bookingId}}",
     "BOOKING_REMINDER": "Reminder: your booking #{{bookingId}} starts tomorrow"
   },
-    "POLICIES": {
+  "POLICIES": {
     "TITLE": "Platform Policies",
     "SUBTITLE": "Terms and policies governing the use of the platform",
     "LINK": "Terms & Policies",
@@ -507,7 +584,7 @@
     "TERMS_LINK": "Terms of Use and Platform Policies",
     "REQUIRED": "You must agree to the terms and policies before booking"
   },
-    "FORGOT": {
+  "FORGOT": {
     "TITLE": "Reset Password",
     "EMAIL_HINT": "Enter your registered email and our support team will send you the recovery code via WhatsApp.",
     "SEND_CODE": "Send Code",
@@ -523,7 +600,7 @@
     "SENT_SUCCESS": "Request sent — you will receive the recovery code via WhatsApp",
     "RESET_SUCCESS": "New password set. You can now log in"
   },
-    "ADMIN_RESET": {
+  "ADMIN_RESET": {
     "TITLE": "Password Reset Requests",
     "CODE": "Code",
     "REQUESTED_AT": "Requested At",
