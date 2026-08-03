@@ -26,13 +26,13 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
             <p-toast />
             <h2>{{ 'BOOKING.MY_BOOKINGS' | translate }}</h2>
             <div class="flex flex-wrap gap-3 mb-3 align-items-center">
-                <p-select [options]="statusOptions" [(ngModel)]="filters.status" optionLabel="label" optionValue="value" placeholder="الحالة" [showClear]="true" styleClass="w-14rem"></p-select>
-                <p-select [options]="typeOptions" [(ngModel)]="filters.bookingType" optionLabel="label" optionValue="value" placeholder="نوع الحجز" [showClear]="true" styleClass="w-12rem"></p-select>
-                <p-datepicker [(ngModel)]="filters.fromDate" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="من تاريخ" [showClear]="true"></p-datepicker>
-                <p-datepicker [(ngModel)]="filters.toDate" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="إلى تاريخ" [showClear]="true"></p-datepicker>
+                <p-select [options]="statusOptions" [(ngModel)]="filters.status" optionLabel="label" optionValue="value" [placeholder]="'COMMON.STATUS' | translate" [showClear]="true" styleClass="w-14rem"></p-select>
+                <p-select [options]="typeOptions" [(ngModel)]="filters.bookingType" optionLabel="label" optionValue="value" [placeholder]="'COMMON.BOOKING_TYPE' | translate" [showClear]="true" styleClass="w-12rem"></p-select>
+                <p-datepicker [(ngModel)]="filters.fromDate" dateFormat="dd/mm/yy" [showIcon]="true" [placeholder]="'COMMON.FROM_DATE' | translate" [showClear]="true"></p-datepicker>
+                <p-datepicker [(ngModel)]="filters.toDate" dateFormat="dd/mm/yy" [showIcon]="true" [placeholder]="'COMMON.TO_DATE' | translate" [showClear]="true"></p-datepicker>
                 <span class="p-input-icon-right">
                     <i class="pi pi-search"></i>
-                    <input pInputText [(ngModel)]="filters.search" placeholder="بحث عن اسم صاحبة المنزل" class="w-16rem" />
+                    <input pInputText [(ngModel)]="filters.search" [placeholder]="'COMMON.SEARCH_BY_NAME' | translate" class="w-16rem" />
                 </span>
                 <p-button icon="pi pi-filter"[label]="'COMMON.SEARCH' | translate" size="small" (onClick)="applyFilters()"></p-button>
                 <p-button icon="pi pi-times" [label]="'COMMON.DELETE' | translate" size="small" severity="secondary" (onClick)="resetFilters()"></p-button>
@@ -47,7 +47,6 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
                         <th>{{ 'BOOKING.QUANTITY' | translate }}</th>
                         <th>{{ 'BOOKING.TOTAL_AMOUNT' | translate }}</th>
                         <th>{{ 'BOOKING.STATUS' | translate }}</th>
-                        <!-- <th>{{ 'REVIEW.RATING' | translate }}</th> -->
                     </tr>
                 </ng-template>
                 <ng-template #body let-booking>
@@ -59,12 +58,6 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
                         <td>{{ (booking.bookingType == 1)?"__": booking.quantity }}</td>
                         <td>{{ booking.totalAmount | currency:booking.currencyCode:'':'1.0-0' }} {{ booking.currencyCode }}</td>
                         <td><p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag></td>
-                        <!-- <td>
-                            <p-button *ngIf="booking.status === 5 && !booking.hasReviewed"
-                                      [label]="'REVIEW.RATE_HOMEOWNER' | translate" size="small" severity="success"
-                                      (onClick)="openReview(booking)"></p-button>
-                            <span *ngIf="booking.hasReviewed" class="text-sm text-muted-color">{{ 'REVIEW.DONE' | translate }}</span>
-                        </td> -->
                     </tr>
                 </ng-template>
             </p-table>
@@ -89,13 +82,8 @@ export class WorkerBookings implements OnInit {
     private messageService = inject(MessageService);
     bookings = signal<BookingListDto[]>([]);
 
-    statusOptions = [
-        { label: 'في الانتظار', value: 0 }, { label: 'تم تأكيد العمالة', value: 1 },
-        { label: 'بانتظار الدفع', value: 2 }, { label: 'مدفوع', value: 3 }, { label: 'نشط', value: 4 },
-        { label: 'مكتمل', value: 5 }, { label: 'ملغي', value: 6 }, { label: 'طلب استبدال', value: 7 },
-        { label: 'قيد المراجعة', value: 8 }
-    ];
-    typeOptions = [{ label: 'يومي', value: 0 }, { label: 'شهري', value: 1 }, { label: 'ساعي', value: 2 }];
+    statusOptions: any[] = [];
+    typeOptions: any[] = [];
 
     filters: any = { status: null, bookingType: null, fromDate: null, toDate: null, search: '' };
 
@@ -109,7 +97,25 @@ export class WorkerBookings implements OnInit {
     isSubmitting = false;
     private currentBooking: BookingListDto | null = null;
 
-    ngOnInit() { this.loadBookings(); }
+    ngOnInit() {
+        this.statusOptions = [
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PENDING'), value: 0 },
+            { label: this.translate.instant('ADMIN.WORKER_CONFIRMED'), value: 1 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_WAITING_PAYMENT'), value: 2 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PAID'), value: 3 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_ACTIVE'), value: 4 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_COMPLETED'), value: 5 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_CANCELLED'), value: 6 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REPLACEMENT'), value: 7 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REVIEW'), value: 8 }
+        ];
+        this.typeOptions = [
+            { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
+            { label: this.translate.instant('WORKER_DETAIL.MONTHLY'), value: 1 },
+            { label: this.translate.instant('WORKER_DETAIL.HOURLY'), value: 2 }
+        ];
+        this.loadBookings();
+    }
 
     applyFilters() { this.page = 1; this.loadBookings(); }
     resetFilters() { this.filters = { status: null, bookingType: null, fromDate: null, toDate: null, search: '' }; this.page = 1; this.loadBookings(); }
@@ -170,8 +176,8 @@ export class WorkerBookings implements OnInit {
     getStatusLabel(status: number): string {
         return [this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PENDING'),
             this.translate.instant('ADMIN.WORKER_CONFIRMED'),
-            this.translate.instant('ADMIN.WORKER_CONFIRMED'),
-            this.translate.instant('ADMIN.WORKER_CONFIRMED'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_WAITING_PAYMENT'),
+            this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PAID'),
             this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_ACTIVE'),
             this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_COMPLETED'),
             this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_CANCELLED'),

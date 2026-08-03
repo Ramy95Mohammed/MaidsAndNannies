@@ -33,7 +33,8 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Ex
         }
         catch (UnauthorizedAccessException ex)
         {
-            await WriteAsync(context, HttpStatusCode.Unauthorized, new { message = ex.Message });
+            await WriteAsync(context, HttpStatusCode.Unauthorized,
+                new { message = string.IsNullOrWhiteSpace(ex.Message) ? "غير مصرح لك" : ex.Message });
         }
         catch (KeyNotFoundException ex)
         {

@@ -44,7 +44,7 @@ import { Textarea } from 'primeng/textarea';
             <td>{{ getTypeLabel(p.bookingType) }}</td>
             <td>{{ p.monthlySalary }} {{ p.currencyCode }}</td>            
             <td>{{ p.createdAt | date:'short' }}</td>
-            <td><p-button label="مراجعة" icon="pi pi-eye" size="small" (onClick)="openReview(p)"></p-button></td>
+            <td><p-button [label]="'JOB_POST.REVIEW' | translate" icon="pi pi-eye" size="small" (onClick)="openReview(p)"></p-button></td>
           </tr>
         </ng-template>
       </p-table>
@@ -61,8 +61,8 @@ import { Textarea } from 'primeng/textarea';
         <small class="text-muted-color">{{ 'JOB_POST.SANITIZED_HINT' | translate }}</small>
       </div>
       <div class="flex gap-2">
-        <p-button label="اعتماد" icon="pi pi-check" severity="success" styleClass="flex-1" (onClick)="review(true)"></p-button>
-        <p-button label="رفض" icon="pi pi-times" severity="danger" styleClass="flex-1" (onClick)="review(false)"></p-button>
+        <p-button [label]="'JOB_POST.APPROVE' | translate" icon="pi pi-check" severity="success" styleClass="flex-1" (onClick)="review(true)"></p-button>
+        <p-button [label]="'ADMIN.REJECT' | translate" icon="pi pi-times" severity="danger" styleClass="flex-1" (onClick)="review(false)"></p-button>
       </div>
     </p-dialog>
   `
@@ -90,16 +90,16 @@ export class AdminJobPosts implements OnInit {
     this.api.reviewJobPost(this.selectedPost.id, {
       sanitizedDescription: this.sanitizedDescription,
       isApproved: approved,
-      rejectionReason: approved ? null : 'مرفوض من الإدارة'
+      rejectionReason: approved ? null : this.translate.instant('JOB_POST.REJECTED_BY_ADMIN')
     }).subscribe({
       next: () => {
-        this.msg.add({ severity: 'success', detail: approved ? 'تم اعتماد الإعلان' : 'تم رفض الإعلان' });
+        this.msg.add({ severity: 'success', detail: approved ? this.translate.instant('JOB_POST.APPROVED') : this.translate.instant('JOB_POST.REJECTED') });
         this.showDialog = false;
         this.load();
       },
-      error: () => this.msg.add({ severity: 'error', detail: 'فشل المراجعة' })
+      error: () => this.msg.add({ severity: 'error', detail: this.translate.instant('JOB_POST.REVIEW_FAILED') })
     });
   }
 
-  getTypeLabel(t: number) { return ['يومي', 'شهري', 'ساعي'][t] || '—'; }
+  getTypeLabel(t: number) { return [this.translate.instant('WORKER_DETAIL.DAILY'), this.translate.instant('WORKER_DETAIL.MONTHLY'), this.translate.instant('WORKER_DETAIL.HOURLY')][t] || '—'; }
 }

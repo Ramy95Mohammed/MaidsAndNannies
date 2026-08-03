@@ -5,7 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { Toast } from 'primeng/toast';
 import { MessageModule } from 'primeng/message';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MessageService } from 'primeng/api';
 import { HomeownerService, HomeownerProfile } from '../../../core/services/homeowner.service';
 import { ChangePasswordComponent } from "@/features/profile/change-password";
@@ -173,6 +173,7 @@ import { ChangePasswordComponent } from "@/features/profile/change-password";
 export class HomeownerProfileComponent implements OnInit {
     private homeownerService = inject(HomeownerService);
     private messageService = inject(MessageService);
+    private translate = inject(TranslateService);
 
     profile: HomeownerProfile | null = null;
     isLoading = false;
@@ -200,7 +201,7 @@ export class HomeownerProfileComponent implements OnInit {
                 this.formData.address = res.address;
                 this.formData.nationalIdNumber = res.nationalIdNumber;
             },
-            error: () => this.errorMessage = 'فشل تحميل الملف الشخصي'
+            error: () => this.errorMessage = this.translate.instant('HOMEOWNER.PROFILE_LOAD_ERROR')
         });
     }
 
@@ -238,13 +239,17 @@ export class HomeownerProfileComponent implements OnInit {
             },
             error: (err) => {                
                 this.isLoading = false;
-                this.errorMessage = err.error?.message || 'فشل التحديث';
+                this.errorMessage = err.error?.message || this.translate.instant('HOMEOWNER.UPDATE_FAILED');
             }
         });
     }
 
     getStatusLabel(status: number | undefined): string {
-        const labels: { [k: number]: string } = { 0: 'في الانتظار', 1: 'موثق', 2: 'مرفوض' };
-        return labels[status ?? 0] || 'غير معروف';
+        const labels: { [k: number]: string } = {
+            0: this.translate.instant('HOMEOWNER.STATUS_PENDING'),
+            1: this.translate.instant('HOMEOWNER.STATUS_VERIFIED'),
+            2: this.translate.instant('HOMEOWNER.STATUS_REJECTED')
+        };
+        return labels[status ?? 0] || this.translate.instant('COMMON.UNKNOWN');
     }
 }

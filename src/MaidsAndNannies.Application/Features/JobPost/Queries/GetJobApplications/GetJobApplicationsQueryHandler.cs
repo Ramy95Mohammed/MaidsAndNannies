@@ -12,7 +12,7 @@ public sealed class GetJobApplicationsQueryHandler(IApplicationDbContext dbConte
     public async Task<IReadOnlyList<ApplicationDto>> Handle(GetJobApplicationsQuery r, CancellationToken ct)
     {
         var isOwner = await dbContext.JobPosts.AnyAsync(j => j.Id == r.PostId && j.HomeownerId == r.HomeownerId, ct);
-        if (!isOwner) throw new UnauthorizedAccessException();
+        if (!isOwner) throw new UnauthorizedAccessException("غير مصرح لك");
 
         // هل يوجد حجز نشط لنفس الإعلان؟ (حتى يُحذَّر صاحبة المنزل أن القبول لا يعدّل الحجز الحالي)
         var hasActiveBooking = await dbContext.Bookings.AnyAsync(

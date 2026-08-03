@@ -8,7 +8,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 
 interface SettingItem {
@@ -55,41 +55,42 @@ interface SettingGroup {
 export class AdminSettings implements OnInit {
     private apiService = inject(ApiService);
     private messageService = inject(MessageService);
+    private translate = inject(TranslateService);
 
     groups: SettingGroup[] = [
         {
-            title: 'الدفع',
+            title: this.translate.instant('SETTINGS.PAYMENT'),
             settings: [
-                { key: 'CommissionBillingMode', label: 'المبلغ المطلوب عند الدفع', value: 'CommissionOnly', type: 'select',
+                { key: 'CommissionBillingMode', label: this.translate.instant('SETTINGS.PAYMENT_AMOUNT_LABEL'), value: 'CommissionOnly', type: 'select',
                   options: [
-                      { label: 'العمولة فقط (لصاحب التطبيق)', value: 'CommissionOnly' },
-                      { label: 'العمولة + مرتب العاملة', value: 'CommissionPlusSalary' }
+                      { label: this.translate.instant('SETTINGS.COMMISSION_ONLY'), value: 'CommissionOnly' },
+                      { label: this.translate.instant('SETTINGS.COMMISSION_PLUS_SALARY'), value: 'CommissionPlusSalary' }
                   ],
-                  description: 'هل يدفع صاحبة المنزل العمولة فقط أم العمولة مع مرتب العاملة الأول' },
-                { key: 'RequirePaymentProof', label: 'طلب إثبات الدفع', value: 'true', type: 'select',
+                  description: this.translate.instant('SETTINGS.PAYMENT_MODE_DESC') },
+                { key: 'RequirePaymentProof', label: this.translate.instant('SETTINGS.REQUIRE_PAYMENT_PROOF'), value: 'true', type: 'select',
                   options: [
-                      { label: 'نعم - ترفع صاحبة المنزل إثبات الدفع', value: 'true' },
-                      { label: 'لا - يُعتبر الحجز مدفوعاً فور طلب الدفع', value: 'false' }
+                      { label: this.translate.instant('SETTINGS.PROOF_YES'), value: 'true' },
+                      { label: this.translate.instant('SETTINGS.PROOF_NO'), value: 'false' }
                   ],
-                  description: 'للحجوزات والاشتراكات — إذا لا، يتم التأكيد عبر واتساب' },
+                  description: this.translate.instant('SETTINGS.PROOF_DESC') },
             ]
         },
         {
-            title: 'نسب العمولة',
+            title: this.translate.instant('SETTINGS.COMMISSION_RATES'),
             settings: [
-                { key: 'CommissionDailyPercent', label: 'عمولة يومي (%)', value: 10, type: 'number', description: 'نسبة العمولة للحجوزات اليومية' },
-                { key: 'CommissionHourlyPercent', label: 'عمولة ساعي (%)', value: 10, type: 'number', description: 'نسبة العمولة للحجوزات بالساعة' },
-                { key: 'CommissionMonthlyOneTimePercent', label: 'عمولة شهري - مرة واحدة (%)', value: 10, type: 'number', description: 'نسبة العمولة للحجز الشهري (مرة واحدة)' },
-                { key: 'CommissionMonthlySubscriptionPercent', label: 'عمولة شهري - اشتراك (%)', value: 10, type: 'number', description: 'نسبة العمولة للحجز الشهري (اشتراك شهري)' },
+                { key: 'CommissionDailyPercent', label: this.translate.instant('SETTINGS.DAILY_LABEL'), value: 10, type: 'number', description: this.translate.instant('SETTINGS.DAILY_DESC') },
+                { key: 'CommissionHourlyPercent', label: this.translate.instant('SETTINGS.HOURLY_LABEL'), value: 10, type: 'number', description: this.translate.instant('SETTINGS.HOURLY_DESC') },
+                { key: 'CommissionMonthlyOneTimePercent', label: this.translate.instant('SETTINGS.MONTHLY_ONETIME_LABEL'), value: 10, type: 'number', description: this.translate.instant('SETTINGS.MONTHLY_ONETIME_DESC') },
+                { key: 'CommissionMonthlySubscriptionPercent', label: this.translate.instant('SETTINGS.MONTHLY_SUBSCRIPTION_LABEL'), value: 10, type: 'number', description: this.translate.instant('SETTINGS.MONTHLY_SUBSCRIPTION_DESC') },
             ]
         },
         {
-            title: 'الحدود',
+            title: this.translate.instant('SETTINGS.LIMITS'),
             settings: [
-                { key: 'MaxFaultReplacementCount', label: 'الحد الأقصى للاستبدال (تقصير العاملة)', value: 3, type: 'number', description: 'عدد مرات الاستبدال المجاني المسموح بها بسبب تقصير العاملة' },
-                { key: 'MaxPreferenceReplacementCount', label: 'الحد الأقصى للاستبدال (رغبة شخصية)', value: 1, type: 'number', description: 'عدد مرات الاستبدال المسموح بها برغبة شخصية من صاحبة المنزل' },
-                { key: 'MaxActiveBookingsPerHomeowner', label: 'أقصى حجوزات نشطة', value: 5, type: 'number', description: 'الحد الأقصى للحجوزات النشطة لكل صاحبة منزل' },
-                { key: 'AutoCancelPendingBookingHours', label: 'إلغاء الحجز المعلق بعد (ساعة)', value: 48, type: 'number', description: 'إلغاء الحجوزات المعلقة تلقائياً بعد هذه المدة' },
+                { key: 'MaxFaultReplacementCount', label: this.translate.instant('SETTINGS.MAX_FAULT_LABEL'), value: 3, type: 'number', description: this.translate.instant('SETTINGS.MAX_FAULT_DESC') },
+                { key: 'MaxPreferenceReplacementCount', label: this.translate.instant('SETTINGS.MAX_PREFERENCE_LABEL'), value: 1, type: 'number', description: this.translate.instant('SETTINGS.MAX_PREFERENCE_DESC') },
+                { key: 'MaxActiveBookingsPerHomeowner', label: this.translate.instant('SETTINGS.MAX_ACTIVE_LABEL'), value: 5, type: 'number', description: this.translate.instant('SETTINGS.MAX_ACTIVE_DESC') },
+                { key: 'AutoCancelPendingBookingHours', label: this.translate.instant('SETTINGS.PENDING_CANCEL_LABEL'), value: 48, type: 'number', description: this.translate.instant('SETTINGS.PENDING_CANCEL_DESC') },
             ]
         }
     ];
@@ -115,7 +116,7 @@ export class AdminSettings implements OnInit {
             }
         }
         this.apiService.updateSettings(items).subscribe({
-            next: () => this.messageService.add({ severity: 'success', detail: 'تم حفظ الإعدادات' })
+            next: () => this.messageService.add({ severity: 'success', detail: this.translate.instant('SETTINGS.SAVED') })
         });
     }
 }

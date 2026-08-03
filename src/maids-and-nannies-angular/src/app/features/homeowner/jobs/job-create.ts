@@ -170,7 +170,7 @@ export class JobCreate implements OnInit {
     }
   submit() {
     if (!this.description || !this.startDate) {
-      this.msg.add({ severity: 'warn', detail: 'يرجى ملء جميع الحقول' });
+      this.msg.add({ severity: 'warn', detail: this.translate.instant('JOB_POST.FILL_ALL_FIELDS') });
       return;
     }
     this.loading = true;
@@ -187,8 +187,10 @@ export class JobCreate implements OnInit {
       quantity: this.quantity,
       currencyId: this.currencyId
     }).subscribe({
-      next: () => { this.msg.add({ severity: 'success', detail: 'تم إنشاء الإعلان' }); setTimeout(() => this.router.navigate(['/homeowner/jobs']), 1500); },
-      error: () => this.msg.add({ severity: 'error', detail: 'فشل إنشاء الإعلان' }),
+      next: () => { this.msg.add({ severity: 'success', detail: this.translate.instant('JOB_POST.CREATED') }); setTimeout(() => this.router.navigate(['/homeowner/jobs']), 1500); },
+      error: (er) =>{  this.msg.add({ severity: 'error', detail: er.error?.message || this.translate.instant('JOB_POST.CREATE_FAILED') });
+    this.loading = false;
+  },
       complete: () => this.loading = false
     });
   }

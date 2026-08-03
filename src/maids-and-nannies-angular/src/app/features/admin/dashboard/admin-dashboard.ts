@@ -36,7 +36,7 @@ import { ApiService } from '../../../core/services/api.service';
             <div class="col-span-12 md:col-span-6 xl:col-span-3">
                 <p-card styleClass="mb-0">
                     <div class="flex align-items-center gap-4">
-                        <div class="flex align-items-center justify-content-center w-12 h-12 border-round bg-green-100">
+                        <div class="flex align-items-center justify-center w-12 h-12 border-round bg-green-100">
                             <i class="pi pi-home text-green-500 text-xl"></i>
                         </div>
                         <div>
@@ -50,7 +50,7 @@ import { ApiService } from '../../../core/services/api.service';
             <div class="col-span-12 md:col-span-6 xl:col-span-3">
                 <p-card styleClass="mb-0">
                     <div class="flex align-items-center gap-4">
-                        <div class="flex align-items-center justify-content-center w-12 h-12 border-round bg-orange-100">
+                        <div class="flex align-items-center justify-center w-12 h-12 border-round bg-orange-100">
                             <i class="pi pi-user text-orange-500 text-xl"></i>
                         </div>
                         <div>
@@ -81,12 +81,12 @@ import { ApiService } from '../../../core/services/api.service';
                     <ng-template #header>
                         <div class="flex align-items-center justify-content-between px-4 pt-4">
                             <h5 class="m-0">{{ 'DASHBOARD.PENDING_VERIFICATIONS' | translate }}</h5>
-                            <p-button label="عرض الكل" routerLink="/admin/homeowners" [text]="true" size="small"></p-button>
+                            <p-button [label]="'COMMON.VIEW_ALL' | translate" routerLink="/admin/homeowners" [text]="true" size="small"></p-button>
                         </div>
                     </ng-template>
                     <div class="text-center py-4">
                         <div class="text-4xl font-bold text-orange-500">{{ stats().pendingVerifications }}</div>
-                        <span class="text-muted-color">طلب تأكيد معلق</span>
+                        <span class="text-muted-color">{{ 'ADMIN.PENDING_VERIFICATION' | translate }}</span>
                     </div>
                 </p-card>
             </div>
@@ -96,12 +96,12 @@ import { ApiService } from '../../../core/services/api.service';
                     <ng-template #header>
                         <div class="flex align-items-center justify-content-between px-4 pt-4">
                             <h5 class="m-0">{{ 'DASHBOARD.PENDING_PAYMENTS' | translate }}</h5>
-                            <p-button label="عرض الكل" routerLink="/admin/payments" [text]="true" size="small"></p-button>
+                            <p-button [label]="'COMMON.VIEW_ALL' | translate" routerLink="/admin/payments" [text]="true" size="small"></p-button>
                         </div>
                     </ng-template>
                     <div class="text-center py-4">
                         <div class="text-4xl font-bold text-red-500">{{ stats().pendingPayments }}</div>
-                        <span class="text-muted-color">دفعة معلقة</span>
+                        <span class="text-muted-color">{{ 'ADMIN.PENDING_PAYMENT' | translate }}</span>
                     </div>
                 </p-card>
             </div>
@@ -111,12 +111,12 @@ import { ApiService } from '../../../core/services/api.service';
                     <ng-template #header>
                         <div class="flex align-items-center justify-content-between px-4 pt-4">
                             <h5 class="m-0">{{ 'DASHBOARD.ACTIVE_BOOKINGS' | translate }}</h5>
-                            <p-button label="عرض الكل" routerLink="/admin/bookings" [text]="true" size="small"></p-button>
+                            <p-button [label]="'COMMON.VIEW_ALL' | translate" routerLink="/admin/bookings" [text]="true" size="small"></p-button>
                         </div>
                     </ng-template>
                     <div class="text-center py-4">
                         <div class="text-4xl font-bold text-green-500">{{ stats().activeBookings }}</div>
-                        <span class="text-muted-color">حجز نشط حالياً</span>
+                        <span class="text-muted-color">{{ 'ADMIN.ACTIVE_BOOKING' | translate }}</span>
                     </div>
                 </p-card>
             </div>

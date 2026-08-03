@@ -13,7 +13,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { Paginator } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
@@ -27,13 +27,13 @@ import { ApiService } from '../../../core/services/api.service';
       <h2>{{ 'JOB_POST.BROWSE' | translate }}</h2>
 
       <div class="flex flex-wrap gap-3 mb-3 align-items-center">
-        <p-select [options]="specOptions" [(ngModel)]="filters.specialization" optionLabel="label" optionValue="value" placeholder="التخصص" [showClear]="true" styleClass="w-14rem"></p-select>
-        <p-select [options]="typeOptions" [(ngModel)]="filters.bookingType" optionLabel="label" optionValue="value" placeholder="نوع الحجز" [showClear]="true" styleClass="w-12rem"></p-select>
+        <p-select [options]="specOptions" [(ngModel)]="filters.specialization" optionLabel="label" optionValue="value" [placeholder]="'ADMIN.SPECIALIZATION' | translate" [showClear]="true" styleClass="w-14rem"></p-select>
+        <p-select [options]="typeOptions" [(ngModel)]="filters.bookingType" optionLabel="label" optionValue="value" [placeholder]="'COMMON.BOOKING_TYPE' | translate" [showClear]="true" styleClass="w-12rem"></p-select>
         <span class="flex align-items-center gap-2">
-          <span class="text-sm text-muted-color">من</span>
-          <p-inputnumber [(ngModel)]="filters.minMonthlySalary" mode="decimal" [minFractionDigits]="0" placeholder="الراتب الأدنى" styleClass="w-9rem"></p-inputnumber>
-          <span class="text-sm text-muted-color">إلى</span>
-          <p-inputnumber [(ngModel)]="filters.maxMonthlySalary" mode="decimal" [minFractionDigits]="0" placeholder="الراتب الأقصى" styleClass="w-9rem"></p-inputnumber>
+          <span class="text-sm text-muted-color">{{ 'COMMON.FROM' | translate }}</span>
+          <p-inputnumber [(ngModel)]="filters.minMonthlySalary" mode="decimal" [minFractionDigits]="0" [placeholder]="'COMMON.MIN_SALARY' | translate" styleClass="w-9rem"></p-inputnumber>
+          <span class="text-sm text-muted-color">{{ 'COMMON.TO' | translate }}</span>
+          <p-inputnumber [(ngModel)]="filters.maxMonthlySalary" mode="decimal" [minFractionDigits]="0" [placeholder]="'COMMON.MAX_SALARY' | translate" styleClass="w-9rem"></p-inputnumber>
         </span>
         <p-button icon="pi pi-filter" [label]="'COMMON.SEARCH' | translate" size="small" (onClick)="applyFilters()"></p-button>
         <p-button icon="pi pi-times" [label]="'COMMON.DELETE' | translate" size="small" severity="secondary" (onClick)="resetFilters()"></p-button>
@@ -52,7 +52,7 @@ import { ApiService } from '../../../core/services/api.service';
           <div class="flex align-items-center justify-content-between">
             <div>
               <span class="text-xl font-bold text-primary">{{ post.monthlySalary }} {{ post.currencyCode }}</span>
-              <span class="text-muted-color text-sm">/ {{ post.bookingType === 0 ? 'يوم' : post.bookingType === 2 ? 'ساعة' : 'شهر' }}</span>
+              <span class="text-muted-color text-sm">{{ post.bookingType === 0 ? ('COMMON.PER_DAY' | translate) : post.bookingType === 2 ? ('COMMON.PER_HOUR' | translate) : ('COMMON.PER_MONTH' | translate) }}</span>
             </div>
             <p-button [label]="'WORKERS.BOOK' | translate" icon="pi pi-send" [rounded]="true" (onClick)="openApplyDialog(post)"></p-button>
           </div>
@@ -82,13 +82,11 @@ import { ApiService } from '../../../core/services/api.service';
 export class JobBrowse implements OnInit {
   private api = inject(ApiService);
   private msg = inject(MessageService);
+  private translate = inject(TranslateService);
   posts = signal<any[]>([]);
 
-  specOptions = [
-    { label: 'تنظيف', value: 0 }, { label: 'طبخ', value: 1 }, { label: 'رعاية أطفال', value: 2 },
-    { label: 'رعاية مسنين', value: 3 }, { label: 'عمل منزلي', value: 4 }
-  ];
-  typeOptions = [{ label: 'يومي', value: 0 }, { label: 'شهري', value: 1 }, { label: 'ساعي', value: 2 }];
+  specOptions: any[] = [];
+  typeOptions: any[] = [];
 
   filters: any = { specialization: null, bookingType: null, minMonthlySalary: null, maxMonthlySalary: null };
 
@@ -100,7 +98,21 @@ export class JobBrowse implements OnInit {
   selectedPostId = 0;
   applyMessage = '';
 
-  ngOnInit() { this.load(); }
+  ngOnInit() {
+    this.specOptions = [
+      { label: this.translate.instant('SPECIALIZATIONS.CLEANING'), value: 0 },
+      { label: this.translate.instant('SPECIALIZATIONS.COOKING'), value: 1 },
+      { label: this.translate.instant('SPECIALIZATIONS.CHILDCARE'), value: 2 },
+      { label: this.translate.instant('SPECIALIZATIONS.ELDERLYCARE'), value: 3 },
+      { label: this.translate.instant('SPECIALIZATIONS.GENERALHOUSEKEEPING'), value: 4 }
+    ];
+    this.typeOptions = [
+      { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
+      { label: this.translate.instant('WORKER_DETAIL.MONTHLY'), value: 1 },
+      { label: this.translate.instant('WORKER_DETAIL.HOURLY'), value: 2 }
+    ];
+    this.load();
+  }
 
   applyFilters() { this.page = 1; this.load(); }
   resetFilters() { this.filters = { specialization: null, bookingType: null, minMonthlySalary: null, maxMonthlySalary: null }; this.page = 1; this.load(); }
@@ -128,11 +140,11 @@ export class JobBrowse implements OnInit {
 
   submitApplication() {
     this.api.applyForJob(this.selectedPostId, this.applyMessage).subscribe({
-      next: () => { this.msg.add({ severity: 'success', detail: 'تم تقديم الطلب' }); this.showDialog = false; },
-      error: () => this.msg.add({ severity: 'error', detail: 'فشل تقديم الطلب' })
+      next: () => { this.msg.add({ severity: 'success', detail: this.translate.instant('JOB_POST.APPLICATION_SUBMITTED') }); this.showDialog = false; },
+      error: () => this.msg.add({ severity: 'error', detail: this.translate.instant('JOB_POST.APPLICATION_SUBMIT_FAILED') })
     });
   }
 
-  getSpecLabel(v: number) { return ['تنظيف', 'طبخ', 'رعاية أطفال', 'رعاية مسنين', 'عمل منزلي'][v] || ''; }
-  getTypeLabel(t: number) { return ['يومي', 'شهري', 'ساعي'][t] || ''; }
+  getSpecLabel(v: number) { return [this.translate.instant('SPECIALIZATIONS.CLEANING'), this.translate.instant('SPECIALIZATIONS.COOKING'), this.translate.instant('SPECIALIZATIONS.CHILDCARE'), this.translate.instant('SPECIALIZATIONS.ELDERLYCARE'), this.translate.instant('SPECIALIZATIONS.GENERALHOUSEKEEPING')][v] || ''; }
+  getTypeLabel(t: number) { return [this.translate.instant('WORKER_DETAIL.DAILY'), this.translate.instant('WORKER_DETAIL.MONTHLY'), this.translate.instant('WORKER_DETAIL.HOURLY')][t] || ''; }
 }

@@ -28,7 +28,8 @@
     "FILL_ALL_FIELDS": "Please fill in all fields",
     "LOGIN_FAILED": "Login failed",
     "PASSWORDS_MISMATCH": "Passwords do not match",
-    "REGISTRATION_FAILED": "Registration failed"
+    "REGISTRATION_FAILED": "Registration failed",
+    "REGISTER_AS_WORKER_DESC":"Find work in homes"
   },
   "HOMEOWNER": {
     "REGISTER": "Homeowner Registration",
@@ -45,7 +46,12 @@
     "NATIONAL_ID_NUMBER": "National ID Number",
     "SELFIE_IMAGE": "Selfie Image",
     "VERIFICATION_STATUS": "Verification Status",
-    "STATE": "State/Province"
+    "STATE": "State/Province",
+     "PROFILE_LOAD_ERROR":"Failed to load profile",
+    "UPDATE_FAILED":"Failed to update",
+    "STATUS_PENDING":"Pending",
+    "STATUS_VERIFIED":"Verified",
+    "STATUS_REJECTED":"Rejected"
   },
   "WORKER": {
     "REGISTER": "Worker Registration",
@@ -120,7 +126,8 @@
     "AMOUNT": "Amount",
     "TRANSACTION_REF": "Transaction Reference",
     "CONFIRM": "Confirm",
-    "REJECT": "Reject"
+    "REJECT": "Reject",
+    "PAYMENT_STATUS": "Payment Status"
   },
   "REVIEW": {
     "WRITE": "Write Review",
@@ -189,7 +196,16 @@
     "TO_DATE": "To",
     "SEARCH_BY_NAME": "Search by name",
     "APPLY": "Apply",
-    "ALL": "All"
+    "ALL": "All",
+    "NOT_SPECIFIED": "Not Specified",
+    "FROM": "From",
+    "TO": "To",
+    "MIN_SALARY": "Min Salary",
+    "MAX_SALARY": "Max Salary",
+    "CHOOSE_IMAGE": "Choose Image",
+    "PAYMENT_STATUS": "Payment Status",
+    "SEARCH_WORKER_OWNER": "Search (worker / homeowner)",
+    "VIEW_ALL": "View All"
   },
   "LANGUAGE": {
     "AR": "العربية",
@@ -253,7 +269,10 @@
     "DAYS_REMAINING": "{{days}} days remaining",
     "ACTIVE_TAG": "Active - {{days}} days left",
     "EXPIRING_TAG": "Expiring soon - {{days}} days left",
-    "RENEWAL_SENT": "Renewal request sent"
+    "RENEWAL_SENT": "Renewal request sent",
+    "PENDING_TAG": "Pending Confirmation",
+    "EXPIRED_TAG": "Expired",
+    "ACTIVE": "Active"
   },
   "CURRENCY": {
     "MANAGE": "Manage Currencies",
@@ -264,7 +283,10 @@
     "NAME_AR": "Name (Arabic)",
     "NAME_EN": "Name (English)",
     "RATE": "Exchange Rate to EGP",
-    "ACTIVE": "Active"
+    "ACTIVE": "Active",
+    "UPDATED": "Updated",
+    "ADDED": "Added",
+    "DELETED": "Deleted"
   },
   "SETTINGS": {
     "TITLE": "Settings",
@@ -295,7 +317,8 @@
     "MAX_ACTIVE_LABEL": "Max active bookings",
     "MAX_ACTIVE_DESC": "Max active bookings per homeowner",
     "PENDING_CANCEL_LABEL": "Cancel pending booking after (hours)",
-    "PENDING_CANCEL_DESC": "Auto-cancel pending bookings after this period"
+    "PENDING_CANCEL_DESC": "Auto-cancel pending bookings after this period",
+    "SAVED": "Settings saved"
   },
   "ERROR_PAGES": {
     "ACCESS_DENIED": "Access Denied",
@@ -334,7 +357,7 @@
     "SEARCH_BUTTON": "Search Worker",
     "RENEW": "Renew",
     "DAYS_LEFT": "{{days}} days remaining for subscription renewal",
-    "DATE":"Date"
+    "DATE": "Date"
   },
   "WORKER_DETAIL": {
     "BACK_TO_SEARCH": "Back to Search",
@@ -476,7 +499,15 @@
     "REJECTED_DONE": "Rejected by admin",
     "HOMEOWNER_REGISTERED": "Homeowner registered successfully",
     "CONFIRM_RENEW_MSG": "Confirm subscription renewal?",
-    "RENEWAL_CONFIRMED": "Renewal confirmed"
+    "RENEWAL_CONFIRMED": "Renewal confirmed",
+    "ALL_HOMEOWNERS": "All Homeowners",
+    "PENDING_VERIFICATION": "Pending verification request",
+    "PENDING_PAYMENT": "Pending payment",
+    "ACTIVE_BOOKING": "Active booking now",
+    "CONFIRM_RENEWAL": "Confirm Renewal",
+    "REGISTER_FAILED": "Registration failed",
+    "CUSTOMIZE_LIMITS": "Customize Replacement Limits",
+    "LIMITS_EMPTY_HINT": "Leave empty to use general settings"
   },
   "JOB_POST": {
     "CREATE": "Create Job Post",
@@ -518,7 +549,12 @@
     "APPLICATION_ACCEPTED": "Application accepted",
     "APPLICATION_ACCEPT_FAILED": "Failed to accept application",
     "APPLICATION_SUBMITTED": "Application submitted",
-    "APPLICATION_SUBMIT_FAILED": "Failed to submit application"
+    "APPLICATION_SUBMIT_FAILED": "Failed to submit application",
+    "REJECT": "Reject",
+    "APPROVE": "Approve",
+    "APPLICATION_STATUS_ACCEPTED": "Accepted",
+    "APPLICATION_STATUS_REJECTED": "Rejected",
+    "FILL_ALL_FIELDS": "Please fill all fields"    
   },
   "MENU": {
     "ADMIN": "Admin",
@@ -611,5 +647,13 @@
     "COPIED": "Code copied",
     "SENT_OK": "Request status updated",
     "EMPTY": "No requests right now"
+  },
+  "BOOKING_STATUS": {
+    "PENDING": "Pending",
+    "CONFIRMED": "Confirmed",
+    "IN_PROGRESS": "In Progress",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled",
+    "PAID": "Paid"
   }
 }

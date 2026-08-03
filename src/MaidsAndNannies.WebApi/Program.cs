@@ -10,6 +10,7 @@ using MaidsAndNannies.Domain.Entities.Identity;
 using MaidsAndNannies.Domain.Enums;
 using MaidsAndNannies.Infrastructure;
 using MaidsAndNannies.Infrastructure.Persistence;
+using MaidsAndNannies.WebApi.Localization;
 using MaidsAndNannies.WebApi.Middleware;
 using MaidsAndNannies.WebApi.Services;
 using MaidsPlatform.API.Domain.Enums;
@@ -56,6 +57,7 @@ builder.Services.AddHostedService<BookingReminderService>();
 
 var app = builder.Build();
 
+MessageLocalizer.Initialize(app.Environment.WebRootPath);
 
 using (var scope = app.Services.CreateScope())
 {
@@ -258,6 +260,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ResponseLocalizationMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseStaticFiles();

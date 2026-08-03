@@ -71,7 +71,7 @@ export class AdminPayments implements OnInit {
         this.apiService.getPendingPayments().subscribe({            
             next: (data) => {                
                 this.payments.set(data || [])},
-            error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل المدفوعات' })
+            error: () => this.messageService.add({ severity: 'error', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('ADMIN.TOAST_LOAD_ERROR') })
         });
     }
 
@@ -81,20 +81,20 @@ export class AdminPayments implements OnInit {
     confirmPayment(id: number) {
         this.apiService.confirmPayment(id).subscribe({
             next: () => {
-                this.messageService.add({ severity: 'success', summary: 'تم', detail: 'تم تأكيد الدفع' });
+                this.messageService.add({ severity: 'success', summary: this.translate.instant('COMMON.SUCCESS'), detail: this.translate.instant('ADMIN.TOAST_PAYMENT_CONFIRMED') });
                 this.loadPayments();
             },
-            error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تأكيد الدفع' })
+            error: () => this.messageService.add({ severity: 'error', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('ADMIN.TOAST_PAYMENT_CONFIRM_ERROR') })
         });
     }
 
     rejectPayment(id: number) {
         this.apiService.rejectPayment(id).subscribe({
             next: () => {
-                this.messageService.add({ severity: 'warn', summary: 'تم', detail: 'تم رفض الدفع' });
+                this.messageService.add({ severity: 'warn', summary: this.translate.instant('COMMON.SUCCESS'), detail: this.translate.instant('ADMIN.TOAST_PAYMENT_REJECTED') });
                 this.loadPayments();
             },
-            error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل رفض الدفع' })
+            error: () => this.messageService.add({ severity: 'error', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('ADMIN.TOAST_PAYMENT_REJECT_ERROR') })
         });
     }
 }

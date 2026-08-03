@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
 import { AuthService } from '../../core/services/auth.service';
-import { LanguageService } from '../../core/services/language.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-menu',
@@ -20,62 +20,63 @@ import { LanguageService } from '../../core/services/language.service';
 export class AppMenu {
     model: MenuItem[] = [];
     authService = inject(AuthService);
-    langService = inject(LanguageService);
+    private translate = inject(TranslateService);
 
     ngOnInit() {
-        this.buildMenu();
+        setTimeout(() => {
+            this.buildMenu();
+            
+        }, 500);
     }
 
     buildMenu() {
         const user = this.authService.currentUser();
-        const isAr = this.langService.getCurrentLanguage() === 'ar';
-    
-        
+        const t = (k: string) => this.translate.instant(k);
+
         if (user?.role === 'Admin') {
             this.model.push({
-                label: isAr ? 'الإدارة' : 'Admin',
+                label: t('MENU.ADMIN'),
                 items: [
-                    { label: isAr ? 'لوحة التحكم' : 'Dashboard', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/admin/dashboard'] },
-                    { label: isAr ? 'الصاحبات' : 'Homeowners', icon: 'pi pi-fw pi-home', routerLink: ['/admin/homeowners'] },
-                    { label: isAr ? 'العاملات' : 'Workers', icon: 'pi pi-fw pi-users', routerLink: ['/admin/workers'] },
-                    { label: isAr ? 'الحجوزات' : 'Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/admin/bookings'] },
-                    { label: isAr ? 'المدفوعات' : 'Payments', icon: 'pi pi-fw pi-dollar', routerLink: ['/admin/payments'] },
-                    { label: isAr ? 'الاشتراكات' : 'Subscriptions', icon: 'pi pi-fw pi-credit-card', routerLink: ['/admin/subscriptions'] },
-                    { label: isAr ? 'العملات' : 'Currencies', icon: 'pi pi-fw pi-money-bill', routerLink: ['/admin/currencies'] },
-                    { label: isAr ? 'الإعدادات' : 'Settings', icon: 'pi pi-fw pi-cog', routerLink: ['/admin/settings'] },
-                    { label: isAr ? 'استعادة كلمات المرور' : 'Password Resets', icon: 'pi pi-fw pi-key', routerLink: ['/admin/password-reset'] },
-                    { label: isAr ? 'إعلانات الوظائف' : 'Job Posts', icon: 'pi pi-fw pi-briefcase', routerLink: ['/admin/job-posts'] },
-                    { label: isAr ? 'تسجيل صاحبة منزل' : 'Register Homeowner', icon: 'pi pi-fw pi-user-plus', routerLink: ['/admin/register-homeowner'] },
+                    { label: t('MENU.DASHBOARD'), icon: 'pi pi-fw pi-chart-bar', routerLink: ['/admin/dashboard'] },
+                    { label: t('MENU.HOMEOWNERS'), icon: 'pi pi-fw pi-home', routerLink: ['/admin/homeowners'] },
+                    { label: t('MENU.WORKERS'), icon: 'pi pi-fw pi-users', routerLink: ['/admin/workers'] },
+                    { label: t('MENU.BOOKINGS'), icon: 'pi pi-fw pi-calendar', routerLink: ['/admin/bookings'] },
+                    { label: t('MENU.PAYMENTS'), icon: 'pi pi-fw pi-dollar', routerLink: ['/admin/payments'] },
+                    { label: t('MENU.SUBSCRIPTIONS'), icon: 'pi pi-fw pi-credit-card', routerLink: ['/admin/subscriptions'] },
+                    { label: t('MENU.CURRENCIES'), icon: 'pi pi-fw pi-money-bill', routerLink: ['/admin/currencies'] },
+                    { label: t('MENU.SETTINGS'), icon: 'pi pi-fw pi-cog', routerLink: ['/admin/settings'] },
+                    { label: t('MENU.PASSWORD_RESET'), icon: 'pi pi-fw pi-key', routerLink: ['/admin/password-reset'] },
+                    { label: t('MENU.JOB_POSTS'), icon: 'pi pi-fw pi-briefcase', routerLink: ['/admin/job-posts'] },
+                    { label: t('MENU.REGISTER_HOMEOWNER'), icon: 'pi pi-fw pi-user-plus', routerLink: ['/admin/register-homeowner'] },
                 ]
             });
         }
 
         if (user?.role === 'Homeowner') {
             this.model.push({
-                label: isAr ? 'صاحبة المنزل' : 'Homeowner',
+                label: t('MENU.HOMEOWNER'),
                 items: [
-                    { label: isAr ? 'لوحة التحكم' : 'Dashboard', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/homeowner/dashboard'] },
-                    { label: isAr ? 'ملفي الشخصي' : 'My Profile', icon: 'pi pi-fw pi-user', routerLink: ['/homeowner/profile'] },
-                    { label: isAr ? 'بحث عن عاملة' : 'Search Workers', icon: 'pi pi-fw pi-search', routerLink: ['/homeowner/workers'] },
-                    { label: isAr ? 'إعلاناتي' : 'My Job Posts', icon: 'pi pi-fw pi-briefcase', routerLink: ['/homeowner/jobs'] },
-                    { label: isAr ? 'حجوزاتي' : 'My Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/homeowner/bookings'] },                    
-                    { label: isAr ? 'اشتراكاتي' : 'My Subscriptions', icon: 'pi pi-fw pi-credit-card', routerLink: ['/homeowner/subscriptions'] },
+                    { label: t('MENU.DASHBOARD'), icon: 'pi pi-fw pi-chart-bar', routerLink: ['/homeowner/dashboard'] },
+                    { label: t('MENU.MY_PROFILE'), icon: 'pi pi-fw pi-user', routerLink: ['/homeowner/profile'] },
+                    { label: t('MENU.SEARCH_WORKERS'), icon: 'pi pi-fw pi-search', routerLink: ['/homeowner/workers'] },
+                    { label: t('JOB_POST.MY_POSTS'), icon: 'pi pi-fw pi-briefcase', routerLink: ['/homeowner/jobs'] },
+                    { label: t('MENU.MY_BOOKINGS'), icon: 'pi pi-fw pi-calendar', routerLink: ['/homeowner/bookings'] },
+                    { label: t('MENU.MY_SUBSCRIPTIONS'), icon: 'pi pi-fw pi-credit-card', routerLink: ['/homeowner/subscriptions'] },
                 ]
             });
         }
 
         if (user?.role === 'Worker') {
             this.model.push({
-                label: isAr ? 'العاملة' : 'Worker',
+                label: t('MENU.WORKER'),
                 items: [
-                    { label: isAr ? 'لوحة التحكم' : 'Dashboard', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/worker/dashboard'] },
-                    { label: isAr ? 'ملفي الشخصي' : 'My Profile', icon: 'pi pi-fw pi-user', routerLink: ['/worker/profile'] },
-                    { label: isAr ? 'حجوزاتي' : 'My Bookings', icon: 'pi pi-fw pi-calendar', routerLink: ['/worker/bookings'] },
-                    { label: isAr ? 'وظائف' : 'Browse Jobs', icon: 'pi pi-fw pi-briefcase', routerLink: ['/worker/jobs'] },
-                    { label: isAr ? 'طلباتي' : 'My Applications', icon: 'pi pi-fw pi-file', routerLink: ['/worker/applications'] },
+                    { label: t('MENU.DASHBOARD'), icon: 'pi pi-fw pi-chart-bar', routerLink: ['/worker/dashboard'] },
+                    { label: t('MENU.MY_PROFILE'), icon: 'pi pi-fw pi-user', routerLink: ['/worker/profile'] },
+                    { label: t('MENU.MY_BOOKINGS'), icon: 'pi pi-fw pi-calendar', routerLink: ['/worker/bookings'] },
+                    { label: t('MENU.BROWSE_JOBS'), icon: 'pi pi-fw pi-briefcase', routerLink: ['/worker/jobs'] },
+                    { label: t('JOB_POST.MY_APPLICATIONS'), icon: 'pi pi-fw pi-file', routerLink: ['/worker/applications'] },
                 ]
             });
         }
-        
     }
 }

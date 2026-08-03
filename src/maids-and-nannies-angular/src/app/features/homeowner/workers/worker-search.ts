@@ -323,7 +323,7 @@ private getliveInOptions(){
         // وضع استبدال: يطلب التأكيد ثم يستبدل
         this.bookingService.requestReplacement(this.replacementBookingId()!, this.replacementReason(), id).subscribe({
             next: () => {
-                this.messageService.add({ severity: 'success', detail: 'تم طلب الاستبدال بنجاح' });
+                this.messageService.add({ severity: 'success', detail: this.translate.instant('BOOKING_DETAIL.REPLACEMENT_REQUESTED') });
                 this.router.navigate(['/homeowner/bookings', this.replacementBookingId()!]);
             }
         });

@@ -67,7 +67,7 @@ import { Toast } from 'primeng/toast';
                                 <div class="border-2 p-6 rounded-lg cursor-pointer text-center" [class.border-primary]="accountType === 1" [class.border-gray-300]="accountType !== 1" (click)="accountType = 1">
                                     <i class="pi pi-user text-4xl mb-4 text-primary"></i>
                                     <h4>{{ 'AUTH.REGISTER_AS_WORKER' | translate }}</h4>
-                                    <p class="text-muted-color text-sm">اعثري عمل في المنازل</p>
+                                    <p class="text-muted-color text-sm">{{ 'AUTH.REGISTER_AS_WORKER_DESC' | translate }}</p>
                                 </div>
                             </div>
                             <p-button [label]="'COMMON.NEXT' | translate" icon="pi pi-arrow-right" styleClass="w-full" (onClick)="step = 2" [disabled]="!accountType"></p-button>
@@ -217,7 +217,7 @@ import { Toast } from 'primeng/toast';
                                 <h5>{{ 'AUTH.HOME_WORKER_IMAGE' | translate }}</h5>
 
                                 <p-toast />
-                                <p-fileupload name="selfieImage" mode="basic" accept="image/*" maxFileSize="1000000" [auto]="false" chooseLabel="اختر صورة شخصية" (onSelect)="onSelfieSelected($event)"> </p-fileupload>
+                                <p-fileupload name="selfieImage" mode="basic" accept="image/*" maxFileSize="1000000" [auto]="false" [chooseLabel]="'COMMON.CHOOSE_IMAGE' | translate" (onSelect)="onSelfieSelected($event)"> </p-fileupload>
 
                                 <div *ngIf="selfieImageFile" class="flex flex-col items-center gap-2 mt-4">
                                     <img [src]="selfiePreviewUrl" alt="selfie" width="120" height="120" style="object-fit:cover;border-radius:8px;" />

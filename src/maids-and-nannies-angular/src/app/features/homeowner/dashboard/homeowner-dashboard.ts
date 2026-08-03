@@ -8,7 +8,7 @@ import { TagModule } from 'primeng/tag';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
 import { SubscriptionService } from '@/core/services/subscription.service';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-homeowner-dashboard',
@@ -38,7 +38,7 @@ import { TranslatePipe } from '@ngx-translate/core';
             </div>
 
             <div class="col-span-12 md:col-span-4">
-                <p-card styleClass="mb-0 cursor-pointer" routerLink="/homeowner/bookings">
+                <p-card styleClass="mb-0 cursor" routerLink="/homeowner/bookings">
                     <div class="flex align-items-center gap-4">
                         <div class="flex align-items-center justify-content-center w-12 h-12 border-round bg-green-100">
                             <i class="pi pi-calendar text-green-500 text-xl"></i>
@@ -112,6 +112,7 @@ export class HomeownerDashboard implements OnInit {
     authService = inject(AuthService);
     private apiService = inject(ApiService);
     private subscriptionService = inject(SubscriptionService);
+    private translate = inject(TranslateService);
 
     subscriptionWarning = signal<string | null>(null);
 
@@ -124,7 +125,7 @@ export class HomeownerDashboard implements OnInit {
     next: (data) => {
         const active = data.find(s => s.isActive && s.daysRemaining > 0);
         if (active && active.daysRemaining <= 7)
-            this.subscriptionWarning.set(`باقي ${active.daysRemaining} يوم على تجديد الاشتراك`);
+            this.subscriptionWarning.set(this.translate.instant('HOMEOWNER_DASHBOARD.DAYS_LEFT', { days: active.daysRemaining }));
     }
 });
     }
@@ -137,10 +138,10 @@ export class HomeownerDashboard implements OnInit {
 
     getStatusLabel(status: number): string {
        const labels: { [k: number]: string } = {
-            0: 'في الانتظار', 1: 'تم تأكيد العاملة', 2: 'بانتظار الدفع',
-            3: 'مدفوع', 4: 'نشط', 5: 'مكتمل', 6: 'ملغي', 7: 'طلب استبدال' , 8:'قيد المراجعة'
+            0: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PENDING'), 1: this.translate.instant('ADMIN.WORKER_CONFIRMED'), 2: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_WAITING_PAYMENT'),
+            3: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PAID'), 4: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_ACTIVE'), 5: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_COMPLETED'), 6: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_CANCELLED'), 7: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REPLACEMENT') , 8:this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REVIEW')
         };
-        return labels[status] || 'غير معروف';
+        return labels[status] || this.translate.instant('COMMON.UNKNOWN');
     }
 
     getStatusSeverity(status: number): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {

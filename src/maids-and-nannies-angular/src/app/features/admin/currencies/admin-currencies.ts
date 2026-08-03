@@ -9,7 +9,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CurrencyService, CurrencyDto } from '../../../core/services/currency.service';
 
 @Component({
@@ -101,6 +101,7 @@ export class AdminCurrencies implements OnInit {
     private currencyService = inject(CurrencyService);
     private fb = inject(FormBuilder);
     private messageService = inject(MessageService);
+    private translate = inject(TranslateService);
 
     currencies = signal<CurrencyDto[]>([]);
     dialogVisible = false;
@@ -144,18 +145,18 @@ export class AdminCurrencies implements OnInit {
 
         if (this.isEdit && this.editId) {
             this.currencyService.updateCurrency(this.editId, data).subscribe({
-                next: () => { this.messageService.add({ severity:'success', detail:'تم التحديث' }); this.dialogVisible = false; this.load(); }
+                next: () => { this.messageService.add({ severity:'success', detail: this.translate.instant('CURRENCY.UPDATED') }); this.dialogVisible = false; this.load(); }
             });
         } else {
             this.currencyService.createCurrency(data).subscribe({
-                next: () => { this.messageService.add({ severity:'success', detail:'تمت الإضافة' }); this.dialogVisible = false; this.load(); }
+                next: () => { this.messageService.add({ severity:'success', detail: this.translate.instant('CURRENCY.ADDED') }); this.dialogVisible = false; this.load(); }
             });
         }
     }
 
     deleteCurrency(id: number) {
         this.currencyService.deleteCurrency(id).subscribe({
-            next: () => { this.messageService.add({ severity:'success', detail:'تم الحذف' }); this.load(); }
+            next: () => { this.messageService.add({ severity:'success', detail: this.translate.instant('CURRENCY.DELETED') }); this.load(); }
         });
     }
 }

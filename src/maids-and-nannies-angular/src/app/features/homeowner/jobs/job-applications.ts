@@ -73,10 +73,10 @@ export class JobApplications implements OnInit {
   accept(appId: number) {
     this.api.acceptApplication(this.postId, appId).subscribe({
       next: (res) => {
-        this.msg.add({ severity: 'success', detail: 'تم قبول الطلب' });
+        this.msg.add({ severity: 'success', detail: this.translate.instant('JOB_POST.APPLICATION_ACCEPTED') });
         this.router.navigate(['/homeowner/bookings', res.bookingId]);
       },
-      error: () => this.msg.add({ severity: 'error', detail: 'فشل قبول الطلب' })
+      error: () => this.msg.add({ severity: 'error', detail: this.translate.instant('JOB_POST.APPLICATION_ACCEPT_FAILED') })
     });
   }
 
@@ -95,6 +95,6 @@ export class JobApplications implements OnInit {
     });
   }
 
-  getStatusLabel(s: number) { return ['بانتظار', 'مقبول', 'مرفوض'][s] || '—'; }
+  getStatusLabel(s: number) { return [this.translate.instant('JOB_POST.APPLICATION_STATUS_PENDING'), this.translate.instant('JOB_POST.APPLICATION_STATUS_ACCEPTED'), this.translate.instant('JOB_POST.APPLICATION_STATUS_REJECTED')][s] || '—'; }
   getStatusSeverity(s: number) { return ['warn', 'success', 'danger'][s] || 'secondary'; }
 }

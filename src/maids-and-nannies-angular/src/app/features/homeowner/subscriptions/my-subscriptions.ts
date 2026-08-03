@@ -11,7 +11,7 @@ import { FileUpload } from 'primeng/fileupload';
 import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { SubscriptionService, SubscriptionDto } from '../../../core/services/subscription.service';
 import { ApiService } from '@/core/services/api.service';
 
@@ -46,10 +46,10 @@ import { ApiService } from '@/core/services/api.service';
                         <td>{{ s.startDate | date:'shortDate' }}</td>
                         <td>{{ s.endDate | date:'shortDate' }}</td>
                         <td>
-                            <p-tag *ngIf="s.isActive && s.daysRemaining > 0" [value]="'نشط - باقي ' + s.daysRemaining + ' يوم'" severity="success"></p-tag>
-                            <p-tag *ngIf="s.isActive && s.daysRemaining <= 7 && s.daysRemaining > 0" [value]="'ينتهي قريباً - باقي ' + s.daysRemaining + ' يوم'" severity="warn"></p-tag>
-                            <p-tag *ngIf="!s.isActive" value="بانتظار التأكيد" severity="warn"></p-tag>
-                            <p-tag *ngIf="s.daysRemaining <= 0" value="منتهي" severity="danger"></p-tag>
+                            <p-tag *ngIf="s.isActive && s.daysRemaining > 0" [value]="'SUBSCRIPTION.ACTIVE_TAG' | translate : { days: s.daysRemaining }" severity="success"></p-tag>
+                            <p-tag *ngIf="s.isActive && s.daysRemaining <= 7 && s.daysRemaining > 0" [value]="'SUBSCRIPTION.EXPIRING_TAG' | translate : { days: s.daysRemaining }" severity="warn"></p-tag>
+                            <p-tag *ngIf="!s.isActive" [value]="'SUBSCRIPTION.PENDING_TAG' | translate" severity="warn"></p-tag>
+                            <p-tag *ngIf="s.daysRemaining <= 0" [value]="'SUBSCRIPTION.EXPIRED_TAG' | translate" severity="danger"></p-tag>
                         </td>
                         <td>
                             <p-button *ngIf="s.isActive && s.daysRemaining <= 7" label="{{ 'SUBSCRIPTION.RENEW' | translate }}" size="small" severity="warn" (onClick)="openRenewDialog(s)"></p-button>
@@ -81,7 +81,7 @@ import { ApiService } from '@/core/services/api.service';
                 </div>
                 <div *ngIf="requireProof">
                     <label class="block font-bold mb-1">{{ 'PAYMENT.UPLOAD_PROOF' | translate }}</label>
-                    <p-fileupload name="proofImage" mode="basic" accept="image/*" maxFileSize="5000000" [auto]="false" chooseLabel="اختر صورة" (onSelect)="onProofSelected($event)"></p-fileupload>
+                    <p-fileupload name="proofImage" mode="basic" accept="image/*" maxFileSize="5000000" [auto]="false" [chooseLabel]="'COMMON.CHOOSE_IMAGE' | translate" (onSelect)="onProofSelected($event)"></p-fileupload>
                 </div>
                <p-button label="{{ 'SUBSCRIPTION.RENEW' | translate }}" icon="pi pi-check" (onClick)="submitRenew()" [disabled]="renewForm.invalid || (requireProof && !proofFile)"></p-button>                
             </form>
@@ -92,6 +92,7 @@ export class MySubscriptions implements OnInit {
     private subscriptionService = inject(SubscriptionService);
     private fb = inject(FormBuilder);
     private messageService = inject(MessageService);
+    private translate = inject(TranslateService);
 
     subscriptions = signal<SubscriptionDto[]>([]);
     showRenewDialog = false;
@@ -101,8 +102,8 @@ export class MySubscriptions implements OnInit {
     private api = inject(ApiService);
 
     paymentMethods = [
-        { label: 'فودافون كاش', value: 0 },
-        { label: 'انستاباي', value: 1 }
+        { label: this.translate.instant('PAYMENT.VODAFONE_CASH'), value: 0 },
+        { label: this.translate.instant('PAYMENT.INSTAPAY'), value: 1 }
     ];
 
     renewForm: FormGroup = this.fb.group({
@@ -147,7 +148,7 @@ export class MySubscriptions implements OnInit {
 
         this.subscriptionService.renewSubscription(this.selectedSub.id, fd).subscribe({
             next: () => {
-                this.messageService.add({ severity: 'success', detail: 'تم إرسال طلب التجديد' });
+                this.messageService.add({ severity: 'success', detail: this.translate.instant('SUBSCRIPTION.RENEWAL_SENT') });
                 this.showRenewDialog = false;
                 this.load();
             }

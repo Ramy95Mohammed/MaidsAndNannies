@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
@@ -40,11 +40,12 @@ import { ApiService } from '../../../core/services/api.service';
 })
 export class WorkerApplications implements OnInit {
   private api = inject(ApiService);
+  private translate = inject(TranslateService);
   apps = signal<any[]>([]);
 
   ngOnInit() { this.api.getMyApplications().subscribe({ next: (d) => this.apps.set(d) }); }
 
-  getTypeLabel(t: number) { return ['يومي', 'شهري', 'ساعي'][t] || '—'; }
-  getStatusLabel(s: number) { return ['بانتظار', 'مقبول', 'مرفوض'][s] || '—'; }
+  getTypeLabel(t: number) { return [this.translate.instant('WORKER_DETAIL.DAILY'), this.translate.instant('WORKER_DETAIL.MONTHLY'), this.translate.instant('WORKER_DETAIL.HOURLY')][t] || '—'; }
+  getStatusLabel(s: number) { return [this.translate.instant('JOB_POST.APPLICATION_STATUS_PENDING'), this.translate.instant('JOB_POST.APPLICATION_STATUS_ACCEPTED'), this.translate.instant('JOB_POST.APPLICATION_STATUS_REJECTED')][s] || '—'; }
   getStatusSeverity(s: number) { return ['warn', 'success', 'danger'][s] || 'secondary'; }
 }

@@ -8,7 +8,7 @@ import { PasswordModule } from 'primeng/password';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
@@ -60,6 +60,7 @@ export class AdminRegisterHomeowner {
     private fb = inject(FormBuilder);
     private apiService = inject(ApiService);
     private messageService = inject(MessageService);
+    private translate = inject(TranslateService);
 
     loading = false;
 
@@ -78,12 +79,12 @@ export class AdminRegisterHomeowner {
         this.loading = true;
         this.apiService.adminRegisterHomeowner(this.form.value).subscribe({
             next: () => {
-                this.messageService.add({ severity: 'success', detail: 'تم تسجيل صاحبة المنزل بنجاح' });
+                this.messageService.add({ severity: 'success', detail: this.translate.instant('ADMIN.HOMEOWNER_REGISTERED') });
                 this.loading = false;
                 this.form.reset();
             },
             error: () => {
-                this.messageService.add({ severity: 'error', detail: 'فشل التسجيل' });
+                this.messageService.add({ severity: 'error', detail: this.translate.instant('ADMIN.REGISTER_FAILED') });
                 this.loading = false;
             }
         });

@@ -5,7 +5,7 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
@@ -52,11 +52,12 @@ import { ApiService } from '../../../core/services/api.service';
 })
 export class JobList implements OnInit {
   private api = inject(ApiService);
+  private translate = inject(TranslateService);
   posts = signal<any[]>([]);
 
   ngOnInit() { this.api.getMyJobPosts().subscribe({ next: (d) => this.posts.set(d) }); }
 
-  getBookingTypeLabel(t: number) { return ['يومي', 'شهري', 'ساعي'][t] || '—'; }
-  getStatusLabel(s: number) { return ['بانتظار المراجعة', 'معتمد', 'مرفوض'][s] || '—'; }
+  getBookingTypeLabel(t: number) { return [this.translate.instant('WORKER_DETAIL.DAILY'), this.translate.instant('WORKER_DETAIL.MONTHLY'), this.translate.instant('WORKER_DETAIL.HOURLY')][t] || '—'; }
+  getStatusLabel(s: number) { return [this.translate.instant('JOB_POST.STATUS_REVIEW_PENDING'), this.translate.instant('JOB_POST.STATUS_APPROVED'), this.translate.instant('WORKER_PROFILE.VERIFICATION_REJECTED')][s] || '—'; }
   getStatusSeverity(s: number) { return ['warn', 'success', 'danger'][s] || 'secondary'; }
 }

@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
@@ -47,6 +47,7 @@ import { ApiService } from '../../../core/services/api.service';
 })
 export class JobDetail implements OnInit {
   private api = inject(ApiService);
+  private translate = inject(TranslateService);
   private route = inject(ActivatedRoute);
   post = signal<any>(null);
 
@@ -55,12 +56,18 @@ export class JobDetail implements OnInit {
     this.api.getJobPostById(id).subscribe({ next: (d) => this.post.set(d) });
   }
 
-  getBookingTypeLabel(t: number) { return ['يومي', 'شهري', 'ساعي'][t] || '—'; }
-  statusLabel(s: number) { return ['بانتظار المراجعة', 'معتمد', 'مرفوض'][s] || '—'; }
+  getBookingTypeLabel(t: number) { return [this.translate.instant('WORKER_DETAIL.DAILY'), this.translate.instant('WORKER_DETAIL.MONTHLY'), this.translate.instant('WORKER_DETAIL.HOURLY')][t] || '—'; }
+  statusLabel(s: number) { return [this.translate.instant('JOB_POST.STATUS_REVIEW_PENDING'), this.translate.instant('JOB_POST.STATUS_APPROVED'), this.translate.instant('WORKER_PROFILE.VERIFICATION_REJECTED')][s] || '—'; }
   statusSeverity(s: number) { return ['warn', 'success', 'danger'][s] || 'secondary'; }
     getSpecsLabel(p: any): string {
-    const names = ['تنظيف', 'طبخ', 'رعاية أطفال', 'رعاية مسنين', 'عمل منزلي'];
+    const map: { [key: number]: string } = {
+      0: this.translate.instant('SPECIALIZATIONS.CLEANING'),
+      1: this.translate.instant('SPECIALIZATIONS.COOKING'),
+      2: this.translate.instant('SPECIALIZATIONS.CHILDCARE'),
+      3: this.translate.instant('SPECIALIZATIONS.ELDERLYCARE'),
+      4: this.translate.instant('SPECIALIZATIONS.GENERALHOUSEKEEPING')
+    };
     const list = [p.specialization, ...(p.specializations || [])];
-    return [...new Set(list)].map((s: number) => names[s] || s).join('، ');
+    return [...new Set(list)].map((s: number) => map[s] || s).join('، ');
   }
 }

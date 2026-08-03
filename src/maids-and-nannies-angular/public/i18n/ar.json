@@ -28,7 +28,8 @@
     "FILL_ALL_FIELDS": "يرجى ملء جميع الحقول",
     "LOGIN_FAILED": "فشل تسجيل الدخول",
     "PASSWORDS_MISMATCH": "كلمتا المرور غير متطابقتين",
-    "REGISTRATION_FAILED": "فشل التسجيل"
+    "REGISTRATION_FAILED": "فشل التسجيل",
+    "REGISTER_AS_WORKER_DESC":"ابحثي عن عمل في المنازل"
   },
   "HOMEOWNER": {
     "REGISTER": "تسجيل صاحبة منزل",
@@ -45,7 +46,12 @@
     "NATIONAL_ID_NUMBER": "رقم البطاقة الشخصية",
     "SELFIE_IMAGE": "صورة شخصية",
     "VERIFICATION_STATUS": "حالة التوثيق",
-    "STATE": "ولاية / محافظة"
+    "STATE": "ولاية / محافظة",
+    "PROFILE_LOAD_ERROR":"فشل تحميل الملف الشخصي",
+    "UPDATE_FAILED":"فشل التحديث",
+    "STATUS_PENDING":"في الانتظار",
+    "STATUS_VERIFIED":"موثق",
+    "STATUS_REJECTED":"مرفوض"
   },
   "WORKER": {
     "REGISTER": "تسجيل عاملة منزل",
@@ -72,7 +78,7 @@
     "COOKING": "طبخ",
     "CHILDCARE": "رعاية أطفال",
     "ELDERLYCARE": "رعاية مسنين",
-    "GENERALHOUSEKEEPING": "عمل منزلي عام"    
+    "GENERALHOUSEKEEPING": "عمل منزلي عام"
   },
   "DASHBOARD": {
     "TITLE": "لوحة التحكم",
@@ -120,11 +126,12 @@
     "AMOUNT": "المبلغ",
     "TRANSACTION_REF": "رقم العملية",
     "CONFIRM": "تأكيد",
-    "REJECT": "رفض"
+    "REJECT": "رفض",
+    "PAYMENT_STATUS": "حالة الدفع"
   },
-  "REVIEW": {    
-    "WRITE": "كتابة تقييم",            
-     "TITLE": "تقييم الحجز",
+  "REVIEW": {
+    "WRITE": "كتابة تقييم",
+    "TITLE": "تقييم الحجز",
     "RATE_WORKER": "قيمي العاملة",
     "RATE_HOMEOWNER": "قيمي صاحبة المنزل",
     "RATING": "التقييم",
@@ -189,7 +196,16 @@
     "FROM_DATE": "من تاريخ",
     "TO_DATE": "إلى تاريخ",
     "SEARCH_BY_NAME": "بحث بالاسم",
-    "APPLY": "تطبيق" 
+    "APPLY": "تطبيق",
+    "NOT_SPECIFIED": "غير محدد",
+    "FROM": "من",
+    "TO": "إلى",
+    "MIN_SALARY": "الراتب الأدنى",
+    "MAX_SALARY": "الراتب الأقصى",
+    "CHOOSE_IMAGE": "اختر صورة",
+    "PAYMENT_STATUS": "حالة الدفع",
+    "SEARCH_WORKER_OWNER": "بحث (عامل / صاحبة منزل)",
+    "VIEW_ALL": "عرض الكل"
   },
   "LANGUAGE": {
     "AR": "العربية",
@@ -253,7 +269,10 @@
     "DAYS_REMAINING": "باقي {{days}} يوم",
     "ACTIVE_TAG": "نشط - باقي {{days}} يوم",
     "EXPIRING_TAG": "ينتهي قريباً - باقي {{days}} يوم",
-    "RENEWAL_SENT": "تم إرسال طلب التجديد"
+    "RENEWAL_SENT": "تم إرسال طلب التجديد",
+    "PENDING_TAG": "بانتظار التأكيد",
+    "EXPIRED_TAG": "منتهي",
+    "ACTIVE": "نشط"
   },
   "CURRENCY": {
     "MANAGE": "إدارة العملات",
@@ -264,7 +283,11 @@
     "NAME_AR": "الاسم (عربي)",
     "NAME_EN": "الاسم (إنجليزي)",
     "RATE": "سعر الصرف مقابل الجنيه",
-    "ACTIVE": "نشط"
+    "ACTIVE": "نشط",
+    "UPDATED": "تم التحديث",
+    "ADDED": "تمت الإضافة",
+    "DELETED": "تم الحذف"
+
   },
   "SETTINGS": {
     "TITLE": "الإعدادات",
@@ -295,7 +318,8 @@
     "MAX_ACTIVE_LABEL": "أقصى حجوزات نشطة",
     "MAX_ACTIVE_DESC": "الحد الأقصى للحجوزات النشطة لكل صاحبة منزل",
     "PENDING_CANCEL_LABEL": "إلغاء الحجز المعلق بعد (ساعة)",
-    "PENDING_CANCEL_DESC": "إلغاء الحجوزات المعلقة تلقائياً بعد هذه المدة"
+    "PENDING_CANCEL_DESC": "إلغاء الحجوزات المعلقة تلقائياً بعد هذه المدة",
+    "SAVED": "تم حفظ الإعدادات"
   },
   "ERROR_PAGES": {
     "ACCESS_DENIED": "الدخول ممنوع",
@@ -334,7 +358,7 @@
     "SEARCH_BUTTON": "بحث عن عاملة",
     "RENEW": "تجديد",
     "DAYS_LEFT": "باقي {{days}} يوم على تجديد الاشتراك",
-    "DATE":"التاريخ"
+    "DATE": "التاريخ"
   },
   "WORKER_DETAIL": {
     "BACK_TO_SEARCH": "العودة للبحث",
@@ -363,9 +387,9 @@
     "HOURLY": "ساعي",
     "COMMISSION_ONETIME": "عمولة من أول شهر",
     "COMMISSION_SUBSCRIPTION": "اشتراك شهري",
-    "LIVE_IN":"مقيمة",
-    "ALL":"الكل",
-    "CALC_COMMISION":"حساب العمولة",
+    "LIVE_IN": "مقيمة",
+    "ALL": "الكل",
+    "CALC_COMMISION": "حساب العمولة",
     "QUANTITY_MONTHLY": "أيام العمل في الشهر"
   },
   "BOOKING_DETAIL": {
@@ -397,7 +421,7 @@
     "REPLACEMENT_REASON_PREFERENCE": "رغبة شخصية",
     "REPLACEMENT_REASON_PREFERENCE_DESC": "لا يوجد عيب في العاملة، لكن تفضلين تغييرها — قد يترتب عليه فرق في العمولة",
     "CONFIRM": "تأكيد",
-     "OUTSTANDING_AMOUNT_TITLE": "مبلغ مستحق",
+    "OUTSTANDING_AMOUNT_TITLE": "مبلغ مستحق",
     "OUTSTANDING_AMOUNT_DESC": "بعد الاستبدال، بقي مبلغ مستحق عليك",
     "PAYMENT_TOTAL": "المبلغ المطلوب دفعه",
     "PAID_DIRECTLY": "تم استلام الدفع — يمكنكم التواصل مع العاملة مباشرة",
@@ -469,14 +493,22 @@
     "SPECIALIZATION_CHILDCARE": "رعاية أطفال",
     "SPECIALIZATION_ELDERLY_CARE": "رعاية مسنين",
     "SPECIALIZATION_GENERAL": "عمل منزلي عام",
-    "CONFIRM_PAYMENT":"تأكيد الدفع",
+    "CONFIRM_PAYMENT": "تأكيد الدفع",
     "TABLE_PAYMENT_AMOUNT": "المبلغ المستحق عند الدفع",
     "AS_PER_SETTINGS": "حسب الإعدادات",
     "REPLACEMENT_LIMITS_UPDATED": "تم تحديث حدود الاستبدال",
     "REJECTED_DONE": "تم الرفض من الإدارة",
     "HOMEOWNER_REGISTERED": "تم تسجيل صاحبة المنزل بنجاح",
     "CONFIRM_RENEW_MSG": "تأكيد تجديد الاشتراك؟",
-    "RENEWAL_CONFIRMED": "تم تأكيد التجديد"
+    "RENEWAL_CONFIRMED": "تم تأكيد التجديد",
+    "ALL_HOMEOWNERS": "كل صاحبات المنازل",
+    "PENDING_VERIFICATION": "طلب تأكيد معلق",
+    "PENDING_PAYMENT": "دفعة معلقة",
+    "ACTIVE_BOOKING": "حجز نشط حالياً",
+    "CONFIRM_RENEWAL": "تأكيد التجديد",
+    "REGISTER_FAILED": "فشل التسجيل",
+    "CUSTOMIZE_LIMITS": "تخصيص حدود الاستبدال",
+    "LIMITS_EMPTY_HINT": "اتركه فارغاً للرجوع للإعدادات العامة"
   },
   "JOB_POST": {
     "CREATE": "إنشاء إعلان وظيفة",
@@ -502,23 +534,28 @@
     "DATE": "التاريخ",
     "POST_ID": "إعلان #",
     "NO_APPLICANTS": "لا يوجد متقدمون جدد",
-          "ACCEPT_CREATE": "قبول وإنشاء حجز",
-      "ACCEPT_CONFIRM_TITLE": "تأكيد إنشاء حجز جديد",
-      "ACCEPT_CONFIRM_MSG": "قبول هذا الطلب سينشئ حجزاً جديداً مستقلاً بعمولته ومدفوعاته الخاصة، ولن يعدّل أي حجز قائم لهذا الإعلان. هل تريد المتابعة؟",
-      "ACCEPT_CONFIRM_MSG_ACTIVE": "لديك حجز نشط لهذا الإعلان. القبول سينشئ حجزاً جديداً مستقلاً ولن يعدّل الحجز الحالي. هل تريد المتابعة؟",
-      "CREATED": "تم إنشاء الإعلان",
-      "CREATE_FAILED": "فشل إنشاء الإعلان",
-      "APPROVED": "تم اعتماد الإعلان",
-      "REJECTED": "تم رفض الإعلان",
-      "REVIEW_FAILED": "فشل المراجعة",
-      "REJECTED_BY_ADMIN": "مرفوض من الإدارة",
-      "STATUS_REVIEW_PENDING": "بانتظار المراجعة",
-      "STATUS_APPROVED": "معتمد",
-      "APPLICATION_STATUS_PENDING": "بانتظار",
-      "APPLICATION_ACCEPTED": "تم قبول الطلب",
-      "APPLICATION_ACCEPT_FAILED": "فشل قبول الطلب",
-      "APPLICATION_SUBMITTED": "تم تقديم الطلب",
-"APPLICATION_SUBMIT_FAILED": "فشل تقديم الطلب"
+    "ACCEPT_CREATE": "قبول وإنشاء حجز",
+    "ACCEPT_CONFIRM_TITLE": "تأكيد إنشاء حجز جديد",
+    "ACCEPT_CONFIRM_MSG": "قبول هذا الطلب سينشئ حجزاً جديداً مستقلاً بعمولته ومدفوعاته الخاصة، ولن يعدّل أي حجز قائم لهذا الإعلان. هل تريد المتابعة؟",
+    "ACCEPT_CONFIRM_MSG_ACTIVE": "لديك حجز نشط لهذا الإعلان. القبول سينشئ حجزاً جديداً مستقلاً ولن يعدّل الحجز الحالي. هل تريد المتابعة؟",
+    "CREATED": "تم إنشاء الإعلان",
+    "CREATE_FAILED": "فشل إنشاء الإعلان",
+    "APPROVED": "تم اعتماد الإعلان",
+    "REJECTED": "تم رفض الإعلان",
+    "REVIEW_FAILED": "فشل المراجعة",
+    "REJECTED_BY_ADMIN": "مرفوض من الإدارة",
+    "STATUS_REVIEW_PENDING": "بانتظار المراجعة",
+    "STATUS_APPROVED": "معتمد",
+    "APPLICATION_STATUS_PENDING": "بانتظار",
+    "APPLICATION_ACCEPTED": "تم قبول الطلب",
+    "APPLICATION_ACCEPT_FAILED": "فشل قبول الطلب",
+    "APPLICATION_SUBMITTED": "تم تقديم الطلب",
+    "APPLICATION_SUBMIT_FAILED": "فشل تقديم الطلب",
+    "REJECT": "رفض",
+    "APPROVE": "اعتماد",
+    "APPLICATION_STATUS_ACCEPTED": "مقبول",
+    "APPLICATION_STATUS_REJECTED": "مرفوض",
+    "FILL_ALL_FIELDS": "يرجى ملء جميع الحقول"
   },
   "MENU": {
     "ADMIN": "الإدارة",
@@ -541,7 +578,7 @@
     "JOB_POSTS": "إعلانات الوظائف",
     "BROWSE_JOBS": "وظائف"
   },
-    "NOTIF": {
+  "NOTIF": {
     "TITLE": "الإشعارات",
     "EMPTY": "لا توجد إشعارات",
     "MARK_ALL_READ": "تحديد الكل كمقروء",
@@ -559,10 +596,10 @@
     "MINUTES_AGO": "قبل {{count}} دقيقة",
     "HOURS_AGO": "قبل {{count}} ساعة",
     "DAYS_AGO": "قبل {{count}} يوم",
-     "NEW_REVIEW": "تلقيت تقييماً {{rating}}/5 على الحجز #{{bookingId}}",
-     "BOOKING_REMINDER": "تذكير: حجزك #{{bookingId}} يبدأ غدًا"     
+    "NEW_REVIEW": "تلقيت تقييماً {{rating}}/5 على الحجز #{{bookingId}}",
+    "BOOKING_REMINDER": "تذكير: حجزك #{{bookingId}} يبدأ غدًا"
   },
-    "POLICIES": {
+  "POLICIES": {
     "TITLE": "سياسات المنصة",
     "SUBTITLE": "الشروط والسياسات المنظمة لاستخدام المنصة",
     "LINK": "الشروط والسياسات",
@@ -584,7 +621,7 @@
     "TERMS_LINK": "شروط الاستخدام وسياسات المنصة",
     "REQUIRED": "يجب الموافقة على الشروط والسياسات قبل الحجز"
   },
-    "FORGOT": {
+  "FORGOT": {
     "TITLE": "استعادة كلمة المرور",
     "EMAIL_HINT": "أدخل بريدك الإلكتروني المسجل وسيتواصل معك فريق الدعم بكود الاستعادة عبر الواتساب.",
     "SEND_CODE": "إرسال الكود",
@@ -600,7 +637,7 @@
     "SENT_SUCCESS": "تم إرسال الطلب، سيصلك كود الاستعادة عبر الواتساب",
     "RESET_SUCCESS": "تم تعيين كلمة المرور الجديدة، يمكنك تسجيل الدخول الآن"
   },
-    "ADMIN_RESET": {
+  "ADMIN_RESET": {
     "TITLE": "طلبات استعادة كلمة المرور",
     "CODE": "الكود",
     "REQUESTED_AT": "تاريخ الطلب",
@@ -611,5 +648,13 @@
     "COPIED": "تم نسخ الكود",
     "SENT_OK": "تم تحديث حالة الطلب",
     "EMPTY": "لا توجد طلبات حاليًا"
+  },
+  "BOOKING_STATUS": {
+    "PENDING": "قيد الانتظار",
+    "CONFIRMED": "مؤكدة",
+    "IN_PROGRESS": "قيد التنفيذ",
+    "COMPLETED": "مكتملة",
+    "CANCELLED": "ملغاة",
+    "PAID": "مدفوع"
   }
 }

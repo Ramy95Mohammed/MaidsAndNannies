@@ -58,15 +58,7 @@ export class AdminWorkers implements OnInit {
 
     workers = signal<any[]>([]);
 
-    specializations: { [key: number]: string } = {
-        0: 'تنظيف',
-        1: 'طبخ',
-        2: 'رعاية أطفال',
-        3: 'رعاية مسنين',
-        4: 'عمل منزلي عام'
-    };
-
-    get specializationLabels() {
+    get specializationLabels():any {
     return {
         0: this.translate.instant('SPECIALIZATIONS.CLEANING'),
         1: this.translate.instant('SPECIALIZATIONS.COOKING'),
@@ -78,7 +70,6 @@ export class AdminWorkers implements OnInit {
 
     ngOnInit() {
         this.loadData();
-        this.specializationLabels;
     }
 
     loadData() {
@@ -88,7 +79,7 @@ export class AdminWorkers implements OnInit {
     }
 
     getSpecializationLabel(value: number): string {
-        return this.specializations[value] || 'غير محدد';
+        return this.specializationLabels[value] || this.translate.instant('COMMON.UNSPECIFIED');
     }
 
     verifyWorker(id: number) {

@@ -55,7 +55,7 @@ import { ApiService } from '../../../core/services/api.service';
         </div>
 
         <div class="card">
-            <h2>كل صاحبات المنازل</h2>
+            <h2>{{ 'ADMIN.ALL_HOMEOWNERS' | translate }}</h2>
 
             <p-table [value]="allHomeowners()" [rows]="10" [paginator]="true" [tableStyle]="{ 'min-width': '70rem' }">
                 <ng-template #header>
@@ -63,8 +63,8 @@ import { ApiService } from '../../../core/services/api.service';
                         <th>{{ 'ADMIN.NAME' | translate }}</th>
                         <th>{{ 'ADMIN.EMAIL' | translate }}</th>
                         <th>{{ 'ADMIN.PHONE' | translate }}</th>
-                        <th>استبدال (تقصير العاملة)</th>
-                        <th>استبدال (رغبة شخصية)</th>
+                        <th>{{ 'SETTINGS.MAX_FAULT_LABEL' | translate }}</th>
+                        <th>{{ 'SETTINGS.MAX_PREFERENCE_LABEL' | translate }}</th>
                         <th>{{ 'ADMIN.TABLE_ACTIONS' | translate }}</th>
                     </tr>
                 </ng-template>
@@ -73,8 +73,8 @@ import { ApiService } from '../../../core/services/api.service';
                         <td>{{ ho.fullName }}</td>
                         <td>{{ ho.email }}</td>
                         <td>{{ ho.phoneNumber }}</td>
-                        <td>{{ ho.maxFaultReplacementCount ?? 'حسب الإعدادات' }}</td>
-                        <td>{{ ho.maxPreferenceReplacementCount ?? 'حسب الإعدادات' }}</td>
+                        <td>{{ ho.maxFaultReplacementCount ?? ('ADMIN.AS_PER_SETTINGS' | translate) }}</td>
+                        <td>{{ ho.maxPreferenceReplacementCount ?? ('ADMIN.AS_PER_SETTINGS' | translate) }}</td>
                         <td>
                             <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" severity="warn" (click)="openLimitsDialog(ho)"></p-button>
                         </td>
@@ -83,21 +83,21 @@ import { ApiService } from '../../../core/services/api.service';
             </p-table>
         </div>
 
-        <p-dialog header="تخصيص حدود الاستبدال" [modal]="true" [(visible)]="showLimitsDialog" [style]="{ width: '420px' }">
+        <p-dialog [header]="'ADMIN.CUSTOMIZE_LIMITS' | translate" [modal]="true" [(visible)]="showLimitsDialog" [style]="{ width: '420px' }">
             <form [formGroup]="limitsForm" class="flex flex-column gap-3">
                 <div>
-                    <label class="block font-bold mb-1">الحد الأقصى للاستبدال (تقصير العاملة)</label>
+                    <label class="block font-bold mb-1">{{ 'SETTINGS.MAX_FAULT_LABEL' | translate }}</label>
                     <p-inputnumber formControlName="maxFaultReplacementCount" [min]="0" [showClear]="true" class="w-full"></p-inputnumber>
-                    <small class="text-muted-color">اتركه فارغاً للرجوع للإعدادات العامة</small>
+                    <small class="text-muted-color">{{ 'ADMIN.LIMITS_EMPTY_HINT' | translate }}</small>
                 </div>
                 <div>
-                    <label class="block font-bold mb-1">الحد الأقصى للاستبدال (رغبة شخصية)</label>
+                    <label class="block font-bold mb-1">{{ 'SETTINGS.MAX_PREFERENCE_LABEL' | translate }}</label>
                     <p-inputnumber formControlName="maxPreferenceReplacementCount" [min]="0" [showClear]="true" class="w-full"></p-inputnumber>
-                    <small class="text-muted-color">اتركه فارغاً للرجوع للإعدادات العامة</small>
+                    <small class="text-muted-color">{{ 'ADMIN.LIMITS_EMPTY_HINT' | translate }}</small>
                 </div>
             </form>
             <ng-template #footer>
-                <p-button label="حفظ" icon="pi pi-check" (onClick)="saveLimits()"></p-button>
+                <p-button [label]="'COMMON.SAVE' | translate" icon="pi pi-check" (onClick)="saveLimits()"></p-button>
             </ng-template>
         </p-dialog>
     `
@@ -149,7 +149,7 @@ export class AdminHomeowners implements OnInit {
             maxPreferenceReplacementCount: this.limitsForm.get('maxPreferenceReplacementCount')?.value ?? null
         }).subscribe({
             next: () => {
-                this.messageService.add({ severity: 'success', detail: 'تم تحديث حدود الاستبدال' });
+                this.messageService.add({ severity: 'success', detail: this.translate.instant('ADMIN.REPLACEMENT_LIMITS_UPDATED') });
                 this.showLimitsDialog = false;
                 this.apiService.getAllHomeowners().subscribe({
                     next: (data) => this.allHomeowners.set(data)
@@ -180,7 +180,7 @@ export class AdminHomeowners implements OnInit {
             header: this.translate.instant('ADMIN.REJECT'),
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
-                this.apiService.rejectHomeowner(id, 'تم الرفض من الإدارة').subscribe({
+                this.apiService.rejectHomeowner(id, this.translate.instant('ADMIN.REJECTED_DONE')).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'info', summary: this.translate.instant('COMMON.SUCCESS'), detail: this.translate.instant('ADMIN.REQUEST_REJECTED') });
                         this.loadData();

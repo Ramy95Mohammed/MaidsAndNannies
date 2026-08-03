@@ -319,8 +319,8 @@ export class BookingDetail implements OnInit {
         showApplicants = signal(false);
 
     paymentMethods = [
-        { label: 'فودافون كاش', value: 0 },
-        { label: 'انستاباي', value: 1 }
+        { label: this.translate.instant('PAYMENT.VODAFONE_CASH'), value: 0 },
+        { label: this.translate.instant('PAYMENT.INSTAPAY'), value: 1 }
     ];
 
 
@@ -334,13 +334,6 @@ export class BookingDetail implements OnInit {
     ngOnInit() {
         const id = Number(this.route.snapshot.paramMap.get('id'));
         this.loadBooking(id);
-
-        setTimeout(() => {
-            this.paymentMethods = [
-                { label: this.translate.instant('PAYMENT.VODAFONE_CASH'), value: 0 },
-                { label: this.translate.instant('PAYMENT.INSTAPAY'), value: 1 }
-            ];
-        }, 1000);        
     }
 
     private loadBooking(id: number) {
@@ -412,7 +405,7 @@ replaceWithApplicant(applicationId: number, reason: 0 | 1 = 1) {
     if(this.booking != null)
   this.bookingService.requestReplacement(this.booking.id, reason, null, applicationId).subscribe({
     next: () => {
-      this.messageService.add({ severity: 'success', detail: 'تم طلب الاستبدال بنجاح' });      
+      this.messageService.add({ severity: 'success', detail: this.translate.instant('BOOKING_DETAIL.REPLACEMENT_REQUESTED') });      
       if(this.booking != null)
       this.loadBooking(this.booking.id);
     }

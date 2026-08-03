@@ -27,13 +27,13 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
             <h2>{{ 'ADMIN.MANAGE_BOOKINGS' | translate }}</h2>
 
             <div class="flex flex-wrap gap-3 mb-3 align-items-center">
-                <p-select [options]="statusOptions" [(ngModel)]="filters.status" optionLabel="label" optionValue="value" placeholder="الحالة" [showClear]="true" styleClass="w-14rem"></p-select>
-                <p-select [options]="paidOptions" [(ngModel)]="filters.isPaid" optionLabel="label" optionValue="value" placeholder="حالة الدفع" [showClear]="true" styleClass="w-12rem"></p-select>
-                <p-datepicker [(ngModel)]="filters.fromDate" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="من تاريخ" [showClear]="true"></p-datepicker>
-                <p-datepicker [(ngModel)]="filters.toDate" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="إلى تاريخ" [showClear]="true"></p-datepicker>
+                <p-select [options]="statusOptions" [(ngModel)]="filters.status" optionLabel="label" optionValue="value" [placeholder]="'COMMON.STATUS' | translate" [showClear]="true" styleClass="w-14rem"></p-select>
+                <p-select [options]="paidOptions" [(ngModel)]="filters.isPaid" optionLabel="label" optionValue="value" [placeholder]="'COMMON.PAYMENT_STATUS' | translate" [showClear]="true" styleClass="w-12rem"></p-select>
+                <p-datepicker [(ngModel)]="filters.fromDate" dateFormat="dd/mm/yy" [showIcon]="true" [placeholder]="'COMMON.FROM_DATE' | translate" [showClear]="true"></p-datepicker>
+                <p-datepicker [(ngModel)]="filters.toDate" dateFormat="dd/mm/yy" [showIcon]="true" [placeholder]="'COMMON.TO_DATE' | translate" [showClear]="true"></p-datepicker>
                 <span class="p-input-icon-right">
                     <i class="pi pi-search"></i>
-                    <input pInputText [(ngModel)]="filters.search" placeholder="بحث (عامل / صاحبة منزل)" class="w-18rem" />
+                    <input pInputText [(ngModel)]="filters.search" [placeholder]="'COMMON.SEARCH_WORKER_OWNER' | translate" class="w-18rem" />
                 </span>
                 <p-button icon="pi pi-filter" [label]="'COMMON.SEARCH' | translate" size="small" (onClick)="applyFilters()"></p-button>
                 <p-button icon="pi pi-times" [label]="'COMMON.DELETE' | translate" size="small" severity="secondary" (onClick)="resetFilters()"></p-button>
@@ -99,13 +99,8 @@ export class AdminBookings implements OnInit {
 
     bookings = signal<any[]>([]);
 
-    statusOptions = [
-        { label: 'في الانتظار', value: 0 }, { label: 'تم تأكيد العاملة', value: 1 },
-        { label: 'بانتظار الدفع', value: 2 }, { label: 'مدفوع', value: 3 }, { label: 'نشط', value: 4 },
-        { label: 'مكتمل', value: 5 }, { label: 'ملغي', value: 6 }, { label: 'طلب استبدال', value: 7 },
-        { label: 'قيد المراجعة', value: 8 }
-    ];
-    paidOptions = [{ label: 'مدفوع', value: true }, { label: 'غير مدفوع', value: false }];
+    statusOptions: any[] = [];
+    paidOptions: any[] = [];
 
     filters: any = { status: null, isPaid: null, fromDate: null, toDate: null, search: '' };
 
@@ -113,7 +108,24 @@ export class AdminBookings implements OnInit {
     pageSize = 15;
     totalCount = 0;
 
-    ngOnInit() { this.load(); }
+    ngOnInit() {
+        this.statusOptions = [
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PENDING'), value: 0 },
+            { label: this.translate.instant('ADMIN.WORKER_CONFIRMED'), value: 1 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_WAITING_PAYMENT'), value: 2 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PAID'), value: 3 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_ACTIVE'), value: 4 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_COMPLETED'), value: 5 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_CANCELLED'), value: 6 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REPLACEMENT'), value: 7 },
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REVIEW'), value: 8 }
+        ];
+        this.paidOptions = [
+            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PAID'), value: true },
+            { label: this.translate.instant('COMMON.UNPAID'), value: false }
+        ];
+        this.load();
+    }
 
     applyFilters() { this.page = 1; this.load(); }
     resetFilters() { this.filters = { status: null, isPaid: null, fromDate: null, toDate: null, search: '' }; this.page = 1; this.load(); }
@@ -144,12 +156,12 @@ export class AdminBookings implements OnInit {
 
     confirmWorker(id: number) {
         this.confirmationService.confirm({
-            message: 'تأكيد العاملة لهذا الحجز؟',
-            header: 'تأكيد',
+            message: this.translate.instant('ADMIN.CONFIRM_WORKER_MSG'),
+            header: this.translate.instant('ADMIN.CONFIRM'),
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.bookingService.confirmWorker(id).subscribe({
-                    next: () => { this.messageService.add({ severity:'success', detail:'تم تأكيد العاملة' }); this.load(); }
+                    next: () => { this.messageService.add({ severity:'success', detail: this.translate.instant('ADMIN.WORKER_CONFIRMED') }); this.load(); }
                 });
             }
         });
@@ -157,19 +169,19 @@ export class AdminBookings implements OnInit {
 
     requestPayment(id: number) {
         this.bookingService.requestPayment(id).subscribe({
-            next: () => { this.messageService.add({ severity:'success', detail:'تم طلب الدفع' }); this.load(); }
+            next: () => { this.messageService.add({ severity:'success', detail: this.translate.instant('ADMIN.PAYMENT_REQUESTED') }); this.load(); }
         });
     }
 
     startWork(id: number) {
         this.bookingService.startWork(id).subscribe({
-            next: () => { this.messageService.add({ severity:'success', detail:'تم بدء العمل' }); this.load(); }
+            next: () => { this.messageService.add({ severity:'success', detail: this.translate.instant('ADMIN.WORK_STARTED') }); this.load(); }
         });
     }
 
     completeWork(id: number) {
         this.bookingService.completeWork(id).subscribe({
-            next: () => { this.messageService.add({ severity:'success', detail:'تم إنهاء الحجز' }); this.load(); }
+            next: () => { this.messageService.add({ severity:'success', detail: this.translate.instant('ADMIN.BOOKING_COMPLETED') }); this.load(); }
         });
     }
 
@@ -181,12 +193,12 @@ export class AdminBookings implements OnInit {
 
     confirmPayment(id: number) {
         this.confirmationService.confirm({
-            message: 'تأكيد استلام الدفع لهذا الحجز؟',
-            header: 'تأكيد',
+            message: this.translate.instant('BOOKING_DETAIL.CONFIRM_PAYMENT_MSG'),
+            header: this.translate.instant('ADMIN.CONFIRM'),
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.bookingService.confirmPayment(id).subscribe({
-                    next: () => { this.messageService.add({ severity: 'success', detail: 'تم تأكيد الدفع' }); this.load(); }
+                    next: () => { this.messageService.add({ severity: 'success', detail: this.translate.instant('ADMIN.TOAST_PAYMENT_CONFIRMED') }); this.load(); }
                 });
             }
         });

@@ -6,7 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { SubscriptionService, SubscriptionDto } from '../../../core/services/subscription.service';
 
 @Component({
@@ -40,11 +40,11 @@ import { SubscriptionService, SubscriptionDto } from '../../../core/services/sub
                         <td>{{ s.startDate | date:'shortDate' }}</td>
                         <td>{{ s.endDate | date:'shortDate' }}</td>
                         <td>
-                            <p-tag *ngIf="s.isActive" value="نشط" severity="success"></p-tag>
-                            <p-tag *ngIf="!s.isActive" value="بانتظار التأكيد" severity="warn"></p-tag>
+                            <p-tag *ngIf="s.isActive" [value]="'SUBSCRIPTION.ACTIVE' | translate" severity="success"></p-tag>
+                            <p-tag *ngIf="!s.isActive" [value]="'SUBSCRIPTION.PENDING_TAG' | translate" severity="warn"></p-tag>
                         </td>
                         <td>
-                            <p-button *ngIf="!s.isActive" label="تأكيد التجديد" size="small" severity="success" (onClick)="confirmRenewal(s.id)"></p-button>
+                            <p-button *ngIf="!s.isActive" [label]="'ADMIN.CONFIRM_RENEWAL' | translate" size="small" severity="success" (onClick)="confirmRenewal(s.id)"></p-button>
                         </td>
                     </tr>
                 </ng-template>
@@ -56,6 +56,7 @@ export class AdminSubscriptions implements OnInit {
     private subscriptionService = inject(SubscriptionService);
     private messageService = inject(MessageService);
     private confirmationService = inject(ConfirmationService);
+    private translate = inject(TranslateService);
 
     subscriptions = signal<SubscriptionDto[]>([]);
 
@@ -69,13 +70,13 @@ export class AdminSubscriptions implements OnInit {
 
     confirmRenewal(id: number) {
         this.confirmationService.confirm({
-            message: 'تأكيد تجديد الاشتراك؟',
-            header: 'تأكيد',
+            message: this.translate.instant('ADMIN.CONFIRM_RENEW_MSG'),
+            header: this.translate.instant('ADMIN.CONFIRM'),
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.subscriptionService.confirmRenewal(id).subscribe({
                     next: () => {
-                        this.messageService.add({ severity: 'success', detail: 'تم تأكيد التجديد' });
+                        this.messageService.add({ severity: 'success', detail: this.translate.instant('ADMIN.RENEWAL_CONFIRMED') });
                         this.load();
                     }
                 });
