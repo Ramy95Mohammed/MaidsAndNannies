@@ -97,7 +97,7 @@ export class AdminJobPosts implements OnInit {
         this.showDialog = false;
         this.load();
       },
-      error: () => this.msg.add({ severity: 'error', detail: this.translate.instant('JOB_POST.REVIEW_FAILED') })
+      error: (er) => this.msg.add({ severity: 'error', detail: er.error?.message || this.translate.instant('JOB_POST.REVIEW_FAILED') })
     });
   }
 
