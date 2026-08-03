@@ -97,8 +97,15 @@ public sealed class AdminController(ISender sender, ICurrentUserService currentU
     // ── Bookings ──
 
     [HttpGet("bookings")]
-    public async Task<IActionResult> GetAllBookings()
-    => Ok(await sender.Send(new GetAllBookingsQuery()));
+    public async Task<IActionResult> GetAllBookings(
+     [FromQuery] int? status = null,
+     [FromQuery] bool? isPaid = null,
+     [FromQuery] string? search = null,
+     [FromQuery] DateTime? fromDate = null,
+     [FromQuery] DateTime? toDate = null,
+     [FromQuery] int page = 1,
+     [FromQuery] int pageSize = 10)
+ => Ok(await sender.Send(new GetAllBookingsQuery(status, isPaid, search, fromDate, toDate, page, pageSize)));
 
 
     [HttpGet("homeowners")]

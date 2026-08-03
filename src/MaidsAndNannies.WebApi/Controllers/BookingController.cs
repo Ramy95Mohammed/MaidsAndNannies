@@ -49,10 +49,17 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
 
     [HttpGet]
     [Authorize(Roles = "Homeowner")]
-    public async Task<IActionResult> GetMyBookings()
+    public async Task<IActionResult> GetMyBookings(
+     [FromQuery] int? status = null,
+     [FromQuery] int? bookingType = null,
+     [FromQuery] DateTime? fromDate = null,
+     [FromQuery] DateTime? toDate = null,
+     [FromQuery] string? search = null,
+     [FromQuery] int page = 1,
+     [FromQuery] int pageSize = 10)
     {
         if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
-        return Ok(await sender.Send(new GetMyBookingsQuery(currentUser.UserId, currentUser.Role ?? "")));
+        return Ok(await sender.Send(new GetMyBookingsQuery(currentUser.UserId, currentUser.Role ?? "", status, bookingType, fromDate, toDate, search, page, pageSize)));
     }
 
     [HttpGet("{id}")]
@@ -103,10 +110,17 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
 
     [HttpGet("worker")]
     [Authorize(Roles = "Worker")]
-    public async Task<IActionResult> GetWorkerBookings()
+    public async Task<IActionResult> GetWorkerBookings(
+    [FromQuery] int? status = null,
+    [FromQuery] int? bookingType = null,
+    [FromQuery] DateTime? fromDate = null,
+    [FromQuery] DateTime? toDate = null,
+    [FromQuery] string? search = null,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
     {
         if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
-        return Ok(await sender.Send(new GetMyBookingsQuery(currentUser.UserId, currentUser.Role ?? "")));
+        return Ok(await sender.Send(new GetMyBookingsQuery(currentUser.UserId, currentUser.Role ?? "", status, bookingType, fromDate, toDate, search, page, pageSize)));
     }
 
     // ── Admin ──

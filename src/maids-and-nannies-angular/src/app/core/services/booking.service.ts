@@ -62,6 +62,14 @@ export interface BookingDetailDto {
   hasReviewed: boolean;
 }
 
+export interface PagedResult<T> {
+  data: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class BookingService {
   private readonly API_URL = environment.apiUrl;
@@ -73,9 +81,9 @@ export class BookingService {
     return this.http.post(`${this.API_URL}/booking`, data);
   }
 
-  getMyBookings(): Observable<BookingListDto[]> {
-    return this.http.get<BookingListDto[]>(`${this.API_URL}/booking`);
-  }
+    getMyBookings(params?: any): Observable<PagedResult<BookingListDto>> {
+    return this.http.get<PagedResult<BookingListDto>>(`${this.API_URL}/booking`, { params });
+  } 
 
   getBookingById(id: number): Observable<BookingDetailDto> {
     return this.http.get<BookingDetailDto>(`${this.API_URL}/booking/${id}`);
@@ -101,10 +109,10 @@ requestReplacement(
 }
 
   // Worker
-  getWorkerBookings(): Observable<BookingListDto[]> {
-    return this.http.get<BookingListDto[]>(`${this.API_URL}/booking/worker`);
+   // Worker
+  getWorkerBookings(params?: any): Observable<PagedResult<BookingListDto>> {
+    return this.http.get<PagedResult<BookingListDto>>(`${this.API_URL}/booking/worker`, { params });
   }
-
   // Admin
   confirmWorker(id: number): Observable<any> {
     return this.http.post(`${this.API_URL}/booking/${id}/confirm-worker`, {});

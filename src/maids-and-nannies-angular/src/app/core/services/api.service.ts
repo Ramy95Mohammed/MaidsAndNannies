@@ -69,8 +69,8 @@ export class ApiService {
     return this.http.put(`${this.API_URL}/booking/${id}/complete`, {});
   }
 
-  getAllBookings(): Observable<any> {
-    return this.http.get(`${this.API_URL}/admin/bookings`);
+   getAllBookings(params?: any): Observable<any> {
+    return this.http.get(`${this.API_URL}/admin/bookings`, { params });
   }
   // Reviews
   createReview(data: any): Observable<any> {
@@ -168,8 +168,8 @@ getMyJobPosts(): Observable<any> {
 getJobPostById(id: number): Observable<any> {
   return this.http.get(`${this.API_URL}/jobposts/${id}`);
 }
-getApprovedJobPosts(): Observable<any> {
-  return this.http.get(`${this.API_URL}/jobposts`);
+getApprovedJobPosts(params?: any): Observable<any> {
+  return this.http.get(`${this.API_URL}/jobposts`, { params });
 }
 applyForJob(postId: number, message?: string): Observable<any> {
   return this.http.post(`${this.API_URL}/jobposts/${postId}/apply`, { message });

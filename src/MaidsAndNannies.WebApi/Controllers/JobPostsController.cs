@@ -49,9 +49,15 @@ public sealed class JobPostsController(ISender sender, ICurrentUserService curre
 
     [HttpGet]
     [Authorize(Roles = "Worker")]
-    public async Task<IActionResult> GetApproved()
+    public async Task<IActionResult> GetApproved(
+       [FromQuery] int? specialization = null,
+       [FromQuery] int? bookingType = null,
+       [FromQuery] decimal? minMonthlySalary = null,
+       [FromQuery] decimal? maxMonthlySalary = null,
+       [FromQuery] int page = 1,
+       [FromQuery] int pageSize = 12)
     {
-        return Ok(await sender.Send(new GetApprovedJobPostsQuery()));
+        return Ok(await sender.Send(new GetApprovedJobPostsQuery(specialization, bookingType, minMonthlySalary, maxMonthlySalary, page, pageSize)));
     }
 
     [HttpPost("{id}/apply")]

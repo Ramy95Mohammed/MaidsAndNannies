@@ -8,6 +8,10 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { RatingModule } from 'primeng/rating';
 import { ToastModule } from 'primeng/toast';
+import { SelectModule } from 'primeng/select';
+import { DatePickerModule } from 'primeng/datepicker';
+import { InputTextModule } from 'primeng/inputtext';
+import { Paginator } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { BookingService, BookingListDto } from '../../../core/services/booking.service';
@@ -15,13 +19,25 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
 @Component({
     selector: 'app-worker-bookings',
     standalone: true,
-    imports: [CommonModule, RouterModule, FormsModule, TableModule, TagModule, ButtonModule, DialogModule, RatingModule, ToastModule, TranslatePipe],
+    imports: [CommonModule, RouterModule, FormsModule, TableModule, TagModule, ButtonModule, DialogModule, RatingModule, ToastModule, SelectModule, DatePickerModule, InputTextModule, Paginator, TranslatePipe],
     providers: [MessageService],
     template: `
         <div class="card">
             <p-toast />
             <h2>{{ 'BOOKING.MY_BOOKINGS' | translate }}</h2>
-            <p-table [value]="bookings()" [rows]="10" [tableStyle]="{ 'min-width': '50rem' }">
+            <div class="flex flex-wrap gap-3 mb-3 align-items-center">
+                <p-select [options]="statusOptions" [(ngModel)]="filters.status" optionLabel="label" optionValue="value" placeholder="الحالة" [showClear]="true" styleClass="w-14rem"></p-select>
+                <p-select [options]="typeOptions" [(ngModel)]="filters.bookingType" optionLabel="label" optionValue="value" placeholder="نوع الحجز" [showClear]="true" styleClass="w-12rem"></p-select>
+                <p-datepicker [(ngModel)]="filters.fromDate" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="من تاريخ" [showClear]="true"></p-datepicker>
+                <p-datepicker [(ngModel)]="filters.toDate" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="إلى تاريخ" [showClear]="true"></p-datepicker>
+                <span class="p-input-icon-right">
+                    <i class="pi pi-search"></i>
+                    <input pInputText [(ngModel)]="filters.search" placeholder="بحث عن اسم صاحبة المنزل" class="w-16rem" />
+                </span>
+                <p-button icon="pi pi-filter"[label]="'COMMON.SEARCH' | translate" size="small" (onClick)="applyFilters()"></p-button>
+                <p-button icon="pi pi-times" [label]="'COMMON.DELETE' | translate" size="small" severity="secondary" (onClick)="resetFilters()"></p-button>
+            </div>
+            <p-table [value]="bookings()" [rows]="pageSize" [tableStyle]="{ 'min-width': '50rem' }">
                 <ng-template #header>
                     <tr>
                         <th>{{ 'COMMON.ID' | translate }}</th>
@@ -52,6 +68,9 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
                     </tr>
                 </ng-template>
             </p-table>
+            <div *ngIf="totalCount > pageSize" class="mt-3">
+                <p-paginator [totalRecords]="totalCount" [rows]="pageSize" [first]="(page - 1) * pageSize" (onPageChange)="onPageChange($event)"></p-paginator>
+            </div>
 
             <p-dialog [(visible)]="showReviewDialog" [header]="'REVIEW.TITLE' | translate" [modal]="true">
                 <div class="flex flex-column gap-3">
@@ -70,15 +89,52 @@ export class WorkerBookings implements OnInit {
     private messageService = inject(MessageService);
     bookings = signal<BookingListDto[]>([]);
 
+    statusOptions = [
+        { label: 'في الانتظار', value: 0 }, { label: 'تم تأكيد العمالة', value: 1 },
+        { label: 'بانتظار الدفع', value: 2 }, { label: 'مدفوع', value: 3 }, { label: 'نشط', value: 4 },
+        { label: 'مكتمل', value: 5 }, { label: 'ملغي', value: 6 }, { label: 'طلب استبدال', value: 7 },
+        { label: 'قيد المراجعة', value: 8 }
+    ];
+    typeOptions = [{ label: 'يومي', value: 0 }, { label: 'شهري', value: 1 }, { label: 'ساعي', value: 2 }];
+
+    filters: any = { status: null, bookingType: null, fromDate: null, toDate: null, search: '' };
+
+    page = 1;
+    pageSize = 10;
+    totalCount = 0;
+
     showReviewDialog = false;
     reviewRating = 5;
     reviewComment = '';
     isSubmitting = false;
     private currentBooking: BookingListDto | null = null;
 
-    ngOnInit() {
-        this.bookingService.getWorkerBookings().subscribe({
-            next: (data) => this.bookings.set(data)
+    ngOnInit() { this.loadBookings(); }
+
+    applyFilters() { this.page = 1; this.loadBookings(); }
+    resetFilters() { this.filters = { status: null, bookingType: null, fromDate: null, toDate: null, search: '' }; this.page = 1; this.loadBookings(); }
+
+    onPageChange(event: any) {
+        this.page = (event.first / event.rows) + 1;
+        this.pageSize = event.rows;
+        this.loadBookings();
+    }
+
+    private toParam(d: Date): string {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    loadBookings() {
+        const params: any = {};
+        if (this.filters.status !== null && this.filters.status !== undefined) params.status = this.filters.status;
+        if (this.filters.bookingType !== null && this.filters.bookingType !== undefined) params.bookingType = this.filters.bookingType;
+        if (this.filters.fromDate) params.fromDate = this.toParam(this.filters.fromDate);
+        if (this.filters.toDate) params.toDate = this.toParam(this.filters.toDate);
+        if (this.filters.search && this.filters.search.trim()) params.search = this.filters.search.trim();
+        params.page = this.page;
+        params.pageSize = this.pageSize;
+        this.bookingService.getWorkerBookings(params).subscribe({
+            next: (res) => { this.bookings.set(res.data || []); this.totalCount = res.totalCount || 0; this.pageSize = res.pageSize || this.pageSize; }
         });
     }
 
