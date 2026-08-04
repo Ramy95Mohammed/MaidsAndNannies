@@ -1,4 +1,5 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Notifications;
 using MaidsAndNannies.Domain.Entities;
 using MaidsAndNannies.Domain.Enums;
 using MaidsPlatform.API.Domain.Enums;
@@ -7,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MaidsAndNannies.Application.Features.JobPosts.Commands.UpdateJobPost;
 
-public sealed class UpdateJobPostCommandHandler(IApplicationDbContext dbContext)
+public sealed class UpdateJobPostCommandHandler(IApplicationDbContext dbContext, INotificationService notifications)
     : IRequestHandler<UpdateJobPostCommand, Unit>
 {
     public async Task<Unit> Handle(UpdateJobPostCommand r, CancellationToken ct)
@@ -54,6 +55,10 @@ public sealed class UpdateJobPostCommandHandler(IApplicationDbContext dbContext)
             post.Specializations.Add(new JobPostSpecializationSpec { JobPostId = post.Id, JobSpecialization = spec });
 
         await dbContext.SaveChangesAsync(ct);
+
+        await notifications.NotifyAdminsAsync(NotificationType.JobPostUpdated, "NOTIF.JOB_POST_UPDATED",
+            new { PostId = r.PostId }, ct);
+
         return Unit.Value;
     }
 }

@@ -1,7 +1,8 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface User {
@@ -31,7 +32,10 @@ export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
 
-  currentUser = signal<AuthResponse | null>(this.loadUser());
+  private readonly userSubject = new BehaviorSubject<AuthResponse | null>(this.loadUser());
+    currentUser$ = this.userSubject;
+  currentUser = toSignal(this.currentUser$, { initialValue: this.loadUser() });
+
   isAuthenticated = computed(() => !!this.currentUser());
   isAdmin = computed(() => this.currentUser()?.role === 'Admin');
   isHomeowner = computed(() => this.currentUser()?.role === 'Homeowner');
@@ -66,7 +70,7 @@ registerWorker(data: FormData): Observable<{ message: string }> {
         tap(response => {
           localStorage.setItem(this.TOKEN_KEY, response.accessToken);
           localStorage.setItem(this.USER_KEY, JSON.stringify(response));
-          this.currentUser.set(response);
+          this.userSubject.next(response);
         })
       );
   }
@@ -86,7 +90,7 @@ registerWorker(data: FormData): Observable<{ message: string }> {
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
-    this.currentUser.set(null);
+    this.userSubject.next(null);
     this.router.navigate(['/auth/login']);
   }
 
@@ -95,10 +99,11 @@ registerWorker(data: FormData): Observable<{ message: string }> {
       .pipe(
         tap(user => {
           localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-          this.currentUser.set(user);
+          this.userSubject.next(user);
         })
       );
   }
+  
 
   isLoggedIn(): boolean {
     return !!this.getToken();

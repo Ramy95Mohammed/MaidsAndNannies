@@ -64,7 +64,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
                         <td>{{ b.workerName }}</td>
                         <td>{{ (b.bookingType==0)? b.dailySalary:(b.bookingType==1)?b.monthlySalary:b.hourlySalary | currency:b.currencyCode:'':'1.0-0' }} {{ b.currencyCode }}</td>
                         <td>{{ getBookingTypeLabel(b.bookingType) }}</td>
-                        <td>{{(b.bookingType == 1)?"__": b.quantity }}</td>
+                        <td>{{ b.quantity}}</td>
                         <td>{{ b.totalAmount | currency:b.currencyCode:'':'1.0-0' }} {{ b.currencyCode }}</td>
                         <td>{{ b.totalAmountAfterConversion | currency:'EGP':'code':'1.0-0' }}</td>
                         <td>{{ b.commissionAmount | currency:'EGP':'code':'1.0-0' }}</td>

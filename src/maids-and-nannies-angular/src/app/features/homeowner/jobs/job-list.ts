@@ -49,7 +49,7 @@ import { ApiService } from '../../../core/services/api.service';
               <p-button icon="pi pi-eye" [rounded]="true" [text]="true" routerLink="/homeowner/jobs/{{p.id}}"></p-button>
               <p-button icon="pi pi-users" [rounded]="true" [text]="true" routerLink="/homeowner/jobs/{{p.id}}/applications"></p-button>
               <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" routerLink="/homeowner/jobs/{{p.id}}/edit"></p-button>
-              <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="confirmDelete(p)"></p-button>
+              <!-- <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="confirmDelete(p)"></p-button> -->
             </td>
           </tr>
         </ng-template>

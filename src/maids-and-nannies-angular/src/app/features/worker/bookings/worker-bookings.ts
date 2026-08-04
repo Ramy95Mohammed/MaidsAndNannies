@@ -55,7 +55,7 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
                         <td>{{ booking.startDate | date:'shortDate' }}</td>
                         <td>{{ (booking.bookingType == 0)? booking.dailySalary:(booking.bookingType == 1)?booking.monthlySalary:booking.hourlySalary | currency:booking.currencyCode:'':'1.0-0' }} {{ booking.currencyCode }}</td>
                         <td>{{ getBookingTypeLabel(booking.bookingType) }}</td>
-                        <td>{{ (booking.bookingType == 1)?"__": booking.quantity }}</td>
+                        <td>{{ booking.quantity}}</td>
                         <td>{{ booking.totalAmount | currency:booking.currencyCode:'':'1.0-0' }} {{ booking.currencyCode }}</td>
                         <td><p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag></td>
                     </tr>

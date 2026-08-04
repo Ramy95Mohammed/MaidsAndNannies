@@ -605,7 +605,10 @@
     "HOURS_AGO": "قبل {{count}} ساعة",
     "DAYS_AGO": "قبل {{count}} يوم",
     "NEW_REVIEW": "تلقيت تقييماً {{rating}}/5 على الحجز #{{bookingId}}",
-    "BOOKING_REMINDER": "تذكير: حجزك #{{bookingId}} يبدأ غدًا"
+    "BOOKING_REMINDER": "تذكير: حجزك #{{bookingId}} يبدأ غدًا",
+    "JOB_POST_CREATED": "إعلان وظيفة جديد #{{postId}} بانتظار مراجعتك",
+    "JOB_POST_UPDATED": "تم تعديل إعلان الوظيفة #{{postId}} بانتظار إعادة المراجعة",
+    "BOOKING_CREATED": "حجز جديد #{{bookingId}} بانتظار إدارة الدفع"
   },
   "POLICIES": {
     "TITLE": "سياسات المنصة",

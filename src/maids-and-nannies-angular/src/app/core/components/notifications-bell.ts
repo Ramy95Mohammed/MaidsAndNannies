@@ -47,21 +47,73 @@ export class NotificationsBell implements OnInit, OnDestroy {
     notifications = signal<NotificationItem[]>([]);
     unreadCount = signal(0);
     private timer: ReturnType<typeof setInterval> | undefined;
+    private seenIds = new Set<number>();
+    private initialized = false;
+    private audioCtx: AudioContext | null = null;
 
     ngOnInit() {
         this.refresh();
         this.timer = setInterval(() => this.refresh(), 60000);
+        document.addEventListener('click', this.unlockAudio, { once: true });
     }
 
     ngOnDestroy() {
         if (this.timer) clearInterval(this.timer);
+        document.removeEventListener('click', this.unlockAudio);
     }
+
+    private unlockAudio = () => {
+        if (!this.audioCtx) {
+            try { this.audioCtx = new AudioContext(); } catch { return; }
+        }
+        if (this.audioCtx.state === 'suspended') this.audioCtx.resume().catch(() => {});
+    };
 
     refresh() {
         if (!this.authService.isLoggedIn()) return;
         this.notificationService.getUnreadCount().subscribe(r => this.unreadCount.set(r.count));
-        this.notificationService.getNotifications().subscribe(list => this.notifications.set(list));
+        this.notificationService.getNotifications().subscribe(list => {
+            const isAdmin = this.authService.currentUser()?.role === 'Admin';
+            const newOnes = list.filter(n => !this.seenIds.has(n.id));
+            if (this.initialized && newOnes.length > 0 && isAdmin) this.playSound();
+            list.forEach(n => this.seenIds.add(n.id));
+            this.initialized = true;
+            this.notifications.set(list);
+        });
     }
+
+  
+ private playSound() {
+        if (!this.audioCtx) {
+            try { this.audioCtx = new AudioContext(); } catch { return; }
+        }
+        if (this.audioCtx.state === 'suspended') return;
+        try {
+             const audio = new Audio('assets/sounds/adminNotification.wav');
+            audio.volume = 0.7;
+            audio.play().catch(() => {});
+        } catch { }
+    }
+
+    // private playSound() {
+    //     if (!this.audioCtx) {    
+    //         try { this.audioCtx = new AudioContext(); } catch { return; }
+    //     }
+    //     if (this.audioCtx.state === 'suspended') return;
+    //     try {
+    //         const osc = this.audioCtx.createOscillator();
+    //         const gain = this.audioCtx.createGain();
+    //         osc.type = 'square';
+    //         osc.frequency.value = 880;
+    //         gain.gain.value = 0.15;
+    //         osc.connect(gain).connect(this.audioCtx.destination);
+    //         const t = this.audioCtx.currentTime;
+    //         gain.gain.setValueAtTime(0.15, t);
+    //         gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    //         osc.start(t);
+    //         osc.stop(t + 0.35);
+    //     } catch { }
+    // }
 
     getParams(n: NotificationItem): Record<string, unknown> {
         try {
@@ -89,7 +141,7 @@ export class NotificationsBell implements OnInit, OnDestroy {
         this.notificationService.markAllRead().subscribe(() => this.refresh());
     }
 
-    timeAgo(iso: string): string {       
+    timeAgo(iso: string): string {
         const diff =  Date.now() - new Date(iso).getTime();
         const mins = Math.floor(diff / 60000);
         if (mins < 1) return this.translate.instant('NOTIF.JUST_NOW');
@@ -98,6 +150,4 @@ export class NotificationsBell implements OnInit, OnDestroy {
         if (hours < 24) return this.translate.instant('NOTIF.HOURS_AGO', { count: hours });
         return this.translate.instant('NOTIF.DAYS_AGO', { count: Math.floor(hours / 24) });
     }
-
-   
 }

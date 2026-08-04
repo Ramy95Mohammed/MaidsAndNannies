@@ -177,16 +177,9 @@ export class WorkerDetail implements OnInit {
     commissionTypeIsDisabled: boolean = true;
     quantityIsDisabled: boolean = false;
 
-    bookingTypes: any = [
-        { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
-        { label: this.translate.instant('WORKER_DETAIL.MONTHLY'), value: 1 },
-        { label: this.translate.instant('WORKER_DETAIL.HOURLY'), value: 2 }
-    ];
+    bookingTypes: any = [];
 
-    commissionOptions = [
-        { label: this.translate.instant('WORKER_DETAIL.COMMISSION_ONETIME'), value: 0 },
-        { label: this.translate.instant('WORKER_DETAIL.COMMISSION_SUBSCRIPTION'), value: 1 }
-    ];
+    commissionOptions:any = [];
 
     ngOnInit() {
         const id = this.route.snapshot.paramMap.get('id');
@@ -197,6 +190,19 @@ export class WorkerDetail implements OnInit {
             });
         }
 
+        setTimeout(() => {
+            this.bookingTypes =  [
+        { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
+        { label: this.translate.instant('WORKER_DETAIL.MONTHLY'), value: 1 },
+        { label: this.translate.instant('WORKER_DETAIL.HOURLY'), value: 2 }
+        ];
+
+         this.commissionOptions = [
+        { label: this.translate.instant('WORKER_DETAIL.COMMISSION_ONETIME'), value: 0 },
+        { label: this.translate.instant('WORKER_DETAIL.COMMISSION_SUBSCRIPTION'), value: 1 }
+            ];
+
+        }, 1000);
         this.currencyService.loadCurrencies(this.currenciesMap);
     }
 

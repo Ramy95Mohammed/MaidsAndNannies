@@ -1,4 +1,6 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Notifications;
+using MaidsAndNannies.Domain.Entities;
 using MaidsAndNannies.Domain.Enums;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
@@ -7,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 namespace MaidsAndNannies.Application.Features.Bookings.Commands.CreateBooking;
 
 public sealed class CreateBookingCommandHandler(
-    IApplicationDbContext dbContext)
+    IApplicationDbContext dbContext ,
+    INotificationService notifications)
     : IRequestHandler<CreateBookingCommand, int>
 {
     public async Task<int> Handle(CreateBookingCommand request, CancellationToken ct)
@@ -123,6 +126,10 @@ public sealed class CreateBookingCommandHandler(
 
             await dbContext.SaveChangesAsync(ct);
             await transaction.CommitAsync();
+
+            
+            await notifications.NotifyAdminsAsync(NotificationType.BookingCreated, "NOTIF.BOOKING_CREATED",
+              new { BookingId = booking.Id }, ct);
             return booking.Id;
         }
         catch (Exception ex)

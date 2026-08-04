@@ -604,7 +604,10 @@
     "HOURS_AGO": "{{count}}h ago",
     "DAYS_AGO": "{{count}}d ago",
     "NEW_REVIEW": "You received a {{rating}}/5 rating on booking #{{bookingId}}",
-    "BOOKING_REMINDER": "Reminder: your booking #{{bookingId}} starts tomorrow"
+    "BOOKING_REMINDER": "Reminder: your booking #{{bookingId}} starts tomorrow",
+    "JOB_POST_CREATED": "New job post #{{postId}} awaiting your review",
+    "JOB_POST_UPDATED": "Job post #{{postId}} edited, awaiting re-review",
+    "BOOKING_CREATED": "New booking #{{bookingId}} awaiting payment management"
   },
   "POLICIES": {
     "TITLE": "Platform Policies",

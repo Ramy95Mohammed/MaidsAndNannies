@@ -125,8 +125,7 @@ export class Login{
         this.errorMessage = '';
 
         this.authService.login(this.email, this.password).subscribe({
-            next: (response) => {
-                console.log('user Response' , response);
+            next: (response) => {                
                 this.isLoading = false;
                 const role = response.role;
                 if (role === 'Admin') {

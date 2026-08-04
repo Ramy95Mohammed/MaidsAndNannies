@@ -1,4 +1,5 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Notifications;
 using MaidsAndNannies.Domain.Entities;
 using MaidsAndNannies.Domain.Enums;
 using MaidsPlatform.API.Domain.Enums;
@@ -7,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MaidsAndNannies.Application.Features.JobPosts.Commands.CreateJobPost;
 
-public sealed class CreateJobPostCommandHandler(IApplicationDbContext dbContext)
+public sealed class CreateJobPostCommandHandler(IApplicationDbContext dbContext, INotificationService notifications)
     : IRequestHandler<CreateJobPostCommand, int>
 {
     public async Task<int> Handle(CreateJobPostCommand r, CancellationToken ct)
@@ -54,6 +55,9 @@ public sealed class CreateJobPostCommandHandler(IApplicationDbContext dbContext)
 
             await transaction.CommitAsync();
 
+            await notifications.NotifyAdminsAsync(NotificationType.JobPostCreated, "NOTIF.JOB_POST_CREATED",
+                new { PostId = post.Id }, ct);
+
             return post.Id;
         }
         catch (Exception ex)
@@ -61,6 +65,6 @@ public sealed class CreateJobPostCommandHandler(IApplicationDbContext dbContext)
             await transaction.RollbackAsync();
             throw;
         }
-       
+
     }
 }
