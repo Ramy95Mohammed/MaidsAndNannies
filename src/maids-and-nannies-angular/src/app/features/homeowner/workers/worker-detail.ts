@@ -67,10 +67,10 @@ import { Checkbox } from "primeng/checkbox";
                                     </div>
 
                                     <div class="mt-2">
-                                         <p>{{ 'BOOKING.TOTAL_AMOUNT' | translate }}:{{ bookingCreationInfo()?.totalAmount | currency: bookingCreationInfo()?.currencyCode:'':'1.0-0' }} {{ bookingCreationInfo()?.currencyCode }}</p>
-                                            <p>{{ 'BOOKING.TOTAL_AMOUNT_AFTER_CONVERSION' | translate }}:{{ bookingCreationInfo()?.totalAmountAfterConversion | currency:'EGP':'code':'1.0-0' }}</p>
-                                            <p>{{ 'BOOKING.COMMISSION' | translate }}: {{ bookingCreationInfo()?.commissionAmount | currency:'EGP':'code':'1.0-0' }}</p>                                        
-                                            <p>{{ 'BOOKING_DETAIL.PAYMENT_TOTAL' | translate }}: {{ bookingCreationInfo()?.paymentAmount | currency:'EGP':'code':'1.0-0' }}</p>
+                                         <p>{{ 'BOOKING.TOTAL_AMOUNT' | translate }}:{{ bookingCalculationInfo()?.totalAmount | currency: bookingCalculationInfo()?.currencyCode:'':'1.0-0' }} {{ bookingCalculationInfo()?.currencyCode }}</p>
+                                            <p>{{ 'BOOKING.TOTAL_AMOUNT_AFTER_CONVERSION' | translate }}:{{ bookingCalculationInfo()?.totalAmountAfterConversion | currency:'EGP':'code':'1.0-0' }}</p>
+                                            <p>{{ 'BOOKING.COMMISSION' | translate }}: {{ bookingCalculationInfo()?.commissionAmount | currency:'EGP':'code':'1.0-0' }}</p>                                        
+                                            <p>{{ 'BOOKING_DETAIL.PAYMENT_TOTAL' | translate }}: {{ bookingCalculationInfo()?.paymentAmount | currency:'EGP':'code':'1.0-0' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -124,7 +124,7 @@ import { Checkbox } from "primeng/checkbox";
                             <textarea pTextarea [(ngModel)]="notes" rows="3" class="w-full" [placeholder]="'WORKER_DETAIL.NOTES_PLACEHOLDER' | translate"></textarea>
                         </div>
 
-                        <p-button [label]="'WORKER_DETAIL.CALC_COMMISION' | translate" icon="pi pi-calculator" styleClass="w-full mb-2" (onClick)="getBookingCreationInfo()"></p-button>
+                        <p-button [label]="'WORKER_DETAIL.CALC_COMMISION' | translate" icon="pi pi-calculator" styleClass="w-full mb-2" (onClick)="getBookingCalculationInfo()"></p-button>
                                                 <div class="flex align-items-center gap-2 mb-3">
                             <p-checkbox [(ngModel)]="termsAccepted" binary="true" inputId="terms"></p-checkbox>
                             <label for="terms">{{ 'CONSENT.AGREE' | translate }}
@@ -163,7 +163,7 @@ export class WorkerDetail implements OnInit {
 
     currenciesMap = signal<{ [id: number]: string }>({});
 
-    bookingCreationInfo = signal<BookingDetailDto | null>(null);
+    bookingCalculationInfo = signal<BookingDetailDto | null>(null);
 
     worker = signal<any>(null);
     bookingType = 0;
@@ -218,7 +218,7 @@ export class WorkerDetail implements OnInit {
         return values?.map((v: any) => map[v] ?? this.translate.instant('COMMON.UNSPECIFIED')).join(', ');
     }
 
-    getBookingCreationInfo() {
+    getBookingCalculationInfo() {
         if (!this.startDate) {
             this.messageService.add({ severity: 'warn', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_SELECT_START_DATE') });
             return;
@@ -229,7 +229,7 @@ export class WorkerDetail implements OnInit {
         }
 
         this.apiService
-            .getBookingCreationInfo({
+            .getBookingCalculationInfo({
                 workerId: this.worker().id,
                 serviceType: this.bookingType,
                 bookingType: this.bookingType,
@@ -242,7 +242,7 @@ export class WorkerDetail implements OnInit {
             })
             .subscribe({
                 next: (data) => {
-                    this.bookingCreationInfo.set(data);
+                    this.bookingCalculationInfo.set(data);
                 },
                 error: () => this.messageService.add({ severity: 'error', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_CREATE_ERROR') })
             });

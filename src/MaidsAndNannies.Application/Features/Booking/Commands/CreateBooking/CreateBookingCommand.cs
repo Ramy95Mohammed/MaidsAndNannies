@@ -12,6 +12,7 @@ public sealed record CreateBookingCommand(
     DateTime StartDate,
     decimal MonthlySalary,
     decimal DailySalary,
-    decimal HourlySalary,
-    CommissionType CommissionType , bool CalcOnly = false) : IRequest<BookingDetailDto>;
+     decimal HourlySalary,
+    CommissionType CommissionType , bool CalcOnly = false   
+    ) : IRequest<BookingDetailDto>;
 

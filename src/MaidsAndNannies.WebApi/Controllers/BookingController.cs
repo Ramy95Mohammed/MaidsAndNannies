@@ -32,9 +32,9 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
     }
 
 
-    [HttpPost("bookingCreationInfo")]
+    [HttpPost("bookingCalculationInfo")]
     [Authorize(Roles = "Homeowner")]
-    public async Task<IActionResult> GetBookingCreationInfo(CreateBookingRequest request)
+    public async Task<IActionResult> GetBookingCalculationInfo(CreateBookingRequest request)
     {
         if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
 

@@ -33,8 +33,8 @@ export class ApiService {
     return this.http.post(`${this.API_URL}/booking`, data);
   }
 
-  getBookingCreationInfo(data: any): Observable<any> {
-    return this.http.post(`${this.API_URL}/booking/bookingCreationInfo`, data);
+  getBookingCalculationInfo(data: any): Observable<any> {
+    return this.http.post(`${this.API_URL}/booking/bookingCalculationInfo`, data);
   }
 
   getMyBookings(): Observable<any> {
@@ -169,6 +169,12 @@ updateJobPost(id: number, data: any): Observable<any> {
 deleteJobPost(id: number): Observable<any> {
   return this.http.delete(`${this.API_URL}/jobposts/${id}`);
 }
+
+getJobPostCalculationInfo(data: any): Observable<any> {
+  return this.http.post(`${this.API_URL}/jobposts/jobPostCalculationInfo`, data);
+}
+
+
 
 getMyJobPosts(): Observable<any> {
   return this.http.get(`${this.API_URL}/jobposts/my`);

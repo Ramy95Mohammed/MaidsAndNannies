@@ -27,7 +27,7 @@ public sealed class CreateJobPostCommandHandler(IApplicationDbContext dbContext,
             if (!currencyExists)
                 throw new KeyNotFoundException("العملة غير موجودة");
 
-            var post = new JobPost
+            var post = new Domain.Entities.JobPost
             {
                 HomeownerId = r.HomeownerId,
                 Description = r.Description,

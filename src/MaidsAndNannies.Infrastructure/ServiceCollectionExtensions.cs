@@ -1,5 +1,6 @@
 using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Application.Contracts;
+using MaidsAndNannies.Application.Features.Booking.Common;
 using MaidsAndNannies.Application.Services;
 using MaidsAndNannies.Domain.Entities.Identity;
 using MaidsAndNannies.Infrastructure.Persistence;
@@ -36,6 +37,7 @@ public static class ServiceCollectionExtensions
 
   
         services.AddScoped<INotificationService, NotificationService>();        
+        services.AddScoped<ICalculateBookingCommissionData, CalculateBookingCommissionData>();        
 
         return services;
     }

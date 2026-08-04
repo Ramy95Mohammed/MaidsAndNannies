@@ -1,4 +1,6 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
+using MaidsAndNannies.Application.Features.Bookings.Common;
+using MaidsAndNannies.Application.Features.JobPost.Queries.GetJobPostCalculation;
 using MaidsAndNannies.Application.Features.JobPosts.Commands.AcceptApplication;
 using MaidsAndNannies.Application.Features.JobPosts.Commands.ApplyForJob;
 using MaidsAndNannies.Application.Features.JobPosts.Commands.CreateJobPost;
@@ -31,6 +33,20 @@ public sealed class JobPostsController(ISender sender, ICurrentUserService curre
             request.BookingType, request.CommissionType, request.StartDate, request.Quantity, request.CurrencyId,
             request.Specializations));
         return Ok(new { JobPostId = id, Message = "تم إنشاء الإعلان بانتظار مراجعة الإدارة" });
+    }
+
+
+    [HttpPost("jobPostCalculationInfo")]
+    [Authorize(Roles = "Homeowner")]
+    public async Task<IActionResult> GetJobPostCalculationInfo(CreateJobPostRequest request)
+    {
+        if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
+
+        var bookingInfo = await
+            sender.Send(new CalculateJobPostCommissionQuery(request.BookingType, request.Quantity , request.CommissionType,
+            request.MonthlySalary , request.DailySalary , request.HourlySalary , request.CurrencyId));
+
+        return Ok(bookingInfo);
     }
 
     [HttpGet("my")]
