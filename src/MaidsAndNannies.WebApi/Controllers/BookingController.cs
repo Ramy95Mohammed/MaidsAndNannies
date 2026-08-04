@@ -1,5 +1,4 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
-using MaidsAndNannies.Application.Features.Booking.Queries;
 using MaidsAndNannies.Application.Features.Bookings.Commands.Admin;
 using MaidsAndNannies.Application.Features.Bookings.Commands.CancelBooking;
 using MaidsAndNannies.Application.Features.Bookings.Commands.CreateBooking;
@@ -25,11 +24,11 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
     {
         if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
 
-        var id = await sender.Send(new CreateBookingCommand(
+        var bookingDetailDto = await sender.Send(new CreateBookingCommand(
             currentUser.UserId, request.WorkerId, request.ServiceType,
             request.BookingType,request.Quantity, request.StartDate, request.MonthlySalary ,request.DailySalary , request.HourlySalary, request.CommissionType));
 
-        return Ok(new { BookingId = id, Message = "تم إنشاء الحجز بنجاح" });
+        return Ok(new { BookingId = bookingDetailDto.Id, Message = "تم إنشاء الحجز بنجاح" });
     }
 
 
@@ -40,9 +39,9 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
         if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
 
         var bookingInfo = await
-            sender.Send(new GetBookingCreationInfoQuery(
+            sender.Send(new CreateBookingCommand(
             currentUser.UserId, request.WorkerId, request.ServiceType,
-            request.BookingType, request.Quantity, request.StartDate, request.MonthlySalary, request.DailySalary, request.HourlySalary, request.CommissionType));
+            request.BookingType, request.Quantity, request.StartDate, request.MonthlySalary, request.DailySalary, request.HourlySalary, request.CommissionType,true));
 
         return Ok(bookingInfo);
     }

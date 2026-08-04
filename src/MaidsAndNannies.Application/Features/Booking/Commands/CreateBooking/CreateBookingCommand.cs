@@ -1,4 +1,5 @@
-﻿using MaidsAndNannies.Domain.Enums;
+﻿using MaidsAndNannies.Application.Features.Bookings.Common;
+using MaidsAndNannies.Domain.Enums;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
 
@@ -12,4 +13,5 @@ public sealed record CreateBookingCommand(
     decimal MonthlySalary,
     decimal DailySalary,
     decimal HourlySalary,
-    CommissionType CommissionType) : IRequest<int>;
+    CommissionType CommissionType , bool CalcOnly = false) : IRequest<BookingDetailDto>;
+
