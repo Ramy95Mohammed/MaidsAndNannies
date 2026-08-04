@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -25,7 +25,7 @@ import { MultiSelect } from "primeng/multiselect";
   template: `
     <p-toast />
     <div class="card">
-      <h2>{{ 'JOB_POST.CREATE' | translate }}</h2>
+      <h2>{{ (editId ? 'JOB_POST.EDIT_TITLE' : 'JOB_POST.CREATE') | translate }}</h2>
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12">
           <label class="block font-bold mb-2">{{ 'JOB_POST.DESCRIPTION' | translate }}</label>
@@ -77,7 +77,7 @@ import { MultiSelect } from "primeng/multiselect";
           <input pInputText [(ngModel)]="quantity" [disabled]="quantityIsDisabled" type="number" min="1" class="w-full" />
         </div>
         <div class="col-span-12 text-center">
-          <p-button [label]="'JOB_POST.SUBMIT' | translate" icon="pi pi-send" (onClick)="submit()" [loading]="loading"></p-button>
+          <p-button [label]="(editId ? 'JOB_POST.SAVE' : 'JOB_POST.SUBMIT') | translate" icon="pi pi-send" (onClick)="submit()" [loading]="loading"></p-button>
         </div>
       </div>
     </div>
@@ -86,95 +86,116 @@ import { MultiSelect } from "primeng/multiselect";
 export class JobCreate implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private msg = inject(MessageService);
   langService = inject(LanguageService);
-  
 
   currencyId = 1;
- currencyOptions = signal<{ value: number; label: string }[]>([]);
+  currencyOptions = signal<{ value: number; label: string }[]>([]);
   description = '';
   monthlySalary = 0; dailySalary = 0; hourlySalary = 0;
   bookingType = 0; commissionType = 0; specialization = 0;
   additionalSpecializations: number[] = [];
   startDate: Date | null = null; quantity = 1;
   loading = false;
+  editId: number | null = null;
   private translate = inject(TranslateService);
- private currencyService = inject(CurrencyService);
+  private currencyService = inject(CurrencyService);
 
- commissionTypeIsDisabled: boolean = true;
- quantityIsDisabled: boolean = false;
- bookingTypes:any;
- commissionOptions:any;
- specializations:any;
+  commissionTypeIsDisabled: boolean = true;
+  quantityIsDisabled: boolean = false;
+  bookingTypes: any;
+  commissionOptions: any;
+  specializations: any;
 
-
-  
-  ngOnInit(){
-    this.loadCurrencies();
+  ngOnInit() {
+    this.editId = this.route.snapshot.params['id'] ? Number(this.route.snapshot.params['id']) : null;
     this.setOptions();
+    this.loadCurrencies(() => { if (this.editId) this.loadPost(); });
   }
 
- loadCurrencies() {
-        this.currencyService.getCurrencies().subscribe({
-            next: (data) => {
-                const isAr = this.langService.getCurrentLanguage() === 'ar';
-                this.currencyOptions.set(data.map(c => ({
-                    value: c.id,
-                    label: isAr ? `${c.nameAr} (${c.code})` : `${c.nameEn} (${c.code})`
-                })));
-            }
-        });
+  loadCurrencies(cb?: () => void) {
+    this.currencyService.getCurrencies().subscribe({
+      next: (data) => {
+        const isAr = this.langService.getCurrentLanguage() === 'ar';
+        this.currencyOptions.set(data.map(c => ({
+          value: c.id,
+          label: isAr ? `${c.nameAr} (${c.code})` : `${c.nameEn} (${c.code})`
+        })));
+        if (cb) cb();
+      }
+    });
+  }
+
+  private loadPost() {
+    this.api.getJobPostById(this.editId!).subscribe({
+      next: (p) => {
+        this.description = p.description || '';
+        this.monthlySalary = p.monthlySalary;
+        this.dailySalary = p.dailySalary;
+        this.hourlySalary = p.hourlySalary;
+        this.bookingType = p.bookingType;
+        this.commissionType = p.commissionType;
+        this.specialization = p.specialization;
+        this.additionalSpecializations = p.specializations || [];
+        this.startDate = p.startDate ? new Date(p.startDate) : null;
+        this.quantity = p.quantity;
+        const match = this.currencyOptions().find(c => c.label.includes(p.currencyCode));
+        if (match) this.currencyId = match.value;
+        this.disableOrEnableComissionTypeAndQuantity(this.bookingType);
+      },
+      error: () => this.router.navigate(['/homeowner/jobs'])
+    });
+  }
+
+  setOptions() {
+    setTimeout(() => {
+      this.bookingTypes = [
+        { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
+        { label: this.translate.instant('WORKER_DETAIL.MONTHLY'), value: 1 },
+        { label: this.translate.instant('WORKER_DETAIL.HOURLY'), value: 2 }
+      ];
+      this.commissionOptions = [
+        { label: this.translate.instant('WORKER_DETAIL.COMMISSION_ONETIME'), value: 0 },
+        { label: this.translate.instant('WORKER_DETAIL.COMMISSION_SUBSCRIPTION'), value: 1 }
+      ];
+      this.specializations = [
+        { label: this.translate.instant('SPECIALIZATIONS.CLEANING'), value: 0 },
+        { label: this.translate.instant('SPECIALIZATIONS.COOKING'), value: 1 },
+        { label: this.translate.instant('SPECIALIZATIONS.CHILDCARE'), value: 2 },
+        { label: this.translate.instant('SPECIALIZATIONS.ELDERLYCARE'), value: 3 },
+        { label: this.translate.instant('SPECIALIZATIONS.GENERALHOUSEKEEPING'), value: 4 }
+      ];
+    }, 1000);
+  }
+
+  disableOrEnableComissionTypeAndQuantity(bookingType: number | null) {
+    if (bookingType == null) return;
+
+    if (bookingType == 0 || bookingType == 2) {
+      this.commissionTypeIsDisabled = true;
+      this.quantityIsDisabled = false;
+    } else {
+      this.commissionTypeIsDisabled = false;
+      this.quantityIsDisabled = true;
     }
+  }
 
-     setOptions(){
- setTimeout(() => {
- this.bookingTypes = [
-    { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
-    { label: this.translate.instant('WORKER_DETAIL.MONTHLY'), value: 1 },
-    { label: this.translate.instant('WORKER_DETAIL.HOURLY'), value: 2 }
-  ];
-  this.commissionOptions = [
-    { label: this.translate.instant('WORKER_DETAIL.COMMISSION_ONETIME'), value: 0 },
-    { label: this.translate.instant('WORKER_DETAIL.COMMISSION_SUBSCRIPTION'), value: 1 }
-  ];
-  this.specializations = [
-    { label: this.translate.instant('SPECIALIZATIONS.CLEANING'), value: 0 },
-    { label: this.translate.instant('SPECIALIZATIONS.COOKING'), value: 1 },
-    { label: this.translate.instant('SPECIALIZATIONS.CHILDCARE'), value: 2 },
-    { label: this.translate.instant('SPECIALIZATIONS.ELDERLYCARE'), value: 3 },
-    { label: this.translate.instant('SPECIALIZATIONS.GENERALHOUSEKEEPING'), value: 4 }
-  ];
-   
- }, 1000);
-}
+  private toDateOnlyString(date: Date | null): string | null {
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 
- disableOrEnableComissionTypeAndQuantity(bookingType: number | null) {
-        if (bookingType == null) return;
-
-        if (bookingType == 0 || bookingType == 2) {
-            this.commissionTypeIsDisabled = true;
-            this.quantityIsDisabled = false;
-        } else {
-            this.commissionTypeIsDisabled = false;
-            this.quantityIsDisabled = true;
-        }
-    }
-
-
- private toDateOnlyString(date: Date | null): string | null {
-        if (!date) return null;
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
   submit() {
     if (!this.description || !this.startDate) {
       this.msg.add({ severity: 'warn', detail: this.translate.instant('JOB_POST.FILL_ALL_FIELDS') });
       return;
     }
     this.loading = true;
-    this.api.createJobPost({
+    const payload = {
       description: this.description,
       monthlySalary: this.monthlySalary,
       dailySalary: this.dailySalary,
@@ -186,14 +207,20 @@ export class JobCreate implements OnInit {
       startDate: this.toDateOnlyString(this.startDate),
       quantity: this.quantity,
       currencyId: this.currencyId
-    }).subscribe({
-      next: () => { this.msg.add({ severity: 'success', detail: this.translate.instant('JOB_POST.CREATED') }); setTimeout(() => this.router.navigate(['/homeowner/jobs']), 1500); },
-      error: (er) =>{  this.msg.add({ severity: 'error', detail: er.error?.message || this.translate.instant('JOB_POST.CREATE_FAILED') });
-    this.loading = false;
-  },
+    };
+    const call = this.editId
+      ? this.api.updateJobPost(this.editId, payload)
+      : this.api.createJobPost(payload);
+    call.subscribe({
+      next: () => {
+        this.msg.add({ severity: 'success', detail: this.translate.instant(this.editId ? 'JOB_POST.UPDATE_SUCCESS' : 'JOB_POST.CREATED') });
+        setTimeout(() => this.router.navigate(['/homeowner/jobs']), 1500);
+      },
+      error: (er) => {
+        this.msg.add({ severity: 'error', detail: er.error?.message || this.translate.instant(this.editId ? 'JOB_POST.UPDATE_FAILED' : 'JOB_POST.CREATE_FAILED') });
+        this.loading = false;
+      },
       complete: () => this.loading = false
     });
   }
-
-  
 }

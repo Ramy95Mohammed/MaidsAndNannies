@@ -2,6 +2,8 @@
 using MaidsAndNannies.Application.Features.JobPosts.Commands.AcceptApplication;
 using MaidsAndNannies.Application.Features.JobPosts.Commands.ApplyForJob;
 using MaidsAndNannies.Application.Features.JobPosts.Commands.CreateJobPost;
+using MaidsAndNannies.Application.Features.JobPosts.Commands.DeleteJobPost;
+using MaidsAndNannies.Application.Features.JobPosts.Commands.UpdateJobPost;
 using MaidsAndNannies.Application.Features.JobPosts.Queries.GetApprovedJobPosts;
 using MaidsAndNannies.Application.Features.JobPosts.Queries.GetJobApplications;
 using MaidsAndNannies.Application.Features.JobPosts.Queries.GetJobPostById;
@@ -93,12 +95,34 @@ public sealed class JobPostsController(ISender sender, ICurrentUserService curre
         if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
         return Ok(await sender.Send(new GetMyJobApplicationsQuery(currentUser.UserId)));
     }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Homeowner")]
+    public async Task<IActionResult> Update(int id, [FromBody] CreateJobPostRequest request)
+    {
+        if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
+        await sender.Send(new UpdateJobPostCommand(
+            id, currentUser.UserId, request.Description, request.MonthlySalary,
+            request.DailySalary, request.HourlySalary, request.Specialization,
+            request.BookingType, request.CommissionType, request.StartDate, request.Quantity, request.CurrencyId,
+            request.Specializations));
+        return Ok(new { Message = "تم تحديث الإعلان بانتظار مراجعة الإدارة" });
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Homeowner")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
+        await sender.Send(new DeleteJobPostCommand(id, currentUser.UserId));
+        return Ok(new { Message = "تم حذف الإعلان" });
+    }
 }
 
 public sealed record CreateJobPostRequest(
     string Description, decimal MonthlySalary, decimal DailySalary,
     decimal HourlySalary, Specialization Specialization, BookingType BookingType,
-    CommissionType CommissionType, DateTime StartDate, int Quantity , int CurrencyId ,
+    CommissionType CommissionType, DateTime StartDate, int Quantity, int CurrencyId,
     List<Specialization>? Specializations = null);
 
 public sealed record ApplyRequest(string? Message);

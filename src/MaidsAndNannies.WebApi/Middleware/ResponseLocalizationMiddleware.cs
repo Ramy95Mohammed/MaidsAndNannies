@@ -28,7 +28,7 @@ public sealed class ResponseLocalizationMiddleware(RequestDelegate next)
             context.Response.Body = originalBody;
         }
 
-        var isJson = context.Response.ContentType?.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) ?? false;
+        var isJson = context.Response.ContentType?.Contains("application/json", StringComparison.OrdinalIgnoreCase) ?? false;
         var lang = context.Request.Headers["currentLanguage"].ToString().ToLowerInvariant() == "en" ? "en" : "ar";
 
         buffer.Position = 0;
@@ -46,13 +46,6 @@ public sealed class ResponseLocalizationMiddleware(RequestDelegate next)
                 return;
             }
         }
-
-        try
-        {
-            System.IO.File.AppendAllText(@"C:\Users\YN\AppData\Local\Temp\opencode\mw-debug.log",
-                $"[{DateTime.UtcNow:HH:mm:ss}] {context.Request.Method} {context.Request.Path} ct={context.Response.ContentType} status={context.Response.StatusCode} bufferedLen={body.Length} isJson={isJson}\n");
-        }
-        catch { }
 
         buffer.Position = 0;
         await buffer.CopyToAsync(originalBody);

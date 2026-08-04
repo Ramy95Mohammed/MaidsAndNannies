@@ -554,7 +554,15 @@
     "APPROVE": "Approve",
     "APPLICATION_STATUS_ACCEPTED": "Accepted",
     "APPLICATION_STATUS_REJECTED": "Rejected",
-    "FILL_ALL_FIELDS": "Please fill all fields"    
+    "FILL_ALL_FIELDS": "Please fill all fields",
+        "EDIT_TITLE": "Edit Job Post",
+    "SAVE": "Save Changes",
+    "UPDATE_SUCCESS": "Job post updated, pending admin review",
+    "UPDATE_FAILED": "Failed to update job post",
+    "DELETE": "Delete",
+    "DELETED": "Job post deleted",
+    "DELETE_FAILED": "Failed to delete job post",
+    "DELETE_CONFIRM": "Are you sure you want to delete this job post?"
   },
   "MENU": {
     "ADMIN": "Admin",

@@ -555,7 +555,15 @@
     "APPROVE": "اعتماد",
     "APPLICATION_STATUS_ACCEPTED": "مقبول",
     "APPLICATION_STATUS_REJECTED": "مرفوض",
-    "FILL_ALL_FIELDS": "يرجى ملء جميع الحقول"
+    "FILL_ALL_FIELDS": "يرجى ملء جميع الحقول",
+    "EDIT_TITLE": "تعديل إعلان الوظيفة",
+    "SAVE": "حفظ التعديلات",
+    "UPDATE_SUCCESS": "تم تحديث الإعلان بانتظار مراجعة الإدارة",
+    "UPDATE_FAILED": "فشل تحديث الإعلان",
+    "DELETE": "حذف",
+    "DELETED": "تم حذف الإعلان",
+    "DELETE_FAILED": "فشل حذف الإعلان",
+    "DELETE_CONFIRM": "هل أنت متأكد من حذف هذا الإعلان؟"
   },
   "MENU": {
     "ADMIN": "الإدارة",
