@@ -40,13 +40,13 @@ public sealed class GetMyBookingsQueryHandler(
 
         var totalCount = await query.CountAsync(ct);
 
-        var bookingList = await query
-            .Include(b => b.Worker)
+        var bookingList = await query            
             .OrderByDescending(b => b.CreatedAt)
             .Select(b => new
             {
                 b.Id,
-                b.Worker.FullName,
+                WorkerName =  b.Worker.FullName,
+                HomeownerName = b.Homeowner.FullName,
                 b.WorkerId,
                 b.ServiceType,
                 b.BookingType,
@@ -80,7 +80,8 @@ public sealed class GetMyBookingsQueryHandler(
 
         var bookingListDto = bookingList.Select(b => new BookingListDto(
                 b.Id,
-                b.FullName,
+                b.WorkerName,
+                b.HomeownerName,
                 workerProfiles.FirstOrDefault(p => p.UserId == b.WorkerId)?.Id ?? 0,
                 b.ServiceType,
                 b.BookingType,

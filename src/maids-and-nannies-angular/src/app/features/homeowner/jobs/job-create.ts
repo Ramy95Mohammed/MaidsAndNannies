@@ -73,7 +73,7 @@ import { Checkbox } from 'primeng/checkbox';
                 </div>
 
                 <div class="col-span-12 md:col-span-4">
-                    <label class="block font-bold mb-2">{{ 'BOOKING.QUANTITY' | translate }}</label>
+                    <label class="block font-bold mb-2">{{ bookingType === 1 ? ('BOOKING.QUANTITY_MONTHLY' | translate) : ('BOOKING.QUANTITY' | translate) }}</label>                    
                     <input pInputText [(ngModel)]="quantity" [disabled]="quantityIsDisabled" type="number" min="1" class="w-full" />
                 </div>
                 <div class="col-span-12 text-center">
@@ -135,6 +135,7 @@ export class JobCreate implements OnInit {
     bookingTypes: any;
     commissionOptions: any;
     specializations: any;
+    monthlyWorkingDaysPerMonthSettingValue:string | null = null;
 
     termsAccepted = false;
 
@@ -146,6 +147,15 @@ export class JobCreate implements OnInit {
         this.loadCurrencies(() => {
             if (this.editId) this.loadPost();
         });
+
+        this.getMonthlyWorkingDaysPerMonthSetting();
+    }
+
+     getMonthlyWorkingDaysPerMonthSetting(){
+         this.api.getSettingByKey('MonthlyWorkingDaysPerMonth').subscribe({
+                next: (data) => this.monthlyWorkingDaysPerMonthSettingValue = data.value,
+                error: () => this.msg.add({ severity: 'error', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_WORKER_NOT_FOUND') })
+            });
     }
 
     loadCurrencies(cb?: () => void) {
@@ -209,12 +219,13 @@ export class JobCreate implements OnInit {
         if (bookingType == null) return;
 
         if (bookingType == 1 && this.quantity === 1) {
-            this.quantity = 26;
+            this.quantity = this.monthlyWorkingDaysPerMonthSettingValue != null? Number(this.monthlyWorkingDaysPerMonthSettingValue) : 26;
         }
 
         if (bookingType == 0 || bookingType == 2) {
             this.commissionTypeIsDisabled = true;
             this.quantityIsDisabled = false;
+            this.quantity = 1;
         } else {
             this.commissionTypeIsDisabled = false;
             this.quantityIsDisabled = false;

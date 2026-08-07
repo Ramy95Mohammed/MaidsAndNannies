@@ -112,11 +112,13 @@
     "COMPLETE": "إنهاء",
     "REPLACEMENT": "الاستبدال",
     "REPLACEMENT_HINT": "تم استخدام {{count}} من 2 استبدال",
-    "TYPE": "نوع الحجز",
-    "QUANTITY": "الكمية",
+    "TYPE": "نوع الحجز",    
     "TOTAL_AMOUNT": "الإجمالي",
     "TOTAL_AMOUNT_AFTER_CONVERSION": "الإجمالي بعد التحويل",
-    "SALARY": "المرتب"
+    "SALARY": "المرتب",
+    "HOMEOWNER":"صاحبة المنزل",
+    "QUANTITY_MONTHLY": "أيام العمل في الشهر",
+    "QUANTITY": "الكمية (عدد الأيام/الساعات)"
   },
   "PAYMENT": {
     "UPLOAD_PROOF": "رفع إثبات الدفع",
@@ -254,7 +256,9 @@
     "TOAST_SAVE_SUCCESS": "تم حفظ التعديلات",
     "TOAST_SAVE_ERROR": "فشل حفظ التعديلات",
     "SELFIE_REQUIRED": "الرجاء رفع الصورة الشخصية",
-    "UPDATE_FAILED": "فشل التحديث"
+    "UPDATE_FAILED": "فشل التحديث",
+    "CURRENT_LOCATION":"الموقع الحالي",
+    "IS_AVAILABLE_HINT": "طالما هذا الخيار غير مفعّل، لن تظهر في قوائم البحث عن عاملات — تغيير الحالة يتم عن طريق الإدارة"   
   },
   "SUBSCRIPTION": {
     "MY_SUBSCRIPTIONS": "اشتراكاتي",
@@ -319,7 +323,10 @@
     "MAX_ACTIVE_DESC": "الحد الأقصى للحجوزات النشطة لكل صاحبة منزل",
     "PENDING_CANCEL_LABEL": "إلغاء الحجز المعلق بعد (ساعة)",
     "PENDING_CANCEL_DESC": "إلغاء الحجوزات المعلقة تلقائياً بعد هذه المدة",
-    "SAVED": "تم حفظ الإعدادات"
+    "SAVED": "تم حفظ الإعدادات",
+    "MONTHLY_WORKING_DAYS_PER_MONTH_LABEL":"عدد أيام العمل فى الشهر",
+    "MONTHLY_WORKING_DAYS_PER_MONTH_DESC":"عدد الأيام العمل للشهر التي تظهر لصاحبة العمل "
+
   },
   "ERROR_PAGES": {
     "ACCESS_DENIED": "الدخول ممنوع",
@@ -508,7 +515,11 @@
     "CONFIRM_RENEWAL": "تأكيد التجديد",
     "REGISTER_FAILED": "فشل التسجيل",
     "CUSTOMIZE_LIMITS": "تخصيص حدود الاستبدال",
-    "LIMITS_EMPTY_HINT": "اتركه فارغاً للرجوع للإعدادات العامة"
+    "LIMITS_EMPTY_HINT": "اتركه فارغاً للرجوع للإعدادات العامة",
+     "WORKERS_ALL": "جميع العاملات",
+    "AVAILABILITY": "متاحة للعمل",
+    "AVAILABILITY_UPDATED": "تم تحديث حالة التوفر",
+    "AVAILABILITY_FAILED": "تعذّر تحديث الحالة"
   },
   "JOB_POST": {
     "CREATE": "إنشاء إعلان وظيفة",

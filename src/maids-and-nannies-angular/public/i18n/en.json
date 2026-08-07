@@ -112,11 +112,13 @@
     "COMPLETE": "Complete",
     "REPLACEMENT": "Replacement",
     "REPLACEMENT_HINT": "Two replacement used",
-    "TYPE": "Booking Type",
-    "QUANTITY": "Quantity",
+    "TYPE": "Booking Type",    
     "TOTAL_AMOUNT": "Total amount",
     "TOTAL_AMOUNT_AFTER_CONVERSION": "Total amount after conversion",
-    "SALARY": "Salary"
+    "SALARY": "Salary",
+    "HOMEOWNER":"Homeowner",
+    "QUANTITY_MONTHLY": "Working days per month",
+    "QUANTITY": "Quantity (days/hours)"
   },
   "PAYMENT": {
     "UPLOAD_PROOF": "Upload Payment Proof",
@@ -254,7 +256,9 @@
     "TOAST_SAVE_SUCCESS": "Changes saved successfully",
     "TOAST_SAVE_ERROR": "Failed to save changes",
     "UPDATE_FAILED": "Update failed",
-    "SELFIE_REQUIRED": "Selfie photo is required"
+    "SELFIE_REQUIRED": "Selfie photo is required",
+    "CURRENT_LOCATION":"Current location",
+    "IS_AVAILABLE_HINT": "While off, you won't appear in worker search results — the admin controls this"
   },
   "SUBSCRIPTION": {
     "MY_SUBSCRIPTIONS": "My Subscriptions",
@@ -318,7 +322,9 @@
     "MAX_ACTIVE_DESC": "Max active bookings per homeowner",
     "PENDING_CANCEL_LABEL": "Cancel pending booking after (hours)",
     "PENDING_CANCEL_DESC": "Auto-cancel pending bookings after this period",
-    "SAVED": "Settings saved"
+    "SAVED": "Settings saved",
+    "MONTHLY_WORKING_DAYS_PER_MONTH_LABEL":"Monthly working days per month",
+    "MONTHLY_WORKING_DAYS_PER_MONTH_DESC":"Number of working days per month shown to the worker "
   },
   "ERROR_PAGES": {
     "ACCESS_DENIED": "Access Denied",
@@ -507,7 +513,11 @@
     "CONFIRM_RENEWAL": "Confirm Renewal",
     "REGISTER_FAILED": "Registration failed",
     "CUSTOMIZE_LIMITS": "Customize Replacement Limits",
-    "LIMITS_EMPTY_HINT": "Leave empty to use general settings"
+    "LIMITS_EMPTY_HINT": "Leave empty to use general settings",
+        "WORKERS_ALL": "All Workers",
+    "AVAILABILITY": "Available",
+    "AVAILABILITY_UPDATED": "Availability updated",
+    "AVAILABILITY_FAILED": "Failed to update availability"
   },
   "JOB_POST": {
     "CREATE": "Create Job Post",

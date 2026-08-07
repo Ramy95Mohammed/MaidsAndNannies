@@ -60,3 +60,15 @@ public sealed record AdminHomeownerDto(
     int? MaxFaultReplacementCount,
     int? MaxPreferenceReplacementCount,
     DateTime CreatedAt);
+
+public sealed record AdminWorkerDto(
+    int Id,
+    string UserId,
+    string FullName,
+    string? NationalityAr,
+    string? NationalityEn,
+    IReadOnlyList<Specialization> Specializations,
+    string? PassportNumber,
+    bool IsAvailable,
+    VerificationStatus VerificationStatus,
+    DateTime CreatedAt);

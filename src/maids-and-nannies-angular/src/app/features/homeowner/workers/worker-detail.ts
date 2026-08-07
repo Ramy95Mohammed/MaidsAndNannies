@@ -161,6 +161,8 @@ export class WorkerDetail implements OnInit {
     private currencyService = inject(CurrencyService);
     private translate = inject(TranslateService);
 
+    monthlyWorkingDaysPerMonthSettingValue:string | null = null;
+
     currenciesMap = signal<{ [id: number]: string }>({});
 
     bookingCalculationInfo = signal<BookingDetailDto | null>(null);
@@ -182,6 +184,7 @@ export class WorkerDetail implements OnInit {
     commissionOptions:any = [];
 
     ngOnInit() {
+
         const id = this.route.snapshot.paramMap.get('id');
         if (id) {
             this.apiService.getWorker(id).subscribe({
@@ -190,6 +193,7 @@ export class WorkerDetail implements OnInit {
             });
         }
 
+        this.getMonthlyWorkingDaysPerMonthSetting();
         setTimeout(() => {
             this.bookingTypes =  [
         { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
@@ -204,6 +208,14 @@ export class WorkerDetail implements OnInit {
 
         }, 1000);
         this.currencyService.loadCurrencies(this.currenciesMap);
+    }
+
+
+    getMonthlyWorkingDaysPerMonthSetting(){
+         this.apiService.getSettingByKey('MonthlyWorkingDaysPerMonth').subscribe({
+                next: (data) => this.monthlyWorkingDaysPerMonthSettingValue = data.value,
+                error: () => this.messageService.add({ severity: 'error', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_WORKER_NOT_FOUND') })
+            });
     }
 
     getSpecLabel(values: number[]): string {
@@ -292,19 +304,23 @@ export class WorkerDetail implements OnInit {
         return `${year}-${month}-${day}`;
     }
 
+    
+
        disableOrEnableComissionTypeAndQuantity(bookingType: number | null) {
         if (bookingType == null) return;
 
         if (bookingType == 1 && this.quantity === 1) {
-            this.quantity = 26;
-        }
+
+            this.quantity = this.monthlyWorkingDaysPerMonthSettingValue != null? Number(this.monthlyWorkingDaysPerMonthSettingValue) : 26;
+        } 
 
         if (bookingType == 0 || bookingType == 2) {
             this.commissionTypeIsDisabled = true;
             this.quantityIsDisabled = false;
+            this.quantity = 1;
         } else {
             this.commissionTypeIsDisabled = false;
-            this.quantityIsDisabled = false;
+            this.quantityIsDisabled = false;            
         }
     }
 

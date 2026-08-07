@@ -40,9 +40,7 @@ import { Toast } from 'primeng/toast';
         StepperModule,
         TranslatePipe,
         RouterModule,
-        AppFloatingConfigurator,        
-        FileUpload,        
-        Toast
+        AppFloatingConfigurator,                        
     ],
     template: `
         <app-floating-configurator />
@@ -213,7 +211,7 @@ import { Toast } from 'primeng/toast';
                         </div>
 
                         <div *ngIf="step === 4" class="flex flex-col gap-4">
-                            <ng-container *ngIf="accountType === 1">
+                            <!-- <ng-container *ngIf="accountType === 1">
                                 <h5>{{ 'AUTH.HOME_WORKER_IMAGE' | translate }}</h5>
 
                                 <p-toast />
@@ -224,7 +222,7 @@ import { Toast } from 'primeng/toast';
                                     <span class="text-sm">{{ selfieImageFile.name }}</span>
                                 </div>
                                
-                            </ng-container>
+                            </ng-container> -->
 
                             <div class="flex gap-2">
                                 <p-button [label]="'COMMON.PREVIOUS' | translate" icon="pi pi-arrow-left" severity="secondary" styleClass="flex-1" (onClick)="step = 3"></p-button>

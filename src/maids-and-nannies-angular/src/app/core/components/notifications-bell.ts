@@ -75,7 +75,7 @@ export class NotificationsBell implements OnInit, OnDestroy {
         this.notificationService.getNotifications().subscribe(list => {
             const isAdmin = this.authService.currentUser()?.role === 'Admin';
             const newOnes = list.filter(n => !this.seenIds.has(n.id));
-            if (this.initialized && newOnes.length > 0 && isAdmin) this.playSound();
+            if (this.initialized && newOnes.length > 0 ) this.playSound();
             list.forEach(n => this.seenIds.add(n.id));
             this.initialized = true;
             this.notifications.set(list);

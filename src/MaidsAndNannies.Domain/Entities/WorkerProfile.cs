@@ -11,7 +11,7 @@ public class WorkerProfile : Entity
 
     // Personal Info
     public int NationalityId { get; set; }//
-    public string NationalIdNumber { get; set; } = string.Empty;
+    public string? NationalIdNumber { get; set; }
     public string WhatsAppNumber { get; set; } = string.Empty;
     public DateTime BirthDate { get; set; }
 

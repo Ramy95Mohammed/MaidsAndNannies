@@ -7,9 +7,11 @@ using MaidsAndNannies.Application.Features.Admin.Commands.RejectHomeowner;
 using MaidsAndNannies.Application.Features.Admin.Commands.RejectPayment;
 using MaidsAndNannies.Application.Features.Admin.Commands.RejectWorker;
 using MaidsAndNannies.Application.Features.Admin.Commands.UpdateHomeownerReplacementLimits;
+using MaidsAndNannies.Application.Features.Admin.Commands.UpdateWorkerAvailability;
 using MaidsAndNannies.Application.Features.Admin.Queries.GetAdminDashboard;
 using MaidsAndNannies.Application.Features.Admin.Queries.GetAllBookings;
 using MaidsAndNannies.Application.Features.Admin.Queries.GetAllHomeowners;
+using MaidsAndNannies.Application.Features.Admin.Queries.GetAllWorkers;
 using MaidsAndNannies.Application.Features.Admin.Queries.GetPendingHomeowners;
 using MaidsAndNannies.Application.Features.Admin.Queries.GetPendingPayments;
 using MaidsAndNannies.Application.Features.Admin.Queries.GetPendingWorkers;
@@ -30,6 +32,10 @@ public sealed class AdminController(ISender sender, ICurrentUserService currentU
     [HttpGet("workers/pending")]
     public async Task<IActionResult> GetPendingWorkers()
         => Ok(await sender.Send(new GetPendingWorkersQuery()));
+
+    [HttpGet("workers")]
+    public async Task<IActionResult> GetAllWorkers()
+        => Ok(await sender.Send(new GetAllWorkersQuery()));
 
     [HttpGet("homeowners/pending")]
     public async Task<IActionResult> GetPendingHomeowners()
@@ -58,6 +64,13 @@ public sealed class AdminController(ISender sender, ICurrentUserService currentU
     {
         await sender.Send(new RejectWorkerCommand(id, currentUser.UserId!, request.Reason));
         return Ok(new { Message = "تم رفض العاملة" });
+    }
+
+    [HttpPut("workers/{id}/availability")]
+    public async Task<IActionResult> UpdateWorkerAvailability(int id, UpdateWorkerAvailabilityRequest request)
+    {
+        await sender.Send(new UpdateWorkerAvailabilityCommand(id, request.IsAvailable));
+        return Ok(new { Message = "تم تحديث حالة التوفر" });
     }
 
     [HttpPost("homeowners/{id}/approve")]
@@ -137,3 +150,5 @@ public sealed record AdminRegisterHomeownerRequest
 }
 
 public sealed record UpdateReplacementLimitsRequest(int? MaxFaultReplacementCount, int? MaxPreferenceReplacementCount);
+
+public sealed record UpdateWorkerAvailabilityRequest(bool IsAvailable);

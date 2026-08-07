@@ -163,12 +163,12 @@ const CURRENCY_KEYS = [
                         </p-select>
                     </div>
 
-                    <div class="flex flex-col gap-2">
+                    <!-- <div class="flex flex-col gap-2">
                         <label class="font-bold">{{ 'WORKER_PROFILE.NATIONAL_ID_NUMBER' | translate }}</label>
                         <input pInputText formControlName="nationalIdNumber" class="w-full" />
-                    </div>
+                    </div> -->
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <!-- <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
                             <label class="font-bold">{{ 'WORKER.PASSPORT_NUMBER' | translate }}</label>
                             <input pInputText formControlName="passportNumber" class="w-full" />
@@ -177,17 +177,17 @@ const CURRENCY_KEYS = [
                             <label class="font-bold">{{ 'WORKER.PASSPORT_EXPIRY' | translate }}</label>
                             <p-datepicker formControlName="passportExpiryDate" dateFormat="dd/mm/yy" [showIcon]="true" class="w-full"></p-datepicker>
                         </div>
-                    </div>
+                    </div> -->
 
-                    <div class="flex flex-col gap-2">
+                    <!-- <div class="flex flex-col gap-2">
                         <label class="font-bold">{{ 'WORKER.PASSPORT_COUNTRY' | translate }}</label>
                         <input pInputText formControlName="passportCountry" class="w-full" />
-                    </div>
+                    </div> -->
                 </div>
 
                 <!-- ================= الموقع ================= -->
                 <div class="flex flex-col gap-4">
-                    <h3>{{ 'WORKER_PROFILE.LOCATION' | translate }}</h3>
+                    <h3>{{ 'WORKER_PROFILE.CURRENT_LOCATION' | translate }}</h3>
 
                     <div class="flex flex-col gap-2">
                         <label class="font-bold">{{ 'COMMON.COUNTRY' | translate }}</label>
@@ -310,20 +310,25 @@ const CURRENCY_KEYS = [
                         </div>
                     </div>
 
-                    <div class="flex flex-col gap-2">
+                    <!-- <div class="flex flex-col gap-2">
                         <label class="font-bold">{{ 'WORKER_PROFILE.PREVIOUS_EMPLOYER' | translate }}</label>
                         <input pInputText formControlName="previousEmployer" class="w-full" />
-                    </div>
+                    </div> -->
 
                     <div class="flex align-items-center gap-2">
                         <p-checkbox formControlName="isLiveIn" [binary]="true"></p-checkbox>
                         <label>{{ 'WORKER.IS_LIVEIN' | translate }}</label>
                     </div>
 
-                    <div class="flex align-items-center gap-2">
-                        <p-checkbox formControlName="isAvailable" [binary]="true"></p-checkbox>
-                        <label>{{ 'WORKER_PROFILE.AVAILABLE_LABEL' | translate }}</label>
+                                       <div class="flex flex-col gap-1">
+                        <div class="flex align-items-center gap-2">
+                            <p-checkbox formControlName="isAvailable" [binary]="true" [disabled]="true"></p-checkbox>
+                            <label>{{ 'WORKER_PROFILE.AVAILABLE_LABEL' | translate }}</label>
+                        </div>
+                        <small class="text-muted-color">{{ 'WORKER_PROFILE.IS_AVAILABLE_HINT' | translate }}</small>
                     </div>
+
+
                 </div>
 
                 <!-- ================= المعلومات المالية ================= -->
@@ -402,7 +407,7 @@ const CURRENCY_KEYS = [
             </div>
 
             <!-- ================= المستندات ================= -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="flex flex-col gap-3">
                     <h3>{{ 'WORKER_PROFILE.SELFIE_TITLE' | translate }}</h3>
                     <img *ngIf="selfieUrl()" width="150" height="150" [src]="selfieUrl()" [attr.alt]="'WORKER_PROFILE.SELFIE_TITLE' | translate" class="w-8rem h-8rem border-round object-fit-cover" />
@@ -432,7 +437,7 @@ const CURRENCY_KEYS = [
                     ></p-fileupload>
                     <small class="text-color-secondary">{{ 'WORKER_PROFILE.UPLOAD_HINT' | translate }}</small>
                 </div>
-            </div>
+            </div> -->
 
             <div class="flex justify-content-end gap-2 mt-4">
                 <p-button [label]="'COMMON.CANCEL' | translate" [outlined]="true" routerLink="/worker/dashboard" type="button"></p-button>
@@ -518,7 +523,7 @@ export class WorkerProfileComponent implements OnInit {
 
     form: FormGroup = this.fb.group({
         nationalityId: [null, Validators.required],
-        nationalIdNumber: ['', Validators.required],
+        nationalIdNumber: [null],
         whatsAppNumber: ['' ,  Validators.required],
         passportNumber: [null],
         passportExpiryDate: [null],

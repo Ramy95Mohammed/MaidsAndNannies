@@ -124,6 +124,13 @@ verifyWorker(id: number): Observable<any> {
     return this.http.post(`${this.API_URL}/admin/workers/${id}/approve`, {});
 }
 
+getAllWorkers(): Observable<any> {
+  return this.http.get(`${this.API_URL}/admin/workers`);
+}
+updateWorkerAvailability(id: number, isAvailable: boolean): Observable<any> {
+  return this.http.put(`${this.API_URL}/admin/workers/${id}/availability`, { isAvailable });
+}
+
 getPendingPayments(): Observable<any> {
     return this.http.get(`${this.API_URL}/admin/payments/pending`);
 }
@@ -217,6 +224,11 @@ reviewJobPost(id: number, data: any): Observable<any> {
   getSettings(): Observable<any> {
     return this.http.get(`${this.API_URL}/adminsettings`);
   }
+
+  getSettingByKey(key:string): Observable<any> {
+    return this.http.get(`${this.API_URL}/adminsettings/`+ key);
+  }
+
 
   updateSettings(settings: any[]): Observable<any> {
     return this.http.put(`${this.API_URL}/adminsettings`, settings);

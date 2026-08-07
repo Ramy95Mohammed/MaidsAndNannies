@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 export interface BookingListDto {
   id: number;
   workerName: string;
+  homeownerName:string;
   workerId: number;
   serviceType: number;
   bookingType: number;

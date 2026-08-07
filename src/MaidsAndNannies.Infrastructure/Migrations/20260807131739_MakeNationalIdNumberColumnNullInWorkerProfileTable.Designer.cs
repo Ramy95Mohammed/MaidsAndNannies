@@ -4,6 +4,7 @@ using MaidsAndNannies.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MaidsAndNannies.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260807131739_MakeNationalIdNumberColumnNullInWorkerProfileTable")]
+    partial class MakeNationalIdNumberColumnNullInWorkerProfileTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -397,7 +400,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 1,
                             Code = "EGP",
-                            CreatedAtUtc = new DateTime(2026, 8, 7, 13, 25, 40, 806, DateTimeKind.Utc).AddTicks(8535),
+                            CreatedAtUtc = new DateTime(2026, 8, 7, 13, 17, 37, 433, DateTimeKind.Utc).AddTicks(9868),
                             IsActive = true,
                             NameAr = "جنيه مصري",
                             NameEn = "Egyptian Pound",
@@ -408,7 +411,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 2,
                             Code = "USD",
-                            CreatedAtUtc = new DateTime(2026, 8, 7, 13, 25, 40, 806, DateTimeKind.Utc).AddTicks(8542),
+                            CreatedAtUtc = new DateTime(2026, 8, 7, 13, 17, 37, 433, DateTimeKind.Utc).AddTicks(9873),
                             IsActive = true,
                             NameAr = "دولار أمريكي",
                             NameEn = "US Dollar",
@@ -419,7 +422,7 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         {
                             Id = 3,
                             Code = "SAR",
-                            CreatedAtUtc = new DateTime(2026, 8, 7, 13, 25, 40, 806, DateTimeKind.Utc).AddTicks(8547),
+                            CreatedAtUtc = new DateTime(2026, 8, 7, 13, 17, 37, 433, DateTimeKind.Utc).AddTicks(9878),
                             IsActive = true,
                             NameAr = "ريال سعودي",
                             NameEn = "Saudi Riyal",
@@ -474,7 +477,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("NationalIdNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("ProofOfAddressImage")
                         .HasMaxLength(500)
@@ -1249,7 +1254,9 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("NationalIdNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int>("NationalityId")
                         .HasColumnType("int");

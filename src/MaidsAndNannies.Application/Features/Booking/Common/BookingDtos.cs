@@ -6,6 +6,7 @@ namespace MaidsAndNannies.Application.Features.Bookings.Common;
 public sealed record BookingListDto(
     int Id,
     string WorkerName,
+    string HomeownerName,
     int WorkerId,
     Specialization ServiceType,
     BookingType BookingType,

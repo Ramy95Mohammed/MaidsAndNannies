@@ -96,8 +96,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         // HomeownerProfile configuration
         builder.Entity<HomeownerProfile>(b =>
         {
-            b.HasKey(p => p.Id);
-            b.Property(p => p.NationalIdNumber).HasMaxLength(20).IsRequired();
+            b.HasKey(p => p.Id);            
             b.Property(p => p.NationalIdImage).HasMaxLength(500).IsRequired();
             b.Property(p => p.SelfieImage).HasMaxLength(500).IsRequired();
             b.Property(p => p.ProofOfAddressImage).HasMaxLength(500);
@@ -111,8 +110,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         // WorkerProfile configuration
         builder.Entity<WorkerProfile>(b =>
         {
-            b.HasKey(p => p.Id);
-            b.Property(p => p.NationalIdNumber).HasMaxLength(20).IsRequired();
+            b.HasKey(p => p.Id);            
             b.Property(p => p.PassportNumber).HasMaxLength(30);
             b.Property(p => p.PassportCountry).HasMaxLength(100);
             b.Property(p => p.WhatsAppNumber).HasMaxLength(20);

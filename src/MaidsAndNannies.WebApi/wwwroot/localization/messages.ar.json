@@ -101,5 +101,6 @@
   "Passwords are required.": "كلمة المرور مطلوبة.",
   "Email is required.": "البريد الإلكتروني مطلوب.",
   "One or more validation errors occurred.": "حدث خطأ أو أكثر في التحقق من صحة البيانات.",
-  "Please enter a valid email address.": "يرجى إدخال بريد إلكتروني صحيح."
+  "Please enter a valid email address.": "يرجى إدخال بريد إلكتروني صحيح.",
+  "تم تحديث حالة التوفر": "تم تحديث حالة التوفر"  
 }

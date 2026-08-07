@@ -101,5 +101,6 @@
   "Passwords are required.": "Passwords are required.",
   "Email is required.": "Email is required.",
   "One or more validation errors occurred.": "One or more validation errors occurred.",
-  "Please enter a valid email address.": "Please enter a valid email address."
+  "Please enter a valid email address.": "Please enter a valid email address.",
+  "تم تحديث حالة التوفر": "Worker availability updated"
 }

@@ -39,7 +39,8 @@ public sealed class UpdateWorkerProfileCommandHandler(IApplicationDbContext dbCo
         workerProfile.Languages = request.Languages ?? workerProfile.Languages;
         workerProfile.PreviousEmployer = request.PreviousEmployer ?? workerProfile.PreviousEmployer;
         workerProfile.IsLiveIn = request.IsLiveIn ?? workerProfile.IsLiveIn;
-        workerProfile.IsAvailable = request.IsAvailable ?? workerProfile.IsAvailable;
+
+        //workerProfile.IsAvailable = request.IsAvailable ?? workerProfile.IsAvailable;
 
         workerProfile.HourlyRate = request.HourlyRate ?? workerProfile.HourlyRate;
         workerProfile.DailyRate = request.DailyRate ?? workerProfile.DailyRate;

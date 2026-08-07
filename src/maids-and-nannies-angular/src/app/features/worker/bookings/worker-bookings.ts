@@ -41,6 +41,7 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
                 <ng-template #header>
                     <tr>
                         <th>{{ 'COMMON.ID' | translate }}</th>
+                        <th>{{ 'BOOKING.HOMEOWNER' | translate }}</th>
                         <th>{{ 'BOOKING.START_DATE' | translate }}</th>
                         <th>{{ 'BOOKING.MONTHLY_SALARY' | translate }}</th>
                         <th>{{ 'BOOKING.TYPE' | translate }}</th>
@@ -52,6 +53,7 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
                 <ng-template #body let-booking>
                     <tr>
                         <td>{{ booking.id }}</td>
+                        <td>{{ booking.homeownerName }}</td>
                         <td>{{ booking.startDate | date:'shortDate' }}</td>
                         <td>{{ (booking.bookingType == 0)? booking.dailySalary:(booking.bookingType == 1)?booking.monthlySalary:booking.hourlySalary | currency:booking.currencyCode:'':'1.0-0' }} {{ booking.currencyCode }}</td>
                         <td>{{ getBookingTypeLabel(booking.bookingType) }}</td>

@@ -91,6 +91,7 @@ export class AdminSettings implements OnInit {
                 { key: 'MaxPreferenceReplacementCount', label: this.translate.instant('SETTINGS.MAX_PREFERENCE_LABEL'), value: 1, type: 'number', description: this.translate.instant('SETTINGS.MAX_PREFERENCE_DESC') },
                 { key: 'MaxActiveBookingsPerHomeowner', label: this.translate.instant('SETTINGS.MAX_ACTIVE_LABEL'), value: 5, type: 'number', description: this.translate.instant('SETTINGS.MAX_ACTIVE_DESC') },
                 { key: 'AutoCancelPendingBookingHours', label: this.translate.instant('SETTINGS.PENDING_CANCEL_LABEL'), value: 48, type: 'number', description: this.translate.instant('SETTINGS.PENDING_CANCEL_DESC') },
+                { key: 'MonthlyWorkingDaysPerMonth', label: this.translate.instant('SETTINGS.MONTHLY_WORKING_DAYS_PER_MONTH_LABEL'), value: 26, type: 'number', description: this.translate.instant('SETTINGS.MONTHLY_WORKING_DAYS_PER_MONTH_DESC') },
             ]
         }
     ];
