@@ -15,6 +15,7 @@ import { Paginator } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { BookingService, BookingListDto } from '../../../core/services/booking.service';
+import { waLink } from '../../../core/utils/whatsapp';
 
 @Component({
     selector: 'app-worker-bookings',
@@ -48,6 +49,7 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
                         <th>{{ 'BOOKING.QUANTITY' | translate }}</th>
                         <th>{{ 'BOOKING.TOTAL_AMOUNT' | translate }}</th>
                         <th>{{ 'BOOKING.STATUS' | translate }}</th>
+                        <!-- <th style="width: 5rem">{{ 'COMMON.ACTIONS' | translate }}</th> -->
                     </tr>
                 </ng-template>
                 <ng-template #body let-booking>
@@ -60,6 +62,11 @@ import { BookingService, BookingListDto } from '../../../core/services/booking.s
                         <td>{{ booking.quantity}}</td>
                         <td>{{ booking.totalAmount | currency:booking.currencyCode:'':'1.0-0' }} {{ booking.currencyCode }}</td>
                         <td><p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag></td>
+                                                <td>
+                            <!-- <a *ngIf="waHref(booking)" [href]="waHref(booking)!" target="_blank" rel="noopener" class="inline-flex align-items-center gap-1 text-green-500 font-medium">
+                                <i class="pi pi-whatsapp"></i>
+                            </a> -->
+                        </td>
                     </tr>
                 </ng-template>
             </p-table>
@@ -100,22 +107,26 @@ export class WorkerBookings implements OnInit {
     private currentBooking: BookingListDto | null = null;
 
     ngOnInit() {
-        this.statusOptions = [
-            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PENDING'), value: 0 },
-            { label: this.translate.instant('ADMIN.WORKER_CONFIRMED'), value: 1 },
-            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_WAITING_PAYMENT'), value: 2 },
-            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PAID'), value: 3 },
-            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_ACTIVE'), value: 4 },
-            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_COMPLETED'), value: 5 },
-            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_CANCELLED'), value: 6 },
-            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REPLACEMENT'), value: 7 },
-            { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REVIEW'), value: 8 }
-        ];
-        this.typeOptions = [
-            { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
-            { label: this.translate.instant('WORKER_DETAIL.MONTHLY'), value: 1 },
-            { label: this.translate.instant('WORKER_DETAIL.HOURLY'), value: 2 }
-        ];
+        setTimeout(() => {
+            this.statusOptions = [
+                    { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PENDING'), value: 0 },
+                    { label: this.translate.instant('ADMIN.WORKER_CONFIRMED'), value: 1 },
+                    { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_WAITING_PAYMENT'), value: 2 },
+                    { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PAID'), value: 3 },
+                    { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_ACTIVE'), value: 4 },
+                    { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_COMPLETED'), value: 5 },
+                    { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_CANCELLED'), value: 6 },
+                    { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REPLACEMENT'), value: 7 },
+                    { label: this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REVIEW'), value: 8 }
+                ];
+                this.typeOptions = [
+                    { label: this.translate.instant('WORKER_DETAIL.DAILY'), value: 0 },
+                    { label: this.translate.instant('WORKER_DETAIL.MONTHLY'), value: 1 },
+                    { label: this.translate.instant('WORKER_DETAIL.HOURLY'), value: 2 }
+                ];
+        }, 1000);
+
+       
         this.loadBookings();
     }
 
@@ -193,4 +204,26 @@ export class WorkerBookings implements OnInit {
         };
         return s[status] || 'secondary';
     }
+
+    //     waMessage(b: BookingListDto): string {
+    //     const keys: { [k: number]: string } = {
+    //         0: 'BOOKING_DETAIL.WA_PENDING',
+    //         1: 'BOOKING_DETAIL.WA_WORKER_CONFIRMED',
+    //         2: 'BOOKING_DETAIL.WA_WAITING_PAYMENT',
+    //         3: 'BOOKING_DETAIL.WA_PAID',
+    //         4: 'BOOKING_DETAIL.WA_ACTIVE',
+    //         5: 'BOOKING_DETAIL.WA_COMPLETED',
+    //         6: 'BOOKING_DETAIL.WA_CANCELLED',
+    //         7: 'BOOKING_DETAIL.WA_REPLACEMENT_REQUESTED',
+    //         8: 'BOOKING_DETAIL.WA_PAYMENT_SUBMITTED',
+    //         9: 'BOOKING_DETAIL.WA_REPLACED'
+    //     };
+    //     return this.translate.instant(keys[b.status] ?? '', { id: b.id, name: b.workerName || b.homeownerName, date: new Date(b.startDate).toLocaleDateString() });
+    // }
+
+    // waHref(b: BookingListDto): string | null {
+    //     const phone = (b as any).homeownerWhatsApp || (b as any).homeownerPhone;
+    //     if (!phone) return null;
+    //     return waLink(phone, this.waMessage(b));
+    // }
 }

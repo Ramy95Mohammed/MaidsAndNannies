@@ -11,7 +11,7 @@ namespace MaidsAndNannies.Application.Features.Auth.Commands.RegisterHomeowner;
 public sealed record RegisterHomeownerCommand(
     string FullName,
     string Email,
-    string PhoneNumber,
+    string PhoneNumber,    
     string Password,
     string? City,
     string? Address) : IRequest<Unit>;

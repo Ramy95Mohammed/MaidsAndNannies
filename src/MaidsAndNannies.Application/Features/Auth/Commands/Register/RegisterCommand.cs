@@ -7,8 +7,10 @@ public sealed record RegisterCommand(
     string FullName,
     string Email,
     string PhoneNumber,
+    string WhatsappNumber,
     string Password,
     AccountType AccountType,
     string PreferredLanguage,
     int NationalityId,
-    int CurrentCityId) : IRequest<AuthResponseDto>;
+    int CountryId,
+    int StateId) : IRequest<AuthResponseDto>;

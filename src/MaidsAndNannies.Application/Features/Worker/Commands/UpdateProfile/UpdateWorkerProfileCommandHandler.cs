@@ -21,6 +21,18 @@ public sealed class UpdateWorkerProfileCommandHandler(IApplicationDbContext dbCo
         if (workerProfile is null)
             throw new NotFoundException("WorkerProfile", request.UserId);
 
+
+        if (request.WhatsAppNumber is not null)
+        {
+            var whatsappDigits = NormalizeDigits(request.WhatsAppNumber);
+            var takenWhatsApps = await dbContext.WorkerProfiles
+                .Where(w => w.UserId != request.UserId && w.WhatsAppNumber != null)
+                .Select(w => w.WhatsAppNumber!)
+                .ToListAsync(cancellationToken);
+            if (takenWhatsApps.Any(w => NormalizeDigits(w) == whatsappDigits))
+                throw new InvalidOperationException("رقم الواتساب مسجل مسبقاً على حساب آخر");
+        }
+
         workerProfile.NationalityId = request.NationalityId ?? workerProfile.NationalityId;
         workerProfile.NationalIdNumber = request.NationalIdNumber ?? workerProfile.NationalIdNumber;
         workerProfile.BirthDate = request.BirthDate;
@@ -114,4 +126,6 @@ public sealed class UpdateWorkerProfileCommandHandler(IApplicationDbContext dbCo
         if (!string.IsNullOrEmpty(previousUrl))
             fileStorage.DeletePublic(previousUrl);
     }
+    private static string NormalizeDigits(string? value) =>
+    new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
 }

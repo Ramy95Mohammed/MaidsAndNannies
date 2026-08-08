@@ -14,6 +14,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ApiService } from '../../../core/services/api.service';
 import { BookingService } from '@/core/services/booking.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { waLink } from '@/core/utils/whatsapp';
 
 @Component({
     selector: 'app-admin-bookings',
@@ -62,15 +63,15 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
                         <td>{{ b.id }}</td>
                         <td>{{ b.homeownerName }}</td>
                         <td>{{ b.workerName }}</td>
-                        <td>{{ (b.bookingType==0)? b.dailySalary:(b.bookingType==1)?b.monthlySalary:b.hourlySalary | currency:b.currencyCode:'':'1.0-0' }} {{ b.currencyCode }}</td>
+                        <td>{{ b.bookingType == 0 ? b.dailySalary : b.bookingType == 1 ? b.monthlySalary : (b.hourlySalary | currency: b.currencyCode : '' : '1.0-0') }} {{ b.currencyCode }}</td>
                         <td>{{ getBookingTypeLabel(b.bookingType) }}</td>
-                        <td>{{ b.quantity}}</td>
-                        <td>{{ b.totalAmount | currency:b.currencyCode:'':'1.0-0' }} {{ b.currencyCode }}</td>
-                        <td>{{ b.totalAmountAfterConversion | currency:'EGP':'code':'1.0-0' }}</td>
-                        <td>{{ b.commissionAmount | currency:'EGP':'code':'1.0-0' }}</td>
-                        <td>{{ b.paymentAmount | currency:'EGP':'code':'1.0-0' }}</td>
+                        <td>{{ b.quantity }}</td>
+                        <td>{{ b.totalAmount | currency: b.currencyCode : '' : '1.0-0' }} {{ b.currencyCode }}</td>
+                        <td>{{ b.totalAmountAfterConversion | currency: 'EGP' : 'code' : '1.0-0' }}</td>
+                        <td>{{ b.commissionAmount | currency: 'EGP' : 'code' : '1.0-0' }}</td>
+                        <td>{{ b.paymentAmount | currency: 'EGP' : 'code' : '1.0-0' }}</td>
                         <td><p-tag [value]="statusLabel(b.status)" [severity]="statusSeverity(b.status)"></p-tag></td>
-                        <td>{{ b.replacementCount }}/{{b.maxReplacement}}</td>
+                        <td>{{ b.replacementCount }}/{{ b.maxReplacement }}</td>
                         <td>
                             <div class="flex gap-1">
                                 <p-button *ngIf="b.status === 0" [label]="'ADMIN.CONFIRM_WORKER' | translate" size="small" (onClick)="confirmWorker(b.id)"></p-button>
@@ -79,6 +80,27 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
                                 <p-button *ngIf="b.status === 3" [label]="'ADMIN.START_WORK' | translate" size="small" (onClick)="startWork(b.id)"></p-button>
                                 <p-button *ngIf="b.status === 4" [label]="'ADMIN.COMPLETE' | translate" severity="success" (onClick)="completeWork(b.id)"></p-button>
                                 <p-button *ngIf="b.status === 7" [label]="'ADMIN.CONFIRM_REPLACEMENT' | translate" size="small" severity="warn" (onClick)="confirmWorker(b.id)"></p-button>
+
+                                
+                                <a
+                                    *ngIf="waNumber(b, 'homeowner')"
+                                    [href]="waLink(waNumber(b, 'homeowner'), waMessage(b, b.homeownerName))"
+                                    
+                                    rel="noopener"
+                                    class="inline-flex align-items-center justify-content-center w-2rem h-2rem text-green-500 mx-2"
+                                    [title]="'BOOKING_DETAIL.WA_TO_HOMEOWNER' | translate"
+                                >
+                                    <i class="pi pi-whatsapp"></i>
+                                </a>
+                                <a
+                                    *ngIf="waNumber(b, 'worker')"
+                                    [href]="waLink(waNumber(b, 'worker'), waMessage(b, b.workerName))"                                    
+                                    rel="noopener"
+                                    class="inline-flex align-items-center justify-content-center w-2rem h-2rem text-blue-500 mx-2"
+                                    [title]="'BOOKING_DETAIL.WA_TO_WORKER' | translate"
+                                >
+                                    <i class="pi pi-whatsapp"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -101,6 +123,9 @@ export class AdminBookings implements OnInit {
 
     statusOptions: any[] = [];
     paidOptions: any[] = [];
+
+      waLink = waLink;
+
 
     filters: any = { status: null, isPaid: null, fromDate: null, toDate: null, search: '' };
 
@@ -127,11 +152,18 @@ export class AdminBookings implements OnInit {
         this.load();
     }
 
-    applyFilters() { this.page = 1; this.load(); }
-    resetFilters() { this.filters = { status: null, isPaid: null, fromDate: null, toDate: null, search: '' }; this.page = 1; this.load(); }
+    applyFilters() {
+        this.page = 1;
+        this.load();
+    }
+    resetFilters() {
+        this.filters = { status: null, isPaid: null, fromDate: null, toDate: null, search: '' };
+        this.page = 1;
+        this.load();
+    }
 
     onPageChange(event: any) {
-        this.page = (event.first / event.rows) + 1;
+        this.page = event.first / event.rows + 1;
         this.pageSize = event.rows;
         this.load();
     }
@@ -150,7 +182,11 @@ export class AdminBookings implements OnInit {
         params.page = this.page;
         params.pageSize = this.pageSize;
         this.apiService.getAllBookings(params).subscribe({
-            next: (res) => { this.bookings.set(res.data || []); this.totalCount = res.totalCount || 0; this.pageSize = res.pageSize || this.pageSize; }
+            next: (res) => {
+                this.bookings.set(res.data || []);
+                this.totalCount = res.totalCount || 0;
+                this.pageSize = res.pageSize || this.pageSize;
+            }
         });
     }
 
@@ -161,7 +197,10 @@ export class AdminBookings implements OnInit {
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.bookingService.confirmWorker(id).subscribe({
-                    next: () => { this.messageService.add({ severity:'success', detail: this.translate.instant('ADMIN.WORKER_CONFIRMED') }); this.load(); }
+                    next: () => {
+                        this.messageService.add({ severity: 'success', detail: this.translate.instant('ADMIN.WORKER_CONFIRMED') });
+                        this.load();
+                    }
                 });
             }
         });
@@ -169,26 +208,33 @@ export class AdminBookings implements OnInit {
 
     requestPayment(id: number) {
         this.bookingService.requestPayment(id).subscribe({
-            next: () => { this.messageService.add({ severity:'success', detail: this.translate.instant('ADMIN.PAYMENT_REQUESTED') }); this.load(); }
+            next: () => {
+                this.messageService.add({ severity: 'success', detail: this.translate.instant('ADMIN.PAYMENT_REQUESTED') });
+                this.load();
+            }
         });
     }
 
     startWork(id: number) {
         this.bookingService.startWork(id).subscribe({
-            next: () => { this.messageService.add({ severity:'success', detail: this.translate.instant('ADMIN.WORK_STARTED') }); this.load(); }
+            next: () => {
+                this.messageService.add({ severity: 'success', detail: this.translate.instant('ADMIN.WORK_STARTED') });
+                this.load();
+            }
         });
     }
 
     completeWork(id: number) {
         this.bookingService.completeWork(id).subscribe({
-            next: () => { this.messageService.add({ severity:'success', detail: this.translate.instant('ADMIN.BOOKING_COMPLETED') }); this.load(); }
+            next: () => {
+                this.messageService.add({ severity: 'success', detail: this.translate.instant('ADMIN.BOOKING_COMPLETED') });
+                this.load();
+            }
         });
     }
 
     getBookingTypeLabel(type: number): string {
-        return [this.translate.instant('WORKER_DETAIL.DAILY'),
-                this.translate.instant('WORKER_DETAIL.MONTHLY'),
-                this.translate.instant('WORKER_DETAIL.HOURLY')][type] || '—';
+        return [this.translate.instant('WORKER_DETAIL.DAILY'), this.translate.instant('WORKER_DETAIL.MONTHLY'), this.translate.instant('WORKER_DETAIL.HOURLY')][type] || '—';
     }
 
     confirmPayment(id: number) {
@@ -198,14 +244,19 @@ export class AdminBookings implements OnInit {
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.bookingService.confirmPayment(id).subscribe({
-                    next: () => { this.messageService.add({ severity: 'success', detail: this.translate.instant('ADMIN.TOAST_PAYMENT_CONFIRMED') }); this.load(); }
+                    next: () => {
+                        this.messageService.add({ severity: 'success', detail: this.translate.instant('ADMIN.TOAST_PAYMENT_CONFIRMED') });
+                        this.load();
+                    }
                 });
             }
         });
     }
 
     statusLabel(s: number): string {
-        return [this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PENDING'),
+        return (
+            [
+                this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PENDING'),
                 this.translate.instant('ADMIN.WORKER_CONFIRMED'),
                 this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_WAITING_PAYMENT'),
                 this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_PAID'),
@@ -213,9 +264,34 @@ export class AdminBookings implements OnInit {
                 this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_COMPLETED'),
                 this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_CANCELLED'),
                 this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REPLACEMENT'),
-                this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REVIEW')][s] || '—';
+                this.translate.instant('BOOKING_DETAIL.STATUS_LABEL_REVIEW')
+            ][s] || '—'
+        );
     }
     statusSeverity(s: number): string {
-        return ['warn','info','warn','success','info','success','danger','warn','info'][s]||'secondary';
+        return ['warn', 'info', 'warn', 'success', 'info', 'success', 'danger', 'warn', 'info'][s] || 'secondary';
+    }
+
+        waNumber(b: any, party: 'homeowner' | 'worker'): string | null {
+        const num = party === 'homeowner'
+            ? (b.homeownerWhatsApp || b.homeownerPhone)
+            : (b.workerWhatsApp || b.workerPhone);
+        return num || null;
+    }
+
+    waMessage(b: any, name: string): string {
+        const keys: { [k: number]: string } = {
+            0: 'BOOKING_DETAIL.WA_PENDING',
+            1: 'BOOKING_DETAIL.WA_WORKER_CONFIRMED',
+            2: 'BOOKING_DETAIL.WA_WAITING_PAYMENT',
+            3: 'BOOKING_DETAIL.WA_PAID',
+            4: 'BOOKING_DETAIL.WA_ACTIVE',
+            5: 'BOOKING_DETAIL.WA_COMPLETED',
+            6: 'BOOKING_DETAIL.WA_CANCELLED',
+            7: 'BOOKING_DETAIL.WA_REPLACEMENT_REQUESTED',
+            8: 'BOOKING_DETAIL.WA_PAYMENT_SUBMITTED',
+            9: 'BOOKING_DETAIL.WA_REPLACED'
+        };
+        return this.translate.instant(keys[b.status] ?? '', { id: b.id, name: name, date: new Date(b.startDate).toLocaleDateString() });
     }
 }

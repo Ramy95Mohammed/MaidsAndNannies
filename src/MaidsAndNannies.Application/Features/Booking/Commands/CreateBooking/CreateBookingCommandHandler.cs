@@ -109,7 +109,7 @@ public sealed class CreateBookingCommandHandler(
             }
 
 
-            var bookingDetailDto = new BookingDetailDto(bookinId, "", "", null, "", "", null, null, null,
+            var bookingDetailDto = new BookingDetailDto(bookinId, "","", "", null, "", "", null, null, null,
                null, Specialization.Childcare, BookingType.Daily, 0, "", DateTime.Now, null,
                0, 0, 0, bookingCalculationsReturnValue.TotalAmount, bookingCalculationsReturnValue.TotalInEgp,
                bookingCalculationsReturnValue.CommissionAmount, CommissionType.OneTime, BookingStatus.Pending,

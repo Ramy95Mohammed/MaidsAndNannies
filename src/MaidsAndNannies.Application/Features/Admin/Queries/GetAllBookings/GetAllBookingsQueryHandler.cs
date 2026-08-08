@@ -48,12 +48,18 @@ public sealed class GetAllBookingsQueryHandler(
 
         var bookings = await query
             .Include(b => b.Homeowner)
+            .ThenInclude(h => h.HomeownerProfile)
             .Include(b => b.Worker)
             .Include(b => b.Currency)
             .OrderByDescending(b => b.CreatedAt)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync(ct);
+
+        var whatsAppByWorker = (await dbContext.WorkerProfiles
+            .Where(w => bookings.Select(b => b.WorkerId).Contains(w.UserId))
+            .Select(w => new { w.UserId, w.WhatsAppNumber })
+            .ToListAsync(ct)).ToDictionary(x => x.UserId, x => x.WhatsAppNumber);
 
         var items = bookings.Select(b =>
         {
@@ -80,7 +86,11 @@ public sealed class GetAllBookingsQueryHandler(
                 b.Id,
                 b.Worker.FullName,
                 b.Homeowner.FullName,
+                b.Homeowner.PhoneNumber,
+                b.Homeowner.HomeownerProfile.WhatsAppNumber,
                 b.OriginalWorkerId ?? 0,
+                b.Worker.PhoneNumber,
+                whatsAppByWorker.TryGetValue(b.WorkerId, out var workerWa) ? workerWa : null,
                 b.ServiceType,
                 b.BookingType,
                 b.Quantity,

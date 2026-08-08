@@ -17,6 +17,7 @@ public sealed class GetBookingByIdQueryHandler(
     {
         var booking = await dbContext.Bookings
             .Include(b => b.Homeowner)
+            .ThenInclude(b => b.HomeownerProfile)
             .Include(b => b.Currency)
             .FirstOrDefaultAsync(b => b.Id == request.BookingId, ct)
             ?? throw new KeyNotFoundException("الحجز غير موجود");
@@ -24,7 +25,7 @@ public sealed class GetBookingByIdQueryHandler(
         if (booking.HomeownerId != request.UserId && booking.WorkerId != request.UserId && request.Role != "Admin")
             throw new UnauthorizedAccessException("غير مصرح لك بمشاهدة هذا الحجز");
 
-        bool canRevealDetails = booking.IsPaid || request.Role == "Admin";
+        bool canRevealDetails = request.Role == "Admin" || booking.IsPaid || request.UserId == booking.HomeownerId;
 
         var worker = dbContext.WorkerProfiles
             .Include(u => u.User)
@@ -72,11 +73,13 @@ public sealed class GetBookingByIdQueryHandler(
         var hasReviewed = await dbContext.Reviews
            .AnyAsync(x => x.BookingId == booking.Id && x.ReviewerId == request.UserId, ct);
 
+
         return new BookingDetailDto(
             booking.Id,
             booking.HomeownerId,
             booking.Homeowner.FullName,
             booking.Homeowner.PhoneNumber,
+            booking.Homeowner.HomeownerProfile.WhatsAppNumber,
             booking.WorkerId,
             worker?.User.FullName ?? "",
             canRevealDetails ? worker?.User.PhoneNumber : null,

@@ -86,6 +86,12 @@ import { Toast } from 'primeng/toast';
                                 <label class="block font-bold mb-2">{{ 'AUTH.PHONE' | translate }}</label>
                                 <input pInputText [(ngModel)]="formData.phoneNumber" class="w-full" />
                             </div>
+
+                              <div>
+                                <label class="block font-bold mb-2">{{ 'AUTH.WHATSAPP_NUMBER' | translate }}</label>
+                                <input pInputText [(ngModel)]="formData.whatsappNumber" class="w-full" />
+                            </div>
+
                             <div>
                                 <label class="block font-bold mb-2">{{ 'AUTH.PASSWORD' | translate }}</label>
                                 <p-password [(ngModel)]="formData.password" [toggleMask]="true" styleClass="w-full" [fluid]="true"></p-password>
@@ -136,7 +142,8 @@ import { Toast } from 'primeng/toast';
                                 </div>
 
                                  <div >
-                        <label class="font-bold">{{ 'COMMON.COUNTRY' | translate }}</label>
+                        <label class="font-bold mx-1">{{ 'COMMON.COUNTRY' | translate }}</label>
+                        <label class="font-bold mx-1">{{ 'COMMON.CURRENT' | translate}}</label>
                         <p-select
                         [(ngModel)]="formData.countryId"                            
                             [options]="countriesOptions"
@@ -167,7 +174,8 @@ import { Toast } from 'primeng/toast';
 
 
                                 <div>
-                                    <label class="block font-bold mb-2">{{ 'COMMON.STATE' | translate }}</label>
+                                    <label class="block font-bold mx-1 mb-2">{{ 'COMMON.STATE' | translate }}</label>
+                                    <label class="font-bold mx-1">{{ 'COMMON.CURRENT' | translate}}</label>
                                     <p-select [options]="statesOptions" [filter]="true" [filterFields]="['name_ar' , 'name_en']" [(ngModel)]="formData.stateId" optionValue="id" optionLabel="name" [placeholder]="'COMMON.STATE' | translate" class="w-full">
                                         <ng-template #selectedItem let-selectedOption>
                                             @if (selectedOption) {
@@ -211,18 +219,35 @@ import { Toast } from 'primeng/toast';
                         </div>
 
                         <div *ngIf="step === 4" class="flex flex-col gap-4">
-                            <!-- <ng-container *ngIf="accountType === 1">
-                                <h5>{{ 'AUTH.HOME_WORKER_IMAGE' | translate }}</h5>
+                            <ng-container *ngIf="accountType === 1">
+                                <h5>{{ 'AUTH.HOME_WORKER_ISAVAILABLE' | translate }}</h5>
 
-                                <p-toast />
+
+                                <div class="flex flex-wrap gap-4">
+                                    <div class="flex items-center">
+                                        <p-radiobutton name="isAvailable" [value]="true" [(ngModel)]="formData.isAvailable" inputId="isAvailableTrue" />
+                                        <label for="isAvailableTrue" class="ml-2">{{'AUTH.AVAILABLE' | translate}}</label>
+                                    </div>
+
+                                    <div class="flex items-center">
+                                        <p-radiobutton name="isAvailable" [value]="false" [(ngModel)]="formData.isAvailable" inputId="isAvailableFalse" />
+                                        <label for="isAvailableFalse" class="ml-2">{{'AUTH.NOT_AVAILABLE' | translate}}</label>
+                                    </div>                                   
+                                </div>
+
+                                <div >
+                                    {{'AUTH.HOME_WORKER_ISAVAILABLE_DESC' | translate}}
+                                </div>
+
+                                <!-- <p-toast />
                                 <p-fileupload name="selfieImage" mode="basic" accept="image/*" maxFileSize="1000000" [auto]="false" [chooseLabel]="'COMMON.CHOOSE_IMAGE' | translate" (onSelect)="onSelfieSelected($event)"> </p-fileupload>
 
                                 <div *ngIf="selfieImageFile" class="flex flex-col items-center gap-2 mt-4">
                                     <img [src]="selfiePreviewUrl" alt="selfie" width="120" height="120" style="object-fit:cover;border-radius:8px;" />
                                     <span class="text-sm">{{ selfieImageFile.name }}</span>
-                                </div>
+                                </div> -->
                                
-                            </ng-container> -->
+                            </ng-container>
 
                             <div class="flex gap-2">
                                 <p-button [label]="'COMMON.PREVIOUS' | translate" icon="pi pi-arrow-left" severity="secondary" styleClass="flex-1" (onClick)="step = 3"></p-button>
@@ -267,11 +292,13 @@ export class Register implements OnInit {
         fullName: '',
         email: '',
         phoneNumber: '',
+        whatsappNumber:'',
         password: '',
         confirmPassword: '',
         nationalityId: null,
         countryId: null,        
         stateId: null,
+        isAvailable:true,
         experienceYears: 0,
         monthlyRate: 0,
         bio: ''
@@ -283,11 +310,11 @@ export class Register implements OnInit {
             return;
         }
         
-        if (!this.selfieImageFile) {
-            this.errorMessage = this.translate.instant('WORKER_PROFILE.SELFIE_REQUIRED');
+        // if (!this.selfieImageFile) {
+        //     this.errorMessage = this.translate.instant('WORKER_PROFILE.SELFIE_REQUIRED');
 
-            return;
-        }
+        //     return;
+        // }
 
         this.isLoading = true;
         this.errorMessage = '';
@@ -296,16 +323,18 @@ export class Register implements OnInit {
         fd.append('fullName', this.formData.fullName);
         fd.append('email', this.formData.email);
         fd.append('phoneNumber', this.formData.phoneNumber);
+        fd.append('whatsappNumber', this.formData.whatsappNumber);
         fd.append('password', this.formData.password);
         fd.append('confirmPassword', this.formData.confirmPassword);
         fd.append('nationalityId', this.formData.nationalityId);
         fd.append('countryId', this.formData.countryId);
         fd.append('stateId', this.formData.stateId);
+        fd.append('isAvailable', this.formData.isAvailable);
         fd.append('experienceYears', this.formData.experienceYears);
         fd.append('monthlyRate', this.formData.monthlyRate);
         fd.append('bio', this.formData.bio ?? '');
 
-        fd.append('selfieImage', this.selfieImageFile);
+        // fd.append('selfieImage', this.selfieImageFile);
 
         this.authService.registerWorker(fd).subscribe({
             next: (response) => {

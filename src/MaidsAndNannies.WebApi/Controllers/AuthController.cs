@@ -26,8 +26,8 @@ public sealed class AuthController(ISender sender) : BaseApiController
     public async Task<ActionResult<AuthResponseDto>> Register(RegisterRequest request)
     {
         var command = new RegisterCommand(
-            request.FullName, request.Email, request.PhoneNumber, request.Password,
-            request.AccountType, request.PreferredLanguage, request.NationalityId, request.CurrentCityId);
+            request.FullName, request.Email, request.PhoneNumber , request.WhatsappNumber, request.Password,
+            request.AccountType, request.PreferredLanguage, request.NationalityId, request.CountryId,request.StateId);
 
         return Ok(await sender.Send(command));
     }
@@ -52,9 +52,9 @@ public sealed class AuthController(ISender sender) : BaseApiController
             selfieStream = request.SelfieImage.OpenReadStream();
 
         var command = new RegisterWorkerCommand(
-            request.FullName, request.Email, request.PhoneNumber, request.Password, request.ConfirmPassword,
+            request.FullName, request.Email, request.PhoneNumber, request.WhatsappNumber,request.Password, request.ConfirmPassword,
             request.NationalityId, request.CountryId, request.StateId, request.ExperienceYears,
-            request.MonthlyRate, request.Bio, selfieStream, request.SelfieImage?.FileName);
+            request.MonthlyRate, request.Bio, selfieStream, request.SelfieImage?.FileName , request.IsAvailable);
 
         await sender.Send(command);
         return Ok(new { message = "تم التسجيل بنجاح، سيتم مراجعة حسابك." });
@@ -96,18 +96,21 @@ public sealed class RegisterRequest
     [Required, StringLength(120)] public required string FullName { get; init; }
     [Required, EmailAddress] public required string Email { get; init; }
     [Required, Phone] public required string PhoneNumber { get; init; }
+
+    [Required, Phone] public required string WhatsappNumber { get; init; }
     [Required, MinLength(8)] public required string Password { get; init; }
     public AccountType AccountType { get; init; }
     [RegularExpression("^(ar|en)$")] public string PreferredLanguage { get; init; } = "ar";
     public int NationalityId { get; init; }
-    public int CurrentCityId { get; init; }
+    public int CountryId { get; init; }
+    public int StateId { get; set; }    
 }
 
 public sealed class RegisterHomeownerRequest
 {
     [Required, StringLength(120)] public required string FullName { get; init; }
     [Required, EmailAddress] public required string Email { get; init; }
-    [Required, Phone] public required string PhoneNumber { get; init; }
+    [Required, Phone] public required string PhoneNumber { get; init; }    
     [Required, MinLength(8)] public required string Password { get; init; }
     public string? City { get; init; }
     public string? Address { get; init; }
@@ -118,6 +121,7 @@ public sealed class RegisterWorkerRequest
     [Required, StringLength(120)] public required string FullName { get; init; }
     [Required, EmailAddress] public required string Email { get; init; }
     [Required, Phone] public required string PhoneNumber { get; init; }
+    [Required, Phone] public required string WhatsappNumber { get; init; }
     [Required, MinLength(8)] public required string Password { get; init; }
     [Required] public required string ConfirmPassword { get; init; }
     public int NationalityId { get; init; }
@@ -127,6 +131,7 @@ public sealed class RegisterWorkerRequest
     public decimal MonthlyRate { get; init; }
     public string? Bio { get; init; }
     public IFormFile? SelfieImage { get; init; }
+    public bool IsAvailable { get; set; }
 }
 
 public sealed class LoginRequest

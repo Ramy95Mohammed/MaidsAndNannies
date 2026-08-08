@@ -11,6 +11,7 @@ public sealed record RegisterWorkerCommand(
     string FullName,
     string Email,
     string PhoneNumber,
+    string WhatsappNumber,
     string Password,
     string ConfirmPassword,
     int NationalityId,
@@ -20,4 +21,5 @@ public sealed record RegisterWorkerCommand(
     decimal MonthlyRate,
     string? Bio,
     Stream? SelfieImageContent,
-    string? SelfieImageFileName) : IRequest<Unit>;
+    string? SelfieImageFileName,
+    bool IsAvailable) : IRequest<Unit>;

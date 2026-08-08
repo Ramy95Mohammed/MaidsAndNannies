@@ -44,7 +44,9 @@ public sealed class RegisterCommandHandler(
             {
                 UserId = user.Id,
                 NationalityId = request.NationalityId,
-                CityId = request.CurrentCityId
+                CountryId = request.CountryId,                
+                StateId = request.StateId,
+                WhatsAppNumber = request.WhatsappNumber
             });
             await dbContext.SaveChangesAsync(cancellationToken);
         }

@@ -41,12 +41,13 @@ export class AppMenu {
                     { label: t('MENU.HOMEOWNERS'), icon: 'pi pi-fw pi-home', routerLink: ['/admin/homeowners'] },
                     { label: t('MENU.WORKERS'), icon: 'pi pi-fw pi-users', routerLink: ['/admin/workers'] },
                     { label: t('MENU.BOOKINGS'), icon: 'pi pi-fw pi-calendar', routerLink: ['/admin/bookings'] },
+                    { label: t('MENU.JOB_POSTS'), icon: 'pi pi-fw pi-briefcase', routerLink: ['/admin/job-posts'] },
                     { label: t('MENU.PAYMENTS'), icon: 'pi pi-fw pi-dollar', routerLink: ['/admin/payments'] },
                     { label: t('MENU.SUBSCRIPTIONS'), icon: 'pi pi-fw pi-credit-card', routerLink: ['/admin/subscriptions'] },
                     { label: t('MENU.CURRENCIES'), icon: 'pi pi-fw pi-money-bill', routerLink: ['/admin/currencies'] },
                     { label: t('MENU.SETTINGS'), icon: 'pi pi-fw pi-cog', routerLink: ['/admin/settings'] },
+                    { label: t('MENU.BACKUP'), icon: 'pi pi-fw pi-database', routerLink: ['/admin/backup'] },
                     { label: t('MENU.PASSWORD_RESET'), icon: 'pi pi-fw pi-key', routerLink: ['/admin/password-reset'] },
-                    { label: t('MENU.JOB_POSTS'), icon: 'pi pi-fw pi-briefcase', routerLink: ['/admin/job-posts'] },
                     { label: t('MENU.REGISTER_HOMEOWNER'), icon: 'pi pi-fw pi-user-plus', routerLink: ['/admin/register-homeowner'] },
                 ]
             });

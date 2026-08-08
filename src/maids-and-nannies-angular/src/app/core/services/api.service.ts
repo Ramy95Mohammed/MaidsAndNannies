@@ -233,4 +233,14 @@ reviewJobPost(id: number, data: any): Observable<any> {
   updateSettings(settings: any[]): Observable<any> {
     return this.http.put(`${this.API_URL}/adminsettings`, settings);
   }
+
+  // Backup
+    createBackup() {
+        return this.http.get(`${this.API_URL}/admin/backup/create`, { responseType: 'blob' });
+  }
+  restoreBackup(file: File) {
+        const fd = new FormData();
+        fd.append('file', file);
+        return this.http.post(`${this.API_URL}/admin/backup/restore`, fd);
+  }
 }

@@ -29,7 +29,12 @@
     "LOGIN_FAILED": "Login failed",
     "PASSWORDS_MISMATCH": "Passwords do not match",
     "REGISTRATION_FAILED": "Registration failed",
-    "REGISTER_AS_WORKER_DESC":"Find work in homes"
+    "REGISTER_AS_WORKER_DESC":"Find work in homes",
+    "HOME_WORKER_ISAVAILABLE":"Is available ?",
+        "AVAILABLE":"Available",
+    "NOT_AVAILABLE":"Not available",
+    "HOME_WORKER_ISAVAILABLE_DESC":"If you are currently working, select 'Unavailable' until you become available so that you will appear later in search results for domestic workers.",
+    "WHATSAPP_NUMBER": "WhatsApp Number"
   },
   "HOMEOWNER": {
     "REGISTER": "Homeowner Registration",
@@ -207,7 +212,8 @@
     "CHOOSE_IMAGE": "Choose Image",
     "PAYMENT_STATUS": "Payment Status",
     "SEARCH_WORKER_OWNER": "Search (worker / homeowner)",
-    "VIEW_ALL": "View All"
+    "VIEW_ALL": "View All",
+    "CURRENT":"(Current)"
   },
   "LANGUAGE": {
     "AR": "العربية",
@@ -433,7 +439,20 @@
     "PAID_DIRECTLY": "Payment has been received. You may contact the worker directly.",
     "SEND_PROOF_WHATSAPP": "Send the payment proof via WhatsApp — the admin will confirm the payment after receiving it",
     "CONFIRM_PAYMENT_MSG": "Confirm payment received for this booking?",
-    "REPLACEMENT_REQUESTED": "Replacement requested successfully"
+    "REPLACEMENT_REQUESTED": "Replacement requested successfully",
+        "WA_LINK": "Message via WhatsApp",
+       "WA_TO_HOMEOWNER": "Message the homeowner via WhatsApp",
+    "WA_TO_WORKER": "Message the worker via WhatsApp",
+    "WA_PENDING": "Hello, there is a booking #{{id}} from {{name}} waiting for worker confirmation. Please log in to confirm",
+    "WA_WORKER_CONFIRMED": "Hello, booking #{{id}} has been confirmed by {{name}}. Thank you for using our platform",
+    "WA_WAITING_PAYMENT": "Hello, the commission for booking #{{id}} is being settled. Work will start once payment is complete",
+    "WA_PAID": "Hello, booking #{{id}} has been paid and the period has started. Best of luck",
+    "WA_ACTIVE": "Hello, booking #{{id}} started on {{date}}. Best of luck",
+    "WA_COMPLETED": "Hello, booking #{{id}} has been completed. Thank you for your commitment",
+    "WA_CANCELLED": "Hello, booking #{{id}} has been cancelled",
+    "WA_REPLACEMENT_REQUESTED": "Hello, regarding booking #{{id}}, a replacement has been requested",
+    "WA_PAYMENT_SUBMITTED": "Hello, payment proof for booking #{{id}} has been submitted and is under review",
+    "WA_REPLACED": "Hello, the worker in booking #{{id}} has been replaced with a new independent booking"
   },
   "ADMIN": {
     "TITLE": "Admin Panel",
@@ -593,7 +612,8 @@
     "WORKER": "Worker",
     "PASSWORD_RESET": "Password Resets",
     "JOB_POSTS": "Job Posts",
-    "BROWSE_JOBS": "Browse Jobs"
+    "BROWSE_JOBS": "Browse Jobs",
+    "BACKUP": "Backup & Restore"
   },
   "NOTIF": {
     "TITLE": "Notifications",
@@ -676,5 +696,21 @@
     "COMPLETED": "Completed",
     "CANCELLED": "Cancelled",
     "PAID": "Paid"
-  }
+  },
+      "ADMIN_BACKUP": {
+        "TITLE": "Database Backup & Restore",
+        "CREATE_TITLE": "Create Backup",
+        "CREATE_DESC": "Create a full database backup and download it as a .bak file",
+        "CREATE": "Create new backup",
+        "CREATE_OK": "Backup created and downloaded successfully",
+        "CREATE_ERROR": "Failed to create backup",
+        "RESTORE_TITLE": "Restore Backup",
+        "RESTORE_WARNING": "Warning: Restoring will replace all current data with the uploaded backup",
+        "RESTORE_CONFIRM": "Are you sure? All current data will be replaced",
+        "SELECTED_FILE": "Selected file",
+        "CHOOSE": "Choose .bak file",
+        "RESTORE": "Restore",
+        "RESTORE_OK": "Backup restored successfully",
+        "RESTORE_ERROR": "Failed to restore backup"
+    }
 }

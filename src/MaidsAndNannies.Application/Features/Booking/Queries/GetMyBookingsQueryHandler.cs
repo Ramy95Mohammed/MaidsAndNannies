@@ -40,13 +40,15 @@ public sealed class GetMyBookingsQueryHandler(
 
         var totalCount = await query.CountAsync(ct);
 
-        var bookingList = await query            
+        var bookingList = await query
             .OrderByDescending(b => b.CreatedAt)
             .Select(b => new
             {
                 b.Id,
-                WorkerName =  b.Worker.FullName,
+                WorkerName = b.Worker.FullName,
                 HomeownerName = b.Homeowner.FullName,
+                HomeownerId = b.HomeownerId,
+                HomeownerPhone = b.Homeowner.PhoneNumber,
                 b.WorkerId,
                 b.ServiceType,
                 b.BookingType,
@@ -78,10 +80,17 @@ public sealed class GetMyBookingsQueryHandler(
                 }
             }).ToListAsync(ct);
 
+        var homeownerProfiles = await dbContext.HomeownerProfiles
+            .Where(h => bookingList.Select(b => b.HomeownerId).Contains(h.UserId))
+            .Select(h => new { h.UserId, h.WhatsAppNumber })
+            .ToListAsync(ct);
+
         var bookingListDto = bookingList.Select(b => new BookingListDto(
                 b.Id,
                 b.WorkerName,
                 b.HomeownerName,
+                b.HomeownerPhone,
+                homeownerProfiles.FirstOrDefault(p => p.UserId == b.HomeownerId)?.WhatsAppNumber,                
                 workerProfiles.FirstOrDefault(p => p.UserId == b.WorkerId)?.Id ?? 0,
                 b.ServiceType,
                 b.BookingType,

@@ -102,5 +102,20 @@
   "Email is required.": "Email is required.",
   "One or more validation errors occurred.": "One or more validation errors occurred.",
   "Please enter a valid email address.": "Please enter a valid email address.",
-  "تم تحديث حالة التوفر": "Worker availability updated"
+  "تم تحديث حالة التوفر": "Worker availability updated",
+  "رقم الهاتف مسجل مسبقاً، لا يمكن إنشاء حساب جديد بهذا الرقم": "This phone number is already registered. A new account cannot be created with it",
+  "رقم الواتساب مسجل مسبقاً على حساب آخر": "This WhatsApp number is already used by another account",
+  "WA_LINK": "Message via WhatsApp",            
+  "WA_TO_HOMEOWNER": "Message the homeowner via WhatsApp",
+  "WA_TO_WORKER": "Message the worker via WhatsApp",
+  "WA_PENDING": "Hello, there is a booking #{{id}} from {{name}} waiting for worker confirmation. Please log in to confirm",
+  "WA_WORKER_CONFIRMED": "Hello, booking #{{id}} has been confirmed by {{name}}. Thank you for using our platform",
+  "WA_WAITING_PAYMENT": "Hello, the commission for booking #{{id}} is being settled. Work will start once payment is complete",
+  "WA_PAID": "Hello, booking #{{id}} has been paid and the period has started. Best of luck",
+  "WA_ACTIVE": "Hello, booking #{{id}} started on {{date}}. Best of luck",
+  "WA_COMPLETED": "Hello, booking #{{id}} has been completed. Thank you for your commitment",
+  "WA_CANCELLED": "Hello, booking #{{id}} has been cancelled",
+  "WA_REPLACEMENT_REQUESTED": "Hello, regarding booking #{{id}}, a replacement has been requested",
+  "WA_PAYMENT_SUBMITTED": "Hello, payment proof for booking #{{id}} has been submitted and is under review",
+  "WA_REPLACED": "Hello, the worker in booking #{{id}} has been replaced with a new independent booking"
 }

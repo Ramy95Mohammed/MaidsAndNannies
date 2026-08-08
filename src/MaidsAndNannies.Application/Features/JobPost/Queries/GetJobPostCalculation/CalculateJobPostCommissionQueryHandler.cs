@@ -39,7 +39,7 @@ namespace MaidsAndNannies.Application.Features.JobPost.Queries.GetJobPostCalcula
 
             var bookingCalculationsReturnValue = await calculateBookingCommissionData.Calc(bookingRequest, workerCalculationsVars, currency, ct);
 
-            return new BookingDetailDto(0, "", "", null, "", "", null, null, null,
+            return new BookingDetailDto(0, "", "", null,"","", "", null, null, null,
               null, Specialization.Childcare, BookingType.Daily, 0, "", DateTime.Now, null,
               0, 0, 0, bookingCalculationsReturnValue.TotalAmount, bookingCalculationsReturnValue.TotalInEgp,
               bookingCalculationsReturnValue.CommissionAmount, CommissionType.OneTime, BookingStatus.Pending,

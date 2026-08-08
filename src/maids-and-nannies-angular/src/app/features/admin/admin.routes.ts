@@ -11,6 +11,7 @@ export default <Routes>[
     { path: 'currencies', loadComponent: () => import('./currencies/admin-currencies').then(m => m.AdminCurrencies) },
         { path: 'register-homeowner', loadComponent: () => import('./register-homeowner/admin-register-homeowner').then(m => m.AdminRegisterHomeowner) },
     { path: 'settings', loadComponent: () => import('./settings/admin-settings').then(m => m.AdminSettings) },
+        { path: 'backup', loadComponent: () => import('./backup/admin-backup').then(m => m.AdminBackup) },
         { path: 'password-reset', loadComponent: () => import('./password-reset/admin-password-reset').then(m => m.AdminPasswordReset) },
     { path: 'job-posts', loadComponent: () => import('./jobs/admin-job-posts').then(m => m.AdminJobPosts) },
 ];
