@@ -43,8 +43,8 @@ import { ApiService } from '@/core/services/api.service';
                     <tr>
                         <td>{{ s.planType === 0 ? ('BOOKING.ONETIME' | translate) : ('BOOKING.SUBSCRIPTION' | translate) }}</td>
                         <td>{{ s.amount | currency:'EGP':'symbol':'1.0-0' }}</td>
-                        <td>{{ s.startDate | date:'shortDate' }}</td>
-                        <td>{{ s.endDate | date:'shortDate' }}</td>
+                        <td>{{ s.startDate | date:'fullDate' }}</td>
+                        <td>{{ s.endDate | date:'fullDate' }}</td>
                         <td>
                             <p-tag *ngIf="s.isActive && s.daysRemaining > 0" [value]="'SUBSCRIPTION.ACTIVE_TAG' | translate : { days: s.daysRemaining }" severity="success"></p-tag>
                             <p-tag *ngIf="s.isActive && s.daysRemaining <= 7 && s.daysRemaining > 0" [value]="'SUBSCRIPTION.EXPIRING_TAG' | translate : { days: s.daysRemaining }" severity="warn"></p-tag>

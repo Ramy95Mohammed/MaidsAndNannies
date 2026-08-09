@@ -73,7 +73,7 @@ import { waLink } from '../../../core/utils/whatsapp';
                 <div class="col-span-12 md:col-span-6">
                     <p-card header="{{ 'BOOKING.STATUS' | translate }}">
                         <p-tag [value]="statusLabel(booking.status)" [severity]="statusSeverity(booking.status)"></p-tag>
-                        <p class="mt-2">{{ 'BOOKING.START_DATE' | translate }}: {{ booking.startDate | date: 'shortDate' }}</p>
+                        <p class="mt-2">{{ 'BOOKING.START_DATE' | translate }}: {{ booking.startDate | date: 'fullDate' }}</p>
                         <p>{{ 'BOOKING.TYPE' | translate }}: {{ getBookingTypeLabel(booking.bookingType) }}</p>
                         <p>
                             {{ 'BOOKING.SALARY' | translate }}: {{ booking.bookingType == 0 ? booking.dailySalary : booking.bookingType == 1 ? booking.monthlySalary : (booking.hourlySalary | currency: booking.currencyCode : '' : '1.0-0') }}

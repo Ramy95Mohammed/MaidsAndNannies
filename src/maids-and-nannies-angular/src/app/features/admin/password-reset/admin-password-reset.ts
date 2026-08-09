@@ -7,6 +7,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../../core/services/api.service';
+import { waLink } from '@/core/utils/whatsapp';
 
 interface ResetRequest {
     id: number; userId: string; email: string; fullName: string;
@@ -51,8 +52,8 @@ interface ResetRequest {
                         <td>{{ r.createdAt | date: 'short' }}</td>
                         <td>{{ r.expiresAt | date: 'short' }}</td>
                         <td>
-                            <div class="flex align-items-center gap-2">
-                                <a *ngIf="r.phoneNumber" [href]="waLink(r)" target="_blank" rel="noopener" class="inline-flex align-items-center gap-1 text-green-500 font-medium">
+                            <div class="flex align-items-center gap-2">                            
+                                <a *ngIf="r.phoneNumber" [href]="waLink(r.phoneNumber , waMessage(r))"  rel="noopener" class="inline-flex align-items-center gap-1 text-green-500 font-medium">
                                     <i class="pi pi-whatsapp"></i>{{ 'ADMIN_RESET.WA_LINK' | translate }}
                                 </a>
                                 <p-button [label]="'ADMIN_RESET.MARK_SENT' | translate" size="small" (onClick)="markSent(r)"></p-button>
@@ -73,6 +74,7 @@ export class AdminPasswordReset implements OnInit {
     private translate = inject(TranslateService);
 
     requests = signal<ResetRequest[]>([]);
+        waLink = waLink;
     loading = signal(false);
 
     ngOnInit() { this.load(); }
@@ -102,10 +104,15 @@ export class AdminPasswordReset implements OnInit {
         });
     }
 
-    waLink(r: ResetRequest): string {
-        const digits = r.phoneNumber.replace(/[^0-9]/g, '');
-        const intl = digits.startsWith('0') ? '2' + digits : digits;
-        const text = encodeURIComponent(`${this.translate.instant('ADMIN_RESET.WA_TEXT')}: ${r.code}`);
-        return `https://wa.me/${intl}?text=${text}`;
-    }
+
+waMessage(r: ResetRequest){
+      const text = `${this.translate.instant('ADMIN_RESET.WA_TEXT')}: ${r.code}`;
+      return text;
+}
+    // waLink(r: ResetRequest): string {
+    //     const digits = r.phoneNumber.replace(/[^0-9]/g, '');
+    //     const intl = digits.startsWith('0') ? '2' + digits : digits;
+    //     const text = encodeURIComponent(`${this.translate.instant('ADMIN_RESET.WA_TEXT')}: ${r.code}`);
+    //     return `https://wa.me/${intl}?text=${text}`;
+    // }
 }

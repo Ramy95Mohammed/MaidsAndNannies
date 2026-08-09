@@ -41,10 +41,10 @@ export class ApiService {
         return this.http.get(`${this.API_URL}/booking`);
   }
 
-  getWorkerBookings(): Observable<any> {
-    return this.http.get(`${this.API_URL}/worker/bookings`);
+   getWorkerBookings(params?: any): Observable<any> {
+    return this.http.get(`${this.API_URL}/worker/bookings`, { params });
   }
-
+  
   getBooking(id: string | number): Observable<any> {
     return this.http.get(`${this.API_URL}/booking/${id}`);
   }

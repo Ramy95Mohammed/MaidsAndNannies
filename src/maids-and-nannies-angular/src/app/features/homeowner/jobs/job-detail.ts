@@ -28,7 +28,7 @@ import { ApiService } from '../../../core/services/api.service';
           <div class="col-span-12 md:col-span-4"><strong>{{ 'WORKER.HOURLY_RATE' | translate }}:</strong> {{ post().hourlySalary }}</div>
           <div class="col-span-12 md:col-span-3"><strong>{{ 'BOOKING.TYPE' | translate }}:</strong> {{ getBookingTypeLabel(post().bookingType) }}</div>
           <div class="col-span-12 md:col-span-3"><strong>{{ 'BOOKING.COMMISSION_TYPE' | translate }}:</strong> {{ post().commissionType === 0 ? ('BOOKING.ONETIME' | translate) : ('BOOKING.SUBSCRIPTION' | translate) }}</div>
-          <div class="col-span-12 md:col-span-3"><strong>{{ 'BOOKING.START_DATE' | translate }}:</strong> {{ post().startDate | date:'shortDate' }}</div>
+          <div class="col-span-12 md:col-span-3"><strong>{{ 'BOOKING.START_DATE' | translate }}:</strong> {{ post().startDate | date:'fullDate' }}</div>
           <div class="col-span-12 md:col-span-3"><strong>{{ 'BOOKING.QUANTITY' | translate }}:</strong> {{ post().quantity }}</div>
           <div class="col-span-12 md:col-span-4"><strong>{{ 'WORKER.CURRENCY' | translate }}:</strong> {{ post().currencyCode }}</div>
                     <div class="col-span-12 md:col-span-4"><strong>{{ 'WORKER.SPECIALIZATION' | translate }}:</strong> {{ getSpecsLabel(post()) }}</div>

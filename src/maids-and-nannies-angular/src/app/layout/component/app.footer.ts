@@ -7,8 +7,8 @@ import { TranslatePipe } from '@ngx-translate/core';
     selector: 'app-footer',
     imports: [RouterModule, TranslatePipe],
     template: `<div class="layout-footer">
-        <span>SAKAI by
-            <a href="https://primeng.org" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">PrimeNG</a>
+        <span>{{ 'APP.NAME' | translate }} by
+            <a href="https://primeng.org" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">prime-devv</a>
         </span>
         <a routerLink="/policies" class="text-primary font-medium hover:underline ml-3">{{ 'POLICIES.LINK' | translate }}</a>
     </div>`

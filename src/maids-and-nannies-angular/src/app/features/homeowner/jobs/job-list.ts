@@ -41,7 +41,7 @@ import { ApiService } from '../../../core/services/api.service';
             <td>{{ p.id }}</td>
             <td>{{ p.description | slice:0:50 }}...</td>
             <td>{{ getBookingTypeLabel(p.bookingType) }}</td>
-            <td>{{ p.startDate | date:'shortDate' }}</td>
+            <td>{{ p.startDate | date:'fullDate' }}</td>
             <td><p-tag [value]="getStatusLabel(p.postStatus)" [severity]="getStatusSeverity(p.postStatus)"></p-tag></td>
             <td>{{ p.currencyCode }}</td>
             <td>{{ p.applicationCount }}</td>

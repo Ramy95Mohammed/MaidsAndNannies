@@ -57,7 +57,7 @@ import { ApiService } from '../../../core/services/api.service';
             <p-button [label]="'WORKERS.BOOK' | translate" icon="pi pi-send" [rounded]="true" (onClick)="openApplyDialog(post)"></p-button>
           </div>
           <div class="text-sm text-muted-color mt-2">
-            <i class="pi pi-calendar mr-1"></i>{{ post.startDate | date:'shortDate' }}
+            <i class="pi pi-calendar mr-1"></i>{{ post.startDate | date:'fullDate' }}
           </div>
         </div>
       </div>

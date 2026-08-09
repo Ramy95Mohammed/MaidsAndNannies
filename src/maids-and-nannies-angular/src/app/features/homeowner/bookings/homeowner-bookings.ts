@@ -54,7 +54,7 @@ import { Select } from "primeng/select";
                     <tr>
                         <td>{{ booking.id }}</td>
                         <td>{{ booking.workerName }}</td>
-                        <td>{{ booking.startDate | date:'shortDate' }}</td>
+                        <td>{{ booking.startDate | date:'fullDate' }}</td>
                         @if(booking.bookingType == 0) { <td>
                             {{ booking.dailySalary | currency:booking.currencyCode:'':'1.0-0' }}
                             {{ booking.currencyCode }}

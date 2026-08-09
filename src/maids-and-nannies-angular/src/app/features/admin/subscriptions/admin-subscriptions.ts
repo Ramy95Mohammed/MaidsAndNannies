@@ -37,8 +37,8 @@ import { SubscriptionService, SubscriptionDto } from '../../../core/services/sub
                         <td>{{ s.id }}</td>
                         <td>{{ s.homeownerName }}</td>
                         <td>{{ s.amount | currency:'EGP':'symbol':'1.0-0' }}</td>
-                        <td>{{ s.startDate | date:'shortDate' }}</td>
-                        <td>{{ s.endDate | date:'shortDate' }}</td>
+                        <td>{{ s.startDate | date:'fullDate' }}</td>
+                        <td>{{ s.endDate | date:'fullDate' }}</td>
                         <td>
                             <p-tag *ngIf="s.isActive" [value]="'SUBSCRIPTION.ACTIVE' | translate" severity="success"></p-tag>
                             <p-tag *ngIf="!s.isActive" [value]="'SUBSCRIPTION.PENDING_TAG' | translate" severity="warn"></p-tag>

@@ -1,6 +1,6 @@
 {
   "APP": {
-    "NAME": "منزلي",
+    "NAME": "Rafeeqa",
     "TAGLINE": "الحلقة الوصل بين صاحبات المنازل وعاملات المنازل"
   },
   "AUTH": {
@@ -213,7 +213,10 @@
     "PAYMENT_STATUS": "حالة الدفع",
     "SEARCH_WORKER_OWNER": "بحث (عامل / صاحبة منزل)",
     "VIEW_ALL": "عرض الكل",
-    "CURRENT":"(الحالي)"
+    "CURRENT":"(الحالي)",
+    "ACTIONS":"اجراءات",
+    "NAME":"الاسم",
+    "REFRESH":"تحديث"
   },
   "LANGUAGE": {
     "AR": "العربية",
@@ -358,7 +361,12 @@
     "ACCEPTED": "تم قبول الحجز",
     "ACCEPT_FAILED": "فشل قبول الحجز",
     "REJECTED": "تم رفض الحجز",
-    "REJECT_FAILED": "فشل رفض الحجز"
+    "REJECT_FAILED": "فشل رفض الحجز",
+        "ACCEPT": "قبول",
+    "REJECT": "رفض",
+    "ACCEPT_OK": "تم قبول الحجز",
+    "REJECT_OK": "تم رفض الحجز",
+    "NO_PENDING": "لا توجد حجوزات بانتظار تأكيدك"
   },
   "HOMEOWNER_DASHBOARD": {
     "WELCOME": "مرحباً {{name}}",
@@ -371,7 +379,10 @@
     "SEARCH_BUTTON": "بحث عن عاملة",
     "RENEW": "تجديد",
     "DAYS_LEFT": "باقي {{days}} يوم على تجديد الاشتراك",
-    "DATE": "التاريخ"
+    "DATE": "التاريخ",
+        "WAITING_PAYMENT": "بانتظار الدفع",
+    "ACTIVE_BOOKINGS": "حجوزات نشطة",
+    "NOTIFICATIONS": "الإشعارات"
   },
   "WORKER_DETAIL": {
     "BACK_TO_SEARCH": "العودة للبحث",
@@ -454,7 +465,8 @@
     "WA_CANCELLED": "مرحباً، تم إلغاء الحجز رقم #{{id}}",
     "WA_REPLACEMENT_REQUESTED": "مرحباً، بخصوص الحجز رقم #{{id}}، تم طلب استبدال",
     "WA_PAYMENT_SUBMITTED": "مرحباً، تم إرسال إثبات الدفع للحجز رقم #{{id}} وجارٍ مراجعته",
-    "WA_REPLACED": "مرحباً، تم استبدال العاملة في الحجز رقم #{{id}} بحجز جديد مستقل"
+    "WA_REPLACED": "مرحباً، تم استبدال العاملة في الحجز رقم #{{id}} بحجز جديد مستقل",
+    "REPLACEMENT_USED_DETAILED":"تفاصيل العاملة البديلة المستخدمة"
   },
   "ADMIN": {
     "TITLE": "لوحة الإدارة",

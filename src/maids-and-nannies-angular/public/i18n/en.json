@@ -1,6 +1,6 @@
 {
   "APP": {
-    "NAME": "MyHome",
+    "NAME": "Rafeeqa",
     "TAGLINE": "Connecting homeowners with house workers"
   },
   "AUTH": {
@@ -213,7 +213,11 @@
     "PAYMENT_STATUS": "Payment Status",
     "SEARCH_WORKER_OWNER": "Search (worker / homeowner)",
     "VIEW_ALL": "View All",
-    "CURRENT":"(Current)"
+    "CURRENT":"(Current)",
+    "ACTIONS":"Actions",
+    "NAME":"Name",
+    "REFRESH":"Refresh"
+
   },
   "LANGUAGE": {
     "AR": "العربية",
@@ -356,7 +360,12 @@
     "ACCEPTED": "Booking accepted",
     "ACCEPT_FAILED": "Failed to accept booking",
     "REJECTED": "Booking rejected",
-    "REJECT_FAILED": "Failed to reject booking"
+    "REJECT_FAILED": "Failed to reject booking",
+        "ACCEPT": "Accept",
+    "REJECT": "Reject",
+    "ACCEPT_OK": "Booking accepted",
+    "REJECT_OK": "Booking rejected",
+    "NO_PENDING": "No bookings waiting for your confirmation"
   },
   "HOMEOWNER_DASHBOARD": {
     "WELCOME": "Welcome {{name}}",
@@ -369,7 +378,10 @@
     "SEARCH_BUTTON": "Search Worker",
     "RENEW": "Renew",
     "DAYS_LEFT": "{{days}} days remaining for subscription renewal",
-    "DATE": "Date"
+    "DATE": "Date",
+        "WAITING_PAYMENT": "Waiting Payment",
+    "ACTIVE_BOOKINGS": "Active Bookings",
+    "NOTIFICATIONS": "Notifications"
   },
   "WORKER_DETAIL": {
     "BACK_TO_SEARCH": "Back to Search",
@@ -452,7 +464,8 @@
     "WA_CANCELLED": "Hello, booking #{{id}} has been cancelled",
     "WA_REPLACEMENT_REQUESTED": "Hello, regarding booking #{{id}}, a replacement has been requested",
     "WA_PAYMENT_SUBMITTED": "Hello, payment proof for booking #{{id}} has been submitted and is under review",
-    "WA_REPLACED": "Hello, the worker in booking #{{id}} has been replaced with a new independent booking"
+    "WA_REPLACED": "Hello, the worker in booking #{{id}} has been replaced with a new independent booking",
+    "REPLACEMENT_USED_DETAILED":"Details of the replacement worker used"
   },
   "ADMIN": {
     "TITLE": "Admin Panel",

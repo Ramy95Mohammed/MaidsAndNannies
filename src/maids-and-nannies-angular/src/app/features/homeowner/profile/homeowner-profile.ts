@@ -72,7 +72,7 @@ import { ChangePasswordComponent } from "@/features/profile/change-password";
                             <div *ngFor="let r of profile.reviews" class="border-top-1 border-surface mt-3 pt-3">
                                 <div class="flex justify-content-between">
                                     <span class="font-bold">{{ r.reviewerName }}</span>
-                                    <span class="text-sm text-muted-color">{{ r.createdAt | date:'shortDate' }}</span>
+                                    <span class="text-sm text-muted-color">{{ r.createdAt | date:'fullDate' }}</span>
                                 </div>
                                 <p-rating [(ngModel)]="r.rating" [readonly]="true" ></p-rating>
                                 <p class="text-sm mt-1">{{ r.comment }}</p>

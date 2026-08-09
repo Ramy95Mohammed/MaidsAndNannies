@@ -44,11 +44,11 @@ import { waLink } from '../../../core/utils/whatsapp';
                         <th>{{ 'COMMON.ID' | translate }}</th>
                         <th>{{ 'BOOKING.HOMEOWNER' | translate }}</th>
                         <th>{{ 'BOOKING.START_DATE' | translate }}</th>
-                        <th>{{ 'BOOKING.MONTHLY_SALARY' | translate }}</th>
+                        <th>{{ 'BOOKING.SALARY' | translate }}</th>
                         <th>{{ 'BOOKING.TYPE' | translate }}</th>
                         <th>{{ 'BOOKING.QUANTITY' | translate }}</th>
                         <th>{{ 'BOOKING.TOTAL_AMOUNT' | translate }}</th>
-                        <th>{{ 'BOOKING.STATUS' | translate }}</th>
+                        <!-- <th>{{ 'BOOKING.STATUS' | translate }}</th> -->
                         <!-- <th style="width: 5rem">{{ 'COMMON.ACTIONS' | translate }}</th> -->
                     </tr>
                 </ng-template>
@@ -56,12 +56,12 @@ import { waLink } from '../../../core/utils/whatsapp';
                     <tr>
                         <td>{{ booking.id }}</td>
                         <td>{{ booking.homeownerName }}</td>
-                        <td>{{ booking.startDate | date:'shortDate' }}</td>
+                        <td>{{ booking.startDate | date:'fullDate' }}</td>
                         <td>{{ (booking.bookingType == 0)? booking.dailySalary:(booking.bookingType == 1)?booking.monthlySalary:booking.hourlySalary | currency:booking.currencyCode:'':'1.0-0' }} {{ booking.currencyCode }}</td>
                         <td>{{ getBookingTypeLabel(booking.bookingType) }}</td>
                         <td>{{ booking.quantity}}</td>
                         <td>{{ booking.totalAmount | currency:booking.currencyCode:'':'1.0-0' }} {{ booking.currencyCode }}</td>
-                        <td><p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag></td>
+                        <!-- <td><p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag></td> -->
                                                 <td>
                             <!-- <a *ngIf="waHref(booking)" [href]="waHref(booking)!" target="_blank" rel="noopener" class="inline-flex align-items-center gap-1 text-green-500 font-medium">
                                 <i class="pi pi-whatsapp"></i>

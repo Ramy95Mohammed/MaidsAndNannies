@@ -8,6 +8,7 @@ import { TagModule } from 'primeng/tag';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
 import { SubscriptionService } from '@/core/services/subscription.service';
+import { NotificationService } from '@/core/services/notification.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
@@ -19,11 +20,11 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
             <div class="col-span-12">
                 <h2>{{ 'HOMEOWNER_DASHBOARD.WELCOME' | translate:{name: authService.currentUser()?.fullName} }}</h2>
                 <p class="text-muted-color" *ngIf="authService.currentUser()?.verificationStatus != 1">
-                {{ 'HOMEOWNER_DASHBOARD.PENDING_VERIFICATION' | translate }}                            
+                {{ 'HOMEOWNER_DASHBOARD.PENDING_VERIFICATION' | translate }}
             </p>
             </div>
 
-            <div class="col-span-12 md:col-span-4">
+            <div class="col-span-12 md:col-span-3">
                 <p-card styleClass="mb-0 cursor-pointer" routerLink="/homeowner/workers">
                     <div class="flex align-items-center gap-4">
                         <div class="flex align-items-center justify-content-center w-12 h-12 border-round bg-blue-100">
@@ -37,29 +38,43 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
                 </p-card>
             </div>
 
-            <div class="col-span-12 md:col-span-4">
-                <p-card styleClass="mb-0 cursor" routerLink="/homeowner/bookings">
+            <div class="col-span-12 md:col-span-3">
+                <p-card styleClass="mb-0 cursor-pointer" routerLink="/homeowner/bookings">
                     <div class="flex align-items-center gap-4">
                         <div class="flex align-items-center justify-content-center w-12 h-12 border-round bg-green-100">
                             <i class="pi pi-calendar text-green-500 text-xl"></i>
                         </div>
                         <div>
                             <span class="text-muted-color text-sm">{{ 'HOMEOWNER_DASHBOARD.MY_BOOKINGS' | translate }}</span>
-                            <div class="text-lg font-bold">{{ bookings().length }}</div>
+                            <div class="text-lg font-bold">{{ totalBookings() }}</div>
                         </div>
                     </div>
                 </p-card>
             </div>
 
-            <div class="col-span-12 md:col-span-4">
-                <p-card styleClass="mb-0">
+            <div class="col-span-12 md:col-span-3">
+                <p-card styleClass="mb-0 cursor-pointer" routerLink="/homeowner/bookings">
                     <div class="flex align-items-center gap-4">
-                        <div class="flex align-items-center justify-content-center w-12 h-12 border-round bg-purple-100">
-                            <i class="pi pi-envelope text-purple-500 text-xl"></i>
+                        <div class="flex align-items-center justify-content-center w-12 h-12 border-round bg-cyan-100">
+                            <i class="pi pi-spinner text-cyan-500 text-xl"></i>
                         </div>
                         <div>
-                            <span class="text-muted-color text-sm">{{ 'HOMEOWNER_DASHBOARD.MESSAGES' | translate }}</span>
-                            <div class="text-lg font-bold">0</div>
+                            <span class="text-muted-color text-sm">{{ 'HOMEOWNER_DASHBOARD.WAITING_PAYMENT' | translate }}</span>
+                            <div class="text-lg font-bold">{{ waitingPaymentCount() }}</div>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+
+            <div class="col-span-12 md:col-span-3">
+                <p-card styleClass="mb-0 cursor-pointer" routerLink="/homeowner/bookings">
+                    <div class="flex align-items-center gap-4">
+                        <div class="flex align-items-center justify-content-center w-12 h-12 border-round bg-purple-100">
+                            <i class="pi pi-check-circle text-purple-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted-color text-sm">{{ 'HOMEOWNER_DASHBOARD.ACTIVE_BOOKINGS' | translate }}</span>
+                            <div class="text-lg font-bold">{{ activeCount() }}</div>
                         </div>
                     </div>
                 </p-card>
@@ -95,8 +110,8 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
                         <ng-template #body let-booking>
                             <tr>
                                 <td>{{ booking.workerName }}</td>
-                                <td>{{ booking.startDate | date:'shortDate' }}</td>
-                                <td>{{ booking.monthlySalary | currency:booking.currencyCode:'':'1.0-0' }} {{booking.currencyCode}}</td>
+                                <td>{{ booking.startDate | date:'fullDate' }}</td>
+                                <td>{{ salaryOf(booking) | currency:booking.currencyCode:'':'1.0-0' }} {{ booking.currencyCode }}</td>
                                 <td>
                                     <p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag>
                                 </td>
@@ -112,28 +127,51 @@ export class HomeownerDashboard implements OnInit {
     authService = inject(AuthService);
     private apiService = inject(ApiService);
     private subscriptionService = inject(SubscriptionService);
+    private notificationService = inject(NotificationService);
     private translate = inject(TranslateService);
 
     subscriptionWarning = signal<string | null>(null);
-
     bookings = signal<any[]>([]);
+    totalBookings = signal(0);
+    waitingPaymentCount = signal(0);
+    activeCount = signal(0);
+    notificationsCount = signal(0);
 
     ngOnInit() {
         this.loadBookings();
 
         this.subscriptionService.getMySubscriptions().subscribe({
-    next: (data) => {
-        const active = data.find(s => s.isActive && s.daysRemaining > 0);
-        if (active && active.daysRemaining <= 7)
-            this.subscriptionWarning.set(this.translate.instant('HOMEOWNER_DASHBOARD.DAYS_LEFT', { days: active.daysRemaining }));
-    }
-});
+            next: (data) => {
+                const active = data.find(s => s.isActive && s.daysRemaining > 0);
+                if (active && active.daysRemaining <= 7)
+                    this.subscriptionWarning.set(this.translate.instant('HOMEOWNER_DASHBOARD.DAYS_LEFT', { days: active.daysRemaining }));
+            }
+        });
+
+        this.notificationService.getUnreadCount().subscribe({
+            next: (res: any) => this.notificationsCount.set(res?.count ?? 0),
+            error: () => this.notificationsCount.set(0)
+        });
     }
 
     loadBookings() {
         this.apiService.getMyBookings().subscribe({
-          next: (data: any) => this.bookings.set(Array.isArray(data) ? data : [])
+            next: (res: any) => {
+                const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+                this.bookings.set(list);
+                this.totalBookings.set(Number(res?.totalCount) || list.length);
+                this.waitingPaymentCount.set(list.filter((b: any) => b.status === 2).length);
+                this.activeCount.set(list.filter((b: any) => b.status === 4).length);
+            },
+            error: () => {
+                this.bookings.set([]);
+                this.totalBookings.set(0);
+            }
         });
+    }
+
+    salaryOf(b: any): number {
+        return (b.bookingType == 0) ? b.dailySalary : (b.bookingType == 1) ? b.monthlySalary : b.hourlySalary;
     }
 
     getStatusLabel(status: number): string {
