@@ -1,6 +1,5 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Application.Features.Notifications;
-using MaidsAndNannies.Domain.Enums;
 using MaidsPlatform.API.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,7 +36,7 @@ public sealed class BookingReminderService(
 
         var dueBookings = await dbContext.Bookings
             .Include(b => b.OriginalWorker)
-            .ThenInclude(w=>w.User)
+            .ThenInclude(w => w.User)
             .Include(b => b.Homeowner)
             .Where(b => b.ReminderSentAt == null
                 && b.StartDate > now

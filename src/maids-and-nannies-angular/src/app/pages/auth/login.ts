@@ -115,7 +115,7 @@ export class Login{
     private translate = inject(TranslateService);     
    private messageService = inject(MessageService);
 
-    login() {
+     login() {
         if (!this.email || !this.password) {
             this.errorMessage = this.translate.instant('AUTH.FILL_ALL_FIELDS');  
             return;
@@ -125,7 +125,7 @@ export class Login{
         this.errorMessage = '';
 
         this.authService.login(this.email, this.password).subscribe({
-            next: (response) => {                
+            next:   (response) => {                
                 this.isLoading = false;
                 const role = response.role;
                 if (role === 'Admin') {

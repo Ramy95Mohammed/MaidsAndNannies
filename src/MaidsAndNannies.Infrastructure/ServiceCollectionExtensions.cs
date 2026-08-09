@@ -37,7 +37,7 @@ public static class ServiceCollectionExtensions
 
   
         services.AddScoped<INotificationService, NotificationService>();        
-        services.AddScoped<ICalculateBookingCommissionData, CalculateBookingCommissionData>();        
+        services.AddScoped<ICalculateBookingCommissionData, CalculateBookingCommissionData>();
 
         return services;
     }

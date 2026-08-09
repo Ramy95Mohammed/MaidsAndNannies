@@ -4,6 +4,7 @@ using MaidsAndNannies.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace MaidsAndNannies.Infrastructure.Persistence;
 
@@ -22,7 +23,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
-    
+
     public DbSet<Policy> Policies => Set<Policy>();
 
     public DbSet<PasswordResetRequest> PasswordResetRequests => Set<PasswordResetRequest>();
@@ -276,7 +277,6 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
                 Description = "عدد أيام العمل القياسية في الشهر لحساب الأجر الشهري النسبي"
             }
         );
-
 
         builder.Entity<Country>(b =>
         {

@@ -32,7 +32,7 @@ public sealed class HomeownerController(ISender sender, ICurrentUserService curr
             request.FullName,
             request.WhatsAppNumber,
             request.PhoneNumber,
-            request.Address, request.State,request.City, request.District, request.NationalIdNumber,
+            request.Address, request.State, request.City, request.District, request.NationalIdNumber,
             nationalIdImage?.OpenReadStream(), nationalIdImage?.FileName,
             selfieImage?.OpenReadStream(), selfieImage?.FileName,
             proofOfAddressImage?.OpenReadStream(), proofOfAddressImage?.FileName);

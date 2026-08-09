@@ -542,9 +542,9 @@ export class WorkerProfileComponent implements OnInit {
         isLiveIn: [false],
         isAvailable: [true],
 
-        hourlyRate: [null],
-        dailyRate: [null],
-        monthlyRate: [null],
+        hourlyRate: [0],
+        dailyRate: [0],
+        monthlyRate: [0],
         currencyId: [0],
 
         specializations: this.fb.array([])
@@ -661,9 +661,9 @@ export class WorkerProfileComponent implements OnInit {
             isLiveIn: data.isLiveIn,
             isAvailable: data.isAvailable,
 
-            hourlyRate: data.hourlyRate,
-            dailyRate: data.dailyRate,
-            monthlyRate: data.monthlyRate,
+            hourlyRate: data.hourlyRate??0,
+            dailyRate: data.dailyRate??0,
+            monthlyRate: data.monthlyRate??0,
             currencyId: data.currencyId
         });
 
@@ -741,9 +741,9 @@ export class WorkerProfileComponent implements OnInit {
             isLiveIn: value.isLiveIn,
             isAvailable: value.isAvailable,
 
-            hourlyRate: value.hourlyRate,
-            dailyRate:  value.dailyRate,
-            monthlyRate: value.monthlyRate,
+            hourlyRate: value.hourlyRate??0,
+            dailyRate:  value.dailyRate??0,
+            monthlyRate: value.monthlyRate??0,
             currencyId: value.currencyId,
 
             workerSpecializationSpecs: value.specializations

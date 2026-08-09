@@ -1,16 +1,15 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
 using MaidsAndNannies.Application.Features.Bookings.Commands.Admin;
 using MaidsAndNannies.Application.Features.Bookings.Commands.CancelBooking;
-using MaidsAndNannies.Application.Features.Bookings.Commands.CreateBooking;
 using MaidsAndNannies.Application.Features.Bookings.Commands.RequestReplacement;
 using MaidsAndNannies.Application.Features.Bookings.Commands.UploadPaymentProof;
 using MaidsAndNannies.Application.Features.Bookings.Common;
 using MaidsAndNannies.Application.Features.Bookings.Queries.GetBookingById;
 using MaidsAndNannies.Application.Features.Bookings.Queries.GetMyBookings;
+using MaidsAndNannies.Application.Features.Reviews.Commands.ReviewBooking;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MaidsAndNannies.Application.Features.Reviews.Commands.ReviewBooking;
 
 namespace MaidsAndNannies.WebApi.Controllers;
 
@@ -26,7 +25,7 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
 
         var bookingDetailDto = await sender.Send(new CreateBookingCommand(
             currentUser.UserId, request.WorkerId, request.ServiceType,
-            request.BookingType,request.Quantity, request.StartDate, request.MonthlySalary ,request.DailySalary , request.HourlySalary, request.CommissionType));
+            request.BookingType, request.Quantity, request.StartDate, request.MonthlySalary, request.DailySalary, request.HourlySalary, request.CommissionType));
 
         return Ok(new { BookingId = bookingDetailDto.Id, Message = "تم إنشاء الحجز بنجاح" });
     }
@@ -41,7 +40,7 @@ public sealed class BookingController(ISender sender, ICurrentUserService curren
         var bookingInfo = await
             sender.Send(new CreateBookingCommand(
             currentUser.UserId, request.WorkerId, request.ServiceType,
-            request.BookingType, request.Quantity, request.StartDate, request.MonthlySalary, request.DailySalary, request.HourlySalary, request.CommissionType,true));
+            request.BookingType, request.Quantity, request.StartDate, request.MonthlySalary, request.DailySalary, request.HourlySalary, request.CommissionType, true));
 
         return Ok(bookingInfo);
     }

@@ -3,8 +3,6 @@ using MaidsAndNannies.Application.Features.Worker.Commands.UpdateProfile;
 using MaidsAndNannies.Application.Features.Worker.Queries.GetMyBookings;
 using MaidsAndNannies.Application.Features.Worker.Queries.GetMyProfile;
 using MaidsAndNannies.Application.Features.Worker.Queries.GetWorkerById;
-using MaidsAndNannies.Application.Features.Worker.Queries.GetWorkers;
-using MaidsAndNannies.Domain.Enums;
 using MaidsPlatform.API.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -18,7 +16,7 @@ namespace MaidsAndNannies.WebApi.Controllers
     {
         private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-      
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> GetWorkers(GetWorkersQueryRequest? filters)
@@ -88,7 +86,7 @@ namespace MaidsAndNannies.WebApi.Controllers
                 dto.PassportNumber, dto.PassportExpiryDate, dto.PassportCountry,
                 dto.CountryId, dto.StateId, dto.CityId, dto.Address,
                 dto.Bio, dto.ExperienceYears, dto.Languages, dto.PreviousEmployer,
-                dto.IsLiveIn, dto.IsAvailable, dto.HourlyRate, dto.DailyRate ,dto.MonthlyRate, dto.CurrencyId,
+                dto.IsLiveIn, dto.IsAvailable, dto.HourlyRate, dto.DailyRate, dto.MonthlyRate, dto.CurrencyId,
                 dto.WorkerSpecializationSpecs?.Select(s => s.WorkerSpecialization).ToList(),
                 selfieImage is { Length: > 0 } ? selfieImage.OpenReadStream() : null,
                 selfieImage?.FileName,
@@ -105,7 +103,7 @@ namespace MaidsAndNannies.WebApi.Controllers
         /// ("/uploads/worker-documents/x.jpg"). Turning that into an absolute URL
         /// the SPA can load is purely an HTTP concern, so it stays here.
         /// </summary>
-        
+
     }
 
     public sealed class UpdateWorkerProfileRequest

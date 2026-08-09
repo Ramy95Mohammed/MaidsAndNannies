@@ -1,5 +1,4 @@
 ﻿using MaidsAndNannies.Application.Common.Interfaces;
-using MaidsAndNannies.Application.Features.Bookings.Common;
 using MaidsAndNannies.Application.Features.JobPost.Queries.GetJobPostCalculation;
 using MaidsAndNannies.Application.Features.JobPosts.Commands.AcceptApplication;
 using MaidsAndNannies.Application.Features.JobPosts.Commands.ApplyForJob;
@@ -43,8 +42,8 @@ public sealed class JobPostsController(ISender sender, ICurrentUserService curre
         if (string.IsNullOrEmpty(currentUser.UserId)) return Unauthorized();
 
         var bookingInfo = await
-            sender.Send(new CalculateJobPostCommissionQuery(request.BookingType, request.Quantity , request.CommissionType,
-            request.MonthlySalary , request.DailySalary , request.HourlySalary , request.CurrencyId));
+            sender.Send(new CalculateJobPostCommissionQuery(request.BookingType, request.Quantity, request.CommissionType,
+            request.MonthlySalary, request.DailySalary, request.HourlySalary, request.CurrencyId));
 
         return Ok(bookingInfo);
     }

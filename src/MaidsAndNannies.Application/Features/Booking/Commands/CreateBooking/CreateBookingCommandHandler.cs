@@ -99,6 +99,8 @@ public sealed class CreateBookingCommandHandler(
                     });
                 }
 
+                worker.IsAvailable = false;
+
                 await dbContext.SaveChangesAsync(ct);
                 await transaction.CommitAsync();
 

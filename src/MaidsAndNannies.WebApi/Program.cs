@@ -1,10 +1,5 @@
-using Azure.Core;
-using FluentValidation;
 using MaidsAndNannies.Application;
-using MaidsAndNannies.Application.Common.Behaviors;
 using MaidsAndNannies.Application.Common.Interfaces;
-using MaidsAndNannies.Application.Contracts;
-using MaidsAndNannies.Application.Features.Homeowner.Commands.UpdateProfile;
 using MaidsAndNannies.Domain.Entities;
 using MaidsAndNannies.Domain.Entities.Identity;
 using MaidsAndNannies.Domain.Enums;
@@ -14,13 +9,11 @@ using MaidsAndNannies.WebApi.Localization;
 using MaidsAndNannies.WebApi.Middleware;
 using MaidsAndNannies.WebApi.Services;
 using MaidsPlatform.API.Domain.Enums;
-using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System.Threading;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +38,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     });
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
-    policy.WithOrigins(builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? ["http://localhost:4200"])
+    policy.WithOrigins(builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? ["http://localhost:4200" , "http://localhost:4201"])
         .AllowAnyHeader()
         .AllowAnyMethod()));
 
@@ -152,7 +145,7 @@ using (var scope = app.Services.CreateScope())
 
         var createResult = await userManager.CreateAsync(adminUser, adminPassword);
         if (createResult.Succeeded)
-            await userManager.AddToRoleAsync(adminUser, UserRole.Admin.ToString());        
+            await userManager.AddToRoleAsync(adminUser, UserRole.Admin.ToString());
     }
 
     if (app.Environment.IsDevelopment())
