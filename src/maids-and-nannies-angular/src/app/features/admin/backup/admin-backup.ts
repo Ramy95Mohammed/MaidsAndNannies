@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -27,6 +27,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
                         <p-button [label]="'ADMIN_BACKUP.CREATE' | translate" icon="pi pi-download" (onClick)="createBackup()" [loading]="creating()"></p-button>
                     </p-card>
                 </div>
+                @if(showDbRestoreSectionSettingValue == 'true'){
                 <div class="col-span-12 md:col-span-6">
                     <p-card header="{{ 'ADMIN_BACKUP.RESTORE_TITLE' | translate }}">
                         <p-message severity="warn" [text]="'ADMIN_BACKUP.RESTORE_WARNING' | translate"></p-message>
@@ -37,11 +38,15 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
                         </div>
                     </p-card>
                 </div>
+                }
             </div>
         </div>
     `
 })
-export class AdminBackup {
+export class AdminBackup implements OnInit{
+    ngOnInit(): void {
+     this.getShowDbRestoreSectionSetting();
+    }
     private api = inject(ApiService);
     private messageService = inject(MessageService);
     private confirmationService = inject(ConfirmationService);
@@ -50,6 +55,8 @@ export class AdminBackup {
     creating = signal(false);
     restoring = signal(false);
     selectedFile: File | null = null;
+
+    showDbRestoreSectionSettingValue:string | null = null;
 
     onFileSelected(event: any) {
         this.selectedFile = event.currentFiles?.[0] ?? null;
@@ -98,5 +105,12 @@ export class AdminBackup {
                 this.messageService.add({ severity: 'error', detail: err?.error?.message || this.translate.instant('ADMIN_BACKUP.RESTORE_ERROR') });
             }
         });
+    }
+
+     getShowDbRestoreSectionSetting(){
+         this.api.getSettingByKey('ShowDbRestoreSection').subscribe({
+                next: (data) => this.showDbRestoreSectionSettingValue = data.value,
+                error: () => this.messageService.add({ severity: 'error', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('ADMIN_BACKUP.RESTORE_ERROR') })
+            });
     }
 }

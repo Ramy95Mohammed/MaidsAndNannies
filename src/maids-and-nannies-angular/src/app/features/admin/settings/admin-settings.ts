@@ -73,6 +73,12 @@ export class AdminSettings implements OnInit {
                       { label: this.translate.instant('SETTINGS.PROOF_NO'), value: 'false' }
                   ],
                   description: this.translate.instant('SETTINGS.PROOF_DESC') },
+                  { key: 'ShowDbRestoreSection', label: this.translate.instant('SETTINGS.SHOWDBRESTORESECTION'), value: 'false', type: 'select',
+                  options: [
+                      { label: this.translate.instant('SETTINGS.SHOW_YES'), value: 'true' },
+                      { label: this.translate.instant('SETTINGS.SHOW_NO'), value: 'false' }
+                  ],
+                  description: this.translate.instant('SETTINGS.SHOWDBRESTORESECTION_DESC') }
             ]
         },
         {

@@ -334,7 +334,11 @@
     "PENDING_CANCEL_DESC": "Auto-cancel pending bookings after this period",
     "SAVED": "Settings saved",
     "MONTHLY_WORKING_DAYS_PER_MONTH_LABEL":"Monthly working days per month",
-    "MONTHLY_WORKING_DAYS_PER_MONTH_DESC":"Number of working days per month shown to the worker "
+    "MONTHLY_WORKING_DAYS_PER_MONTH_DESC":"Number of working days per month shown to the worker ",
+    "SHOWDBRESTORESECTION":"Show / Hide Database restore",
+    "SHOW_YES":"Show",
+    "SHOW_NO":"Hide",
+    "SHOWDBRESTORESECTION_DESC":"Show / Hide Database restore"
   },
   "ERROR_PAGES": {
     "ACCESS_DENIED": "Access Denied",

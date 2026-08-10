@@ -334,7 +334,11 @@
     "PENDING_CANCEL_DESC": "إلغاء الحجوزات المعلقة تلقائياً بعد هذه المدة",
     "SAVED": "تم حفظ الإعدادات",
     "MONTHLY_WORKING_DAYS_PER_MONTH_LABEL":"عدد أيام العمل فى الشهر",
-    "MONTHLY_WORKING_DAYS_PER_MONTH_DESC":"عدد الأيام العمل للشهر التي تظهر لصاحبة العمل "
+    "MONTHLY_WORKING_DAYS_PER_MONTH_DESC":"عدد الأيام العمل للشهر التي تظهر لصاحبة العمل ",
+    "SHOWDBRESTORESECTION":"اظهار / اخفاء استعادة قاعدة البيانات",
+    "SHOW_YES":"اظهار",
+    "SHOW_NO":"اخفاء",
+    "SHOWDBRESTORESECTION_DESC":"اظهار / اخفاء استعادة قاعدة البيانات"
 
   },
   "ERROR_PAGES": {
