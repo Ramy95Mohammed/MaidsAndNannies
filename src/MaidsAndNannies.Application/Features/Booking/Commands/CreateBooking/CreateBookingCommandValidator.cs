@@ -7,7 +7,7 @@ public sealed class CreateBookingCommandValidator : AbstractValidator<CreateBook
     public CreateBookingCommandValidator()
     {
         RuleFor(x => x.WorkerId).GreaterThan(0);
-        RuleFor(x => x.MonthlySalary).GreaterThan(0);
+        //RuleFor(x => x.MonthlySalary).GreaterThan(0);
         RuleFor(x => x.StartDate).NotEmpty();
         RuleFor(x => x.Quantity).GreaterThan(0);
         RuleFor(x => x.BookingType).IsInEnum();

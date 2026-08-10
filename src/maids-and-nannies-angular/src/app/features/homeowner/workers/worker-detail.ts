@@ -188,7 +188,13 @@ export class WorkerDetail implements OnInit {
         const id = this.route.snapshot.paramMap.get('id');
         if (id) {
             this.apiService.getWorker(id).subscribe({
-                next: (data) => this.worker.set(data),
+                next: (data) => { 
+                     this.worker.set(data);                    
+                     if(this.worker().monthlyRate == null)this.worker().monthlyRate = 0;
+                     if(this.worker().hourlyRate == null)this.worker().hourlyRate = 0;
+                     if(this.worker().dailyRate == null)this.worker().dailyRate = 0;
+
+                },
                 error: () => this.messageService.add({ severity: 'error', summary: this.translate.instant('COMMON.ERROR'), detail: this.translate.instant('BOOKING_DETAIL.TOAST_WORKER_NOT_FOUND') })
             });
         }
@@ -247,9 +253,9 @@ export class WorkerDetail implements OnInit {
                 bookingType: this.bookingType,
                 quantity: this.quantity,
                 startDate: this.toDateOnlyString(this.startDate),
-                monthlySalary: this.worker().monthlyRate,
-                dailySalary: this.worker().dailyRate,
-                hourlySalary: this.worker().hourlyRate,
+                monthlySalary: this.worker().monthlyRate??0,
+                dailySalary: this.worker().dailyRate??0,
+                hourlySalary: this.worker().hourlyRate??0,
                 commissionType: this.commissionType
             })
             .subscribe({
@@ -282,9 +288,9 @@ export class WorkerDetail implements OnInit {
                 bookingType: this.bookingType,
                 quantity: this.quantity,
                 startDate: this.toDateOnlyString(this.startDate),
-                monthlySalary: this.worker().monthlyRate,
-                dailySalary: this.worker().dailyRate,
-                hourlySalary: this.worker().hourlyRate,
+                monthlySalary: this.worker().monthlyRate??0,
+                dailySalary: this.worker().dailyRate??0,
+                hourlySalary: this.worker().hourlyRate??0,
                 commissionType: this.commissionType
             })
             .subscribe({
