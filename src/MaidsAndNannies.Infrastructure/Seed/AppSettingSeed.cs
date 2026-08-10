@@ -17,7 +17,7 @@ namespace MaidsAndNannies.Infrastructure.Seed
             {
                 await dbContext.AppSettings.AddRangeAsync(new List<AppSetting>
                 {
-                     new AppSetting { Key = "MaxFaultReplacementCount", Value = "3", Description = "الحد الأقصى لعدد مرات الاستبدال بسبب تقصير العاملة" },
+                     new AppSetting { Key = "MaxFaultReplacementCount", Value = "1", Description = "الحد الأقصى لعدد مرات الاستبدال بسبب تقصير العاملة" },
                      new AppSetting { Key = "MaxPreferenceReplacementCount", Value = "1", Description = "الحد الأقصى لعدد مرات الاستبدال برغبة شخصية من صاحبة المنزل" },
                      new AppSetting { Key = "CommissionDailyPercent", Value = "10", Description = "نسبة العمولة للحجوزات اليومية (%)" },
                      new AppSetting { Key = "CommissionHourlyPercent", Value = "10", Description = "نسبة العمولة للحجوزات بالساعة (%)" },

@@ -85,6 +85,10 @@ public sealed class RegisterWorkerCommandHandler(
         return Unit.Value;
     }
 
-    private static string NormalizeDigits(string? value) =>
-        new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+    private static string NormalizeDigits(string? value)
+    {
+        var digits = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+        if (digits.StartsWith("20") && digits.Length == 12) digits = digits[2..];
+        return digits;
+    }
 }
