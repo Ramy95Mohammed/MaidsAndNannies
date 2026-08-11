@@ -116,7 +116,7 @@ const CURRENCY_KEYS = [
                         <input pInputText  formControlName="email"  class="w-full"  />
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid md:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
                             <label class="font-bold">{{ 'AUTH.PHONE' | translate }}</label>
                             <input pInputText [value]="profile()?.phoneNumber ?? ''" class="w-full" disabled />
@@ -299,7 +299,7 @@ const CURRENCY_KEYS = [
                         <textarea pTextarea formControlName="bio" rows="4" class="w-full" [placeholder]="'WORKER_PROFILE.BIO_PLACEHOLDER' | translate"></textarea>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid md:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
                             <label class="font-bold">{{ 'WORKER.EXPERIENCE' | translate }}</label>
                             <p-inputnumber formControlName="experienceYears" [min]="0" class="w-full"></p-inputnumber>

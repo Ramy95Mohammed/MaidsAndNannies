@@ -68,24 +68,24 @@ public sealed class GeoSeeder
         }
 
         // ── Cities ──
-        if (!await db.Cities.AnyAsync())
-        {
-            var citiesJsonPath = Path.Combine(
-                rootPath,
-                "json",
-                "Cities.json");
+        //if (!await db.Cities.AnyAsync())
+        //{
+        //    var citiesJsonPath = Path.Combine(
+        //        rootPath,
+        //        "json",
+        //        "Cities.json");
 
-            var citiesJson = await File.ReadAllTextAsync(citiesJsonPath);
+        //    var citiesJson = await File.ReadAllTextAsync(citiesJsonPath);
 
-            var citiesList =
-                JsonSerializer.Deserialize<List<City>>(citiesJson)
-                ?? new List<City>();
+        //    var citiesList =
+        //        JsonSerializer.Deserialize<List<City>>(citiesJson)
+        //        ?? new List<City>();
 
-            foreach (var batch in citiesList.Chunk(100))
-            {
-                await db.Cities.AddRangeAsync(batch);
-                await db.SaveChangesAsync();
-            }
-        }
+        //    foreach (var batch in citiesList.Chunk(100))
+        //    {
+        //        await db.Cities.AddRangeAsync(batch);
+        //        await db.SaveChangesAsync();
+        //    }
+        //}
     }
 }

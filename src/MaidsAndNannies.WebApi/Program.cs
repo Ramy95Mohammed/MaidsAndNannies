@@ -92,7 +92,7 @@ using (var scope = app.Services.CreateScope())
 
     if (app.Environment.IsDevelopment())
     {       
-        //await UsersSeed.SeedAOnDevelopsync(userManager, dbContext);
+        await UsersSeed.SeedAOnDevelopsync(userManager, dbContext);
     }
 }
 

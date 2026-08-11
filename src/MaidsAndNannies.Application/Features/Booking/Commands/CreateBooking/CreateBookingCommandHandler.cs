@@ -16,115 +16,152 @@ public sealed class CreateBookingCommandHandler(
     INotificationService notifications)
     : IRequestHandler<CreateBookingCommand, BookingDetailDto>
 {
-    public async Task<BookingDetailDto> Handle(CreateBookingCommand request, CancellationToken ct)
+    public async Task<BookingDetailDto> Handle(
+    CreateBookingCommand request,
+    CancellationToken ct)
     {
-        await using var transaction = await (dbContext ).Database.BeginTransactionAsync();
-        try
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+
+        BookingDetailDto? result = null;
+
+        await strategy.ExecuteAsync(async () =>
         {
+            await using var transaction =
+                await dbContext.Database.BeginTransactionAsync(ct);
 
-            var worker = await dbContext.WorkerProfiles
-               .FirstOrDefaultAsync(w => w.Id == request.WorkerId, ct)
-               ?? throw new KeyNotFoundException("العاملة غير موجودة");
-
-            var currency = await dbContext.Currencies
-                .FirstOrDefaultAsync(c => c.Id == worker.CurrencyId, ct)
-                ?? throw new KeyNotFoundException("العملة غير موجودة");
-
-            var workerCalculationsVars = new HomeownerOrWorkerCalculationsVars();
-
-            workerCalculationsVars.DailyRate = worker.DailyRate;
-            workerCalculationsVars.HourlyRate = worker.HourlyRate;
-            workerCalculationsVars.MonthlyRate = worker.MonthlyRate;
-
-            var bookingRequest = new BookingOrJobPostRequestVars
+            try
             {
-                BookingType = request.BookingType,
-                CommissionType = request.CommissionType,
-                MonthlySalary = request.MonthlySalary,
-                Quantity = request.Quantity,
-            };
+                var worker = await dbContext.WorkerProfiles
+                    .FirstOrDefaultAsync(
+                        w => w.Id == request.WorkerId,
+                        ct)
+                    ?? throw new KeyNotFoundException("العاملة غير موجودة");
 
-           var bookingCalculationsReturnValue = await calculateBookingCommissionData.Calc(bookingRequest, workerCalculationsVars, currency, ct);
-          
-            int bookinId = 0;
+                var currency = await dbContext.Currencies
+                    .FirstOrDefaultAsync(
+                        c => c.Id == worker.CurrencyId,
+                        ct)
+                    ?? throw new KeyNotFoundException("العملة غير موجودة");
 
-            if (request.CalcOnly == false)
-            {
-                var booking = new MaidsAndNannies.Domain.Entities.Booking
+                var workerCalculationsVars =
+                    new HomeownerOrWorkerCalculationsVars
+                    {
+                        DailyRate = worker.DailyRate,
+                        HourlyRate = worker.HourlyRate,
+                        MonthlyRate = worker.MonthlyRate
+                    };
+
+                var bookingRequest = new BookingOrJobPostRequestVars
                 {
-                    HomeownerId = request.HomeownerId,
-                    WorkerId = worker.UserId,
-                    OriginalWorkerId = worker.Id,
-                    ServiceType = request.ServiceType,
                     BookingType = request.BookingType,
-                    Quantity = request.Quantity,
-                    StartDate = request.StartDate,
+                    CommissionType = request.CommissionType,
                     MonthlySalary = request.MonthlySalary,
-                    DailySalary = request.DailySalary,
-                    HourlySalary = request.HourlySalary,
-                    TotalAmount = bookingCalculationsReturnValue.TotalAmount,
-                    CommissionAmount = bookingCalculationsReturnValue.CommissionAmount,
-                    CommissionType = bookingCalculationsReturnValue.CommissionType,
-                    Status = BookingStatus.Pending,
-                    ReplacementCount = 0,
-                    CurrencyId = worker.CurrencyId,
+                    Quantity = request.Quantity
                 };
 
+                var bookingCalculationsReturnValue =
+                    await calculateBookingCommissionData.Calc(
+                        bookingRequest,
+                        workerCalculationsVars,
+                        currency,
+                        ct);
 
+                int bookingId = 0;
 
-                var homeownerProfile = await dbContext.HomeownerProfiles
-                      .FirstOrDefaultAsync(h => h.UserId == request.HomeownerId, ct);
-
-                if (homeownerProfile is not null && homeownerProfile.TermsAcceptedAt is null)
+                if (!request.CalcOnly)
                 {
-                    homeownerProfile.TermsAcceptedAt = DateTime.UtcNow;
-                    homeownerProfile.TermsAcceptedVersion = "1.0";
-                }
+                    var booking =
+                        new MaidsAndNannies.Domain.Entities.Booking
+                        {
+                            HomeownerId = request.HomeownerId,
+                            WorkerId = worker.UserId,
+                            OriginalWorkerId = worker.Id,
+                            ServiceType = request.ServiceType,
+                            BookingType = request.BookingType,
+                            Quantity = request.Quantity,
+                            StartDate = request.StartDate,
+                            MonthlySalary = request.MonthlySalary,
+                            DailySalary = request.DailySalary,
+                            HourlySalary = request.HourlySalary,
+                            TotalAmount =
+                                bookingCalculationsReturnValue.TotalAmount,
+                            CommissionAmount =
+                                bookingCalculationsReturnValue.CommissionAmount,
+                            CommissionType =
+                                bookingCalculationsReturnValue.CommissionType,
+                            Status = BookingStatus.Pending,
+                            ReplacementCount = 0,
+                            CurrencyId = worker.CurrencyId
+                        };
 
-                dbContext.Bookings.Add(booking);
+                    var homeownerProfile =
+                        await dbContext.HomeownerProfiles
+                            .FirstOrDefaultAsync(
+                                h => h.UserId == request.HomeownerId,
+                                ct);
 
-                await dbContext.SaveChangesAsync(ct);
-
-                if (bookingCalculationsReturnValue.CommissionType == CommissionType.Subscription)
-                {
-                    dbContext.Subscriptions.Add(new Domain.Entities.Subscription
+                    if (homeownerProfile is not null &&
+                        homeownerProfile.TermsAcceptedAt is null)
                     {
-                        HomeownerId = request.HomeownerId,
-                        BookingId = booking.Id,
-                        PlanType = CommissionType.Subscription,
-                        Amount = bookingCalculationsReturnValue.CommissionAmount,
-                        StartDate = request.StartDate.Date.ToUniversalTime(),
-                        EndDate = request.StartDate.Date.ToUniversalTime().AddDays(30),
-                        IsActive = true
-                    });
+                        homeownerProfile.TermsAcceptedAt = DateTime.UtcNow;
+                        homeownerProfile.TermsAcceptedVersion = "1.0";
+                    }
+
+                    dbContext.Bookings.Add(booking);
+
+                    await dbContext.SaveChangesAsync(ct);
+
+                    if (bookingCalculationsReturnValue.CommissionType ==
+                        CommissionType.Subscription)
+                    {
+                        dbContext.Subscriptions.Add(
+                            new Domain.Entities.Subscription
+                            {
+                                HomeownerId = request.HomeownerId,
+                                BookingId = booking.Id,
+                                PlanType = CommissionType.Subscription,
+                                Amount =
+                                    bookingCalculationsReturnValue.CommissionAmount,
+                                StartDate =
+                                    request.StartDate.Date.ToUniversalTime(),
+                                EndDate =
+                                    request.StartDate.Date
+                                        .ToUniversalTime()
+                                        .AddDays(30),
+                                IsActive = true
+                            });
+                    }
+
+                    worker.IsAvailable = false;
+
+                    await dbContext.SaveChangesAsync(ct);
+
+                    await transaction.CommitAsync(ct);
+
+                    bookingId = booking.Id;
                 }
 
-                worker.IsAvailable = false;
+                result = new BookingDetailDto(bookingId, "", "", "", null, "", "", null, null, null, null, Specialization.Childcare, BookingType.Daily, 0, "", DateTime.Now, null, 0, 0, 0, bookingCalculationsReturnValue.TotalAmount, bookingCalculationsReturnValue.TotalInEgp, bookingCalculationsReturnValue.CommissionAmount, CommissionType.OneTime, BookingStatus.Pending, false, 0, 0, null, DateTime.Now, null, 0, 0, 0, bookingCalculationsReturnValue.PaymentAmount, true, false);
 
-                await dbContext.SaveChangesAsync(ct);
-                await transaction.CommitAsync();
-
-                bookinId = booking.Id;
-
-                await notifications.NotifyAdminsAsync(NotificationType.BookingCreated, "NOTIF.BOOKING_CREATED",
-                  new { BookingId = booking.Id }, ct);
+                // مهم: الـ notification خارج الـ transaction
             }
+            catch
+            {
+                await transaction.RollbackAsync(ct);
+                throw;
+            }
+        });
 
-
-            var bookingDetailDto = new BookingDetailDto(bookinId, "","", "", null, "", "", null, null, null,
-               null, Specialization.Childcare, BookingType.Daily, 0, "", DateTime.Now, null,
-               0, 0, 0, bookingCalculationsReturnValue.TotalAmount, bookingCalculationsReturnValue.TotalInEgp,
-               bookingCalculationsReturnValue.CommissionAmount, CommissionType.OneTime, BookingStatus.Pending,
-               false, 0, 0, null, DateTime.Now, null, 0, 0, 0, bookingCalculationsReturnValue.PaymentAmount, true, false);
-
-            return bookingDetailDto;
-        }
-        catch (Exception ex)
+        if (!request.CalcOnly && result is not null)
         {
-            await transaction.RollbackAsync();
-            throw;
-        }       
+            await notifications.NotifyAdminsAsync(
+                NotificationType.BookingCreated,
+                "NOTIF.BOOKING_CREATED",
+                new { BookingId = result.Id },
+                ct);
+        }
+
+        return result!;
     }
 
-   
 }
