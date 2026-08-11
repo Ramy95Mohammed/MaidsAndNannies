@@ -22,16 +22,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\uploads\homeowners\" />
-    <Folder Include="wwwroot\uploads\payments\" />
-    <Folder Include="wwwroot\uploads\worker-documents\" />
-    <Folder Include="wwwroot\uploads\workers\" />
+    <Content Include="wwwroot\json\Cities.json"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+
+    <Content Include="wwwroot\json\Countries.json"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+
+    <Content Include="wwwroot\json\States.json"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\json\Cities.json" />
-    <None Include="wwwroot\json\Countries.json" />
-    <None Include="wwwroot\json\States.json" />
+    <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -39,7 +39,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     });
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
-    policy.WithOrigins(builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? ["http://localhost:4200" , "http://localhost:4201"])
+    policy.WithOrigins(builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? ["http://localhost:4200" , "http://localhost:4201"
+    ,"https://rafeeqa.prime-devv.online"])
         .AllowAnyHeader()
         .AllowAnyMethod()));
 
@@ -91,7 +92,7 @@ using (var scope = app.Services.CreateScope())
 
     if (app.Environment.IsDevelopment())
     {       
-        await UsersSeed.SeedAOnDevelopsync(userManager, dbContext);
+        //await UsersSeed.SeedAOnDevelopsync(userManager, dbContext);
     }
 }
 
@@ -104,6 +105,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ResponseLocalizationMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
+app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseCors();
 app.UseAuthentication();

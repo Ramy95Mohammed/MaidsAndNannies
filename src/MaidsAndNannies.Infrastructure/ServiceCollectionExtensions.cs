@@ -19,8 +19,17 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+     options.UseSqlServer(
+         configuration.GetConnectionString("DefaultConnection"),
+         sqlOptions =>
+         {
+             sqlOptions.CommandTimeout(120);
 
+             sqlOptions.EnableRetryOnFailure(
+                 maxRetryCount: 5,
+                 maxRetryDelay: TimeSpan.FromSeconds(10),
+                 errorNumbersToAdd: null);
+         }));
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
         services.AddIdentityCore<ApplicationUser>(options =>

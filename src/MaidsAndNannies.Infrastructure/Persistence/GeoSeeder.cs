@@ -19,40 +19,73 @@ public sealed class GeoSeeder
     public async Task SeedAsync()
     {
         using var scope = _services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
+
+        var db = scope.ServiceProvider
+            .GetRequiredService<ApplicationDbContext>();
+
         var rootPath = Path.Combine(_environment.ContentRootPath, "wwwroot");
 
+        // ── Countries ──
         if (!await db.Countries.AnyAsync())
         {
-            var countriesJsonPath = Path.Combine(rootPath, "json", "Countries.json");
+            var countriesJsonPath = Path.Combine(
+                rootPath,
+                "json",
+                "Countries.json");
+
             var countriesJson = await File.ReadAllTextAsync(countriesJsonPath);
 
-            var countriesList = JsonSerializer.Deserialize<List<Country>>(countriesJson);
-            
+            var countriesList =
+                JsonSerializer.Deserialize<List<Country>>(countriesJson)
+                ?? new List<Country>();
 
-            await db.Countries.AddRangeAsync(countriesList);
-            await db.SaveChangesAsync();
+            foreach (var batch in countriesList.Chunk(20))
+            {
+                await db.Countries.AddRangeAsync(batch);
+                await db.SaveChangesAsync();
+            }
         }
 
         // ── States ──
         if (!await db.States.AnyAsync())
         {
-            var statesJsonPath = Path.Combine(rootPath, "json", "States.json");
+            var statesJsonPath = Path.Combine(
+                rootPath,
+                "json",
+                "States.json");
+
             var statesJson = await File.ReadAllTextAsync(statesJsonPath);
-            var statesList = JsonSerializer.Deserialize<List<State>>(statesJson);
-            await db.States.AddRangeAsync(statesList);
-            await db.SaveChangesAsync();
+
+            var statesList =
+                JsonSerializer.Deserialize<List<State>>(statesJson)
+                ?? new List<State>();
+
+            foreach (var batch in statesList.Chunk(50))
+            {
+                await db.States.AddRangeAsync(batch);
+                await db.SaveChangesAsync();
+            }
         }
 
-        // ── Citiees ──
+        // ── Cities ──
         if (!await db.Cities.AnyAsync())
         {
-            var citiesJsonPath = Path.Combine(rootPath, "json" , "Cities.json");
+            var citiesJsonPath = Path.Combine(
+                rootPath,
+                "json",
+                "Cities.json");
+
             var citiesJson = await File.ReadAllTextAsync(citiesJsonPath);
-            var citiesList = JsonSerializer.Deserialize<List<City>>(citiesJson);
-            await db.Cities.AddRangeAsync(citiesList);
-            await db.SaveChangesAsync();
+
+            var citiesList =
+                JsonSerializer.Deserialize<List<City>>(citiesJson)
+                ?? new List<City>();
+
+            foreach (var batch in citiesList.Chunk(100))
+            {
+                await db.Cities.AddRangeAsync(batch);
+                await db.SaveChangesAsync();
+            }
         }
-    }    
+    }
 }

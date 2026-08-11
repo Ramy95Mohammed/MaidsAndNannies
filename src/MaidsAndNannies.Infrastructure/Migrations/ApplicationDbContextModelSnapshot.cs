@@ -46,74 +46,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("AppSettings");
-
-                    b.HasData(
-                        new
-                        {
-                            Key = "MaxFaultReplacementCount",
-                            Description = "الحد الأقصى لعدد مرات الاستبدال بسبب تقصير العاملة",
-                            Value = "3"
-                        },
-                        new
-                        {
-                            Key = "MaxPreferenceReplacementCount",
-                            Description = "الحد الأقصى لعدد مرات الاستبدال برغبة شخصية من صاحبة المنزل",
-                            Value = "1"
-                        },
-                        new
-                        {
-                            Key = "CommissionDailyPercent",
-                            Description = "نسبة العمولة للحجوزات اليومية (%)",
-                            Value = "10"
-                        },
-                        new
-                        {
-                            Key = "CommissionHourlyPercent",
-                            Description = "نسبة العمولة للحجوزات بالساعة (%)",
-                            Value = "10"
-                        },
-                        new
-                        {
-                            Key = "CommissionMonthlyOneTimePercent",
-                            Description = "نسبة العمولة للحجوزات الشهرية (مرة واحدة)",
-                            Value = "10"
-                        },
-                        new
-                        {
-                            Key = "CommissionMonthlySubscriptionPercent",
-                            Description = "نسبة العمولة للحجوزات الشهرية (اشتراك شهري)",
-                            Value = "10"
-                        },
-                        new
-                        {
-                            Key = "AutoCancelPendingBookingHours",
-                            Description = "إلغاء الحجوزات المعلقة تلقائياً بعد (ساعة)",
-                            Value = "48"
-                        },
-                        new
-                        {
-                            Key = "MaxActiveBookingsPerHomeowner",
-                            Description = "الحد الأقصى للحجوزات النشطة لكل صاحبة منزل",
-                            Value = "5"
-                        },
-                        new
-                        {
-                            Key = "CommissionBillingMode",
-                            Description = "المبلغ المطلوب من صاحبة المنزل عند الدفع: CommissionOnly = العمولة فقط، CommissionPlusSalary = العمولة + مرتب العاملة",
-                            Value = "CommissionOnly"
-                        },
-                        new
-                        {
-                            Key = "RequirePaymentProof",
-                            Description = "إظهار قسم رفع إثبات الدفع: true = ترفع صاحبة المنزل إثبات الدفع، false = يُعتبر الحجز مدفوعاً فور طلب الدفع (التواصل عبر واتساب)",
-                            Value = "true"
-                        },
-                        new
-                        {
-                            Key = "MonthlyWorkingDaysPerMonth",
-                            Description = "عدد أيام العمل القياسية في الشهر لحساب الأجر الشهري النسبي",
-                            Value = "26"
-                        });
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.Booking", b =>
@@ -391,41 +323,6 @@ namespace MaidsAndNannies.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Currencies");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Code = "EGP",
-                            CreatedAtUtc = new DateTime(2026, 8, 9, 20, 0, 24, 771, DateTimeKind.Utc).AddTicks(9612),
-                            IsActive = true,
-                            NameAr = "جنيه مصري",
-                            NameEn = "Egyptian Pound",
-                            RateToEgp = 1m,
-                            Symbol = "E£"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Code = "USD",
-                            CreatedAtUtc = new DateTime(2026, 8, 9, 20, 0, 24, 771, DateTimeKind.Utc).AddTicks(9618),
-                            IsActive = true,
-                            NameAr = "دولار أمريكي",
-                            NameEn = "US Dollar",
-                            RateToEgp = 48.5m,
-                            Symbol = "$"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Code = "SAR",
-                            CreatedAtUtc = new DateTime(2026, 8, 9, 20, 0, 24, 771, DateTimeKind.Utc).AddTicks(9623),
-                            IsActive = true,
-                            NameAr = "ريال سعودي",
-                            NameEn = "Saudi Riyal",
-                            RateToEgp = 12.9m,
-                            Symbol = "﷼"
-                        });
                 });
 
             modelBuilder.Entity("MaidsAndNannies.Domain.Entities.HomeownerProfile", b =>
